@@ -30,6 +30,7 @@ class CookiesMiddleware:
                 cookie = value.decode('utf-8')
         cookie = parse_cookie(cookie)
         if not 'access_token' in cookie:
+            print('cookies: ************: ', cookie)
             print('access token not found')
             scope['user'] = AnonymousUser()
         else:
