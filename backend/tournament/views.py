@@ -4,7 +4,7 @@ from .serializers import *
 from .models import *
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework_simplejwt.authentication import CookieJWTAuthentication
+from authentication.middlewares import CookieJWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 
 # Create your views here.

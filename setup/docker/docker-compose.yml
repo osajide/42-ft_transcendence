@@ -1,0 +1,15 @@
+services:
+  frontend:
+    image: nginx:django
+    build: .
+    container_name: frontend
+    # network_mode: host
+    volumes:
+      - ${HOME}/Desktop/42-ft_transcendence/frontend:/var/www/html
+    ports:
+      - 4242:4242
+  redis:
+    image: redis:bookworm
+    container_name: redis
+    ports:
+      - 6379:6379

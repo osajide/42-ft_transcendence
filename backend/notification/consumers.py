@@ -32,15 +32,17 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 		# print('cl: ', self.channel_layer)
 		await self.accept()
 
+		if self.scope['user'].is_authenticated is False:
+			await self.send(text_data=json.dumps({'error': 'user not authenticated'}))
+			await self.close(4000)
+
 		await self.channel_layer.group_add(self.notification_group, self.channel_name)
 		notifications = await get_notifications(self.scope['user'].id)
 		await self.send(text_data=notifications)
 
 	async def	disconnect(self, code):
-		await self.channel_layer.group_discard(self.notification_group, self.channel_name)
-		# print('games noti: ', games)
-		# games.clear() #temp
-		# await self.close()
+		if code != 4000:
+			await self.channel_layer.group_discard(self.notification_group, self.channel_name)
 
 	async def	receive(self, text_data=None, bytes_data=None):
 		

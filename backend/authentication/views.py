@@ -18,7 +18,7 @@ from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password
-from rest_framework_simplejwt.authentication import CookieJWTAuthentication
+from .middlewares import CookieJWTAuthentication
 
 # Create your views here.
 

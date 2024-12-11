@@ -1,7 +1,7 @@
 from .models import Friendship
 from rest_framework.decorators import api_view
 from rest_framework.decorators import authentication_classes, permission_classes
-from rest_framework_simplejwt.authentication import CookieJWTAuthentication
+from authentication.middlewares import CookieJWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 from authentication.models import UserAccount
 from notification.models import Notification
