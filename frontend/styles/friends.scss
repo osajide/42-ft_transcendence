@@ -1,0 +1,108 @@
+@use "./vars.scss" as *;
+
+#friends #page {
+  flex-direction: row;
+
+  & > section {
+    @include container;
+  }
+
+  #userProfile {
+    text-align: left;
+    width: 100%;
+    flex-grow: 1;
+    height: 100%;
+    padding: $global_padding;
+    // background-color: $prim_dark;
+
+    img {
+      width: 200px;
+      margin-inline: auto;
+    }
+  }
+
+  .popup {
+    * {
+      outline: none;
+      border: none;
+    }
+    input {
+      width: 100%;
+      padding: 10px 7px;
+      border-radius: 7px;
+      color: $sec_dark;
+      margin-bottom: 10px;
+    }
+  }
+}
+
+@media screen and (max-width: 480px) {
+  #userProfile {
+    height: 100dvh;
+    position: absolute;
+    z-index: 1;
+    left: 0;
+    border: none !important;
+
+    & > * {
+      width: 100% !important;
+    }
+  }
+
+  #friends #page {
+    & > section {
+      // width: 100% !important;
+      max-width: 100%;
+    }
+
+    .list {
+      width: 100%;
+      position: relative !important;
+    }
+
+    #userProfile {
+      width: 0 !important;
+      overflow: hidden;
+      transform-origin: right;
+      transition: all 0.25s linear;
+      padding: 0;
+    }
+
+    input[type="checkbox"]:checked + #userProfile {
+      width: 100% !important;
+      border: $global_border !important;
+    }
+
+    // .users_list {
+    //   flex-wrap: wrap;
+    //   flex-direction: row;
+    //   justify-content: space-between;
+    //   gap: 10px;
+
+    //   .user_label {
+    //     flex-direction: column;
+    //     width: 30%;
+    //     border: none;
+    //     gap: 5px;
+
+    //     img {
+    //       width: 50%;
+    //       height: fit-content;
+    //     }
+
+    //     h4 {
+    //       overflow: hidden;
+    //       white-space: nowrap;
+    //       width: 100%;
+    //       text-align: center;
+    //       text-overflow: ellipsis;
+    //     }
+    //   }
+    // }
+  }
+
+  .hide:checked + label + .popup {
+    width: 90% !important;
+    height: 90% !important;
+  }
+}

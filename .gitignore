@@ -1,0 +1,21 @@
+.* ! .gitignore
+
+backend/project/__pycache__/
+
+backend/authentication/__pycache__/
+backend/authentication/migrations/__pycache__/
+
+backend/chat/__pycache__/
+backend/chat/migrations/__pycache__/
+
+backend/friend/__pycache__/
+backend/friend/migrations/__pycache__/
+
+backend/notification/__pycache__/
+backend/notification/migrations/__pycache__/
+
+backend/game/__pycache__/
+backend/game/migrations/__pycache__/
+
+backend/tournament/__pycache__/
+backend/tournament/migrations/__pycache__/
