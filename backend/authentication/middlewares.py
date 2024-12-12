@@ -3,6 +3,9 @@ from channels.db import database_sync_to_async
 from django.http import parse_cookie
 from authentication.tokens import token_decoder
 from django.contrib.auth.models import AnonymousUser
+import jwt 
+from django.conf import settings
+from rest_framework_simplejwt.tokens import RefreshToken
 
 # ------------------------ from channels/auth.py ----------------------------------
 
@@ -12,12 +15,12 @@ def get_user(user_id):
         return UserAccount.objects.get(id=user_id)
     except UserAccount.DoesNotExist:
         return AnonymousUser()
+        
+class TokenExpiredError(Exception):
+    pass
 
 class CookiesMiddleware:
-    """
-    Custom middleware (insecure) that takes user IDs from the query string.
-    """
-
+    
     def __init__(self, app):
         # Store the ASGI application we were passed
         self.app = app
@@ -35,10 +38,58 @@ class CookiesMiddleware:
             scope['user'] = AnonymousUser()
         else:
             access_token = cookie['access_token']
-            user_id = token_decoder(access_token)
-            scope['user'] = await get_user(user_id)
+            try:
+                user_id = token_decoder(access_token)
+                if user_id == -1:
+                    raise TokenExpiredError("The access token has expired.")
+                scope['user'] = await get_user(user_id)
+                print("getted user")    
+            except TokenExpiredError:
+                print("Token expired, attempting to refresh...")
+                new_access_token = await self.refresh_access_token(cookie['refresh_token'])
+                if new_access_token:
+                    print("set new access_token token")
+                    scope['user'] = await get_user(token_decoder(new_access_token))
+                else:
+                    print("Failed to refresh token")
+                    scope['user'] = AnonymousUser()
 
         return await self.app(scope, receive, send)
+
+    async def refresh_access_token(self, refresh_token):
+        try:
+            refresh = RefreshToken(refresh_token)
+            new_access_token = str(refresh.access_token)
+            return new_access_token
+        except TokenExpiredError:
+            return None
+
+# class CookiesMiddleware:
+#     """
+#     Custom middleware (insecure) that takes user IDs from the query string.
+#     """
+
+#     def __init__(self, app):
+#         # Store the ASGI application we were passed
+#         self.app = app
+
+#     async def __call__(self, scope, receive, send):
+#         cookie = ""
+#         headers = scope['headers']
+#         for key, value in headers:
+#             if key == b'cookie':
+#                 cookie = value.decode('utf-8')
+#         cookie = parse_cookie(cookie)
+#         if not 'access_token' in cookie:
+#             print('cookies: ************: ', cookie)
+#             print('access token not found')
+#             scope['user'] = AnonymousUser()
+#         else:
+#             access_token = cookie['access_token']
+#             user_id = token_decoder(access_token)
+#             scope['user'] = await get_user(user_id)
+
+#         return await self.app(scope, receive, send)
     
 # ---------------------     from rest_framework_simplejwt/authentication.py ------------------------------
 
