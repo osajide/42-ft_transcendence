@@ -65,7 +65,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             users_states[tournament_id] = {}
             users_states[tournament_id][self.scope['user'].id] = 1
 
-        if (len(users[tournament_id]) == 2):
+        if (len(users[tournament_id]) == 8):
             await self.send(text_data=json.dumps({
                     'message' : 'Tournament is Full'
                 }))
@@ -156,10 +156,10 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         tournament_id = self.scope["url_route"]["kwargs"]["tournament_id"] 
 
         users[tournament_id].remove(self.scope['user'])
-        users_states[tournament_id].pop(self.scope['user'].id)
+        # users_states[tournament_id].pop(self.scope['user'].id)
 
-        if len(users_states[tournament_id]) == 0:
-            users_states.pop(tournament_id)
+        # if len(users_states[tournament_id]) == 0:
+        #     users_states.pop(tournament_id)
 
         if len(users[tournament_id]) == 0:
             users.pop(tournament_id)

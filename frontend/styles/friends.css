@@ -73,6 +73,20 @@
   margin-bottom: 10px;
 }
 
+.relManager {
+  display: flex;
+  gap: 15px;
+}
+.relManager .button:nth-child(2) {
+  background-color: transparent;
+  border: 2px solid #00bcbc;
+  color: #00bcbc;
+}
+.relManager .button:nth-child(2):hover {
+  background-color: #00bcbc;
+  color: #f1f1f1;
+}
+
 @media screen and (max-width: 480px) {
   #userProfile {
     height: 100dvh;
