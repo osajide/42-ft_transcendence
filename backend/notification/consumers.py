@@ -33,11 +33,19 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 	async def	connect(self):
 		await self.accept()
 
+		if self.user.is_authenticated == False:
+			await self.send(text_data=json.dumps({'error': 'user not authenticated'}))
+			await self.close(code=4000)
+			return
+
 		await self.channel_layer.group_add(self.notification_group, self.channel_name)
 		notifications = await get_notifications(self.scope['user'].id)
 		await self.send(text_data=notifications)
 
 	async def	disconnect(self, code):
+		if code == 4000:
+			return
+
 		await self.channel_layer.group_discard(self.notification_group, self.channel_name)
 		print("=====> DISCONNECTED IN NOTIFICATION")
 		if len(tournaments) > 0 and  tournaments[user_index[self.scope['user']]] != '0' and tournaments[user_index[self.scope['user']]] != '8':

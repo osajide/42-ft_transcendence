@@ -29,6 +29,11 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 		print('participants before: ', participants)
 		await self.accept()
 
+		if self.user.is_authenticated == False:
+			await self.send(text_data=json.dumps({'error': 'user not authenticated'}))
+			await self.close(code=4000)
+			return
+
 		self.user = self.scope['user']
 		self.conversation_name = self.scope['url_route']['kwargs']['conversation_name']
 		friend_id = await self.extract_friend_id() # checks and close
@@ -74,11 +79,13 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 	
 	async def	disconnect(self, code):
 		print('code: ', code)
-		if code != 4000:
-			await self.channel_layer.group_discard(self.conversation_name, self.channel_name)
-			participants[self.conversation_name] -= 1
-			if participants[self.conversation_name] == 0:
-				participants.pop(self.conversation_name)
+		if code == 4000:
+			return
+
+		await self.channel_layer.group_discard(self.conversation_name, self.channel_name)
+		participants[self.conversation_name] -= 1
+		if participants[self.conversation_name] == 0:
+			participants.pop(self.conversation_name)
 
 		print('participants after disconnect(): ', participants)
 
