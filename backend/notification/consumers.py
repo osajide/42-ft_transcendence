@@ -12,6 +12,7 @@ redis_client = redis.Redis(host='localhost', port=6379, db=1)
 
 games = []
 tournaments = []
+user_index = {}
 
 @database_sync_to_async
 def get_notifications(id):
@@ -37,6 +38,11 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 
 	async def	disconnect(self, code):
 		await self.channel_layer.group_discard(self.notification_group, self.channel_name)
+		print("=====> DISCONNECTED IN NOTIFICATION")
+		if len(tournaments) > 0 and  tournaments[user_index[self.scope['user']]] != '0':
+			tournaments[user_index[self.scope['user']]] = chr(ord(tournaments[user_index[self.scope['user']]]) - 1)
+			print(f"tounaments {user_index[self.scope['user']]} count {tournaments[user_index[self.scope['user']]]}")
+
 		# print('games noti: ', games)
 		# games.clear() #temp
 		# await self.close()
@@ -78,6 +84,9 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 						redis_client.set(f"tournament_len", len(tournaments))
 						index = len(tournaments) - 1
 						break
+			if self.scope['user'] not in user_index:
+				user_index[self.scope['user']] = []
+			user_index[self.scope['user']] = index
 			
 			print(f"tournament : {index} => {tournaments[index]}")
 			await self.send(json.dumps(
@@ -91,11 +100,7 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 		print("UPDATE TOURNAMENT")
 		tournaments[event['id']] = chr(ord(tournaments[event['id']]) + event['value'])
 		print(f"tournament {event['id']} has {tournaments[event['id']]} elements")
-		# if tournaments[event['id']] == '0':
-		# 	print("The tournament is empty")
-		# 	await self.send(text_data=json.dumps({
-        #         'empty_tournament' : event['id']
-        #     }))
+		print("END UP")
 
 	async def	send_notification(self, event):
 		if self.scope['user'].id == event['receiver']:

@@ -6,7 +6,7 @@ start: push
 	@docker compose -f ./setup/docker/docker-compose.yml up --build -d
 	@python backend/manage.py makemigrations
 	@python backend/manage.py migrate
-	@python backend/manage.py runserver 0.0.0.0:8000
+	@python backend/manage.py runserver
 
 stop:
 	@docker compose -f ./setup/docker/docker-compose.yml down

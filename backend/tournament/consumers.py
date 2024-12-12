@@ -63,13 +63,13 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 }))
             return 
 
-        found = any(self.scope['user'] in value for value in users.values())
-        if found:
-            print("user already exists")
-            await self.send(text_data=json.dumps({
-                    'message' : 'User already joined an existing tournament'
-                }))
-            return 
+        # found = any(self.scope['user'] in value for value in users.values())
+        # if found:
+        #     print("user already exists")
+        #     await self.send(text_data=json.dumps({
+        #             'message' : 'User already joined an existing tournament'
+        #         }))
+        #     return 
         print("joined user : ", self.scope['user'].first_name)
         await self.channel_layer.group_send('notification',
                 {
@@ -77,6 +77,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     'id' : tournament_id,
                     'value' : 1
                 })
+        print("HERE")
         users[tournament_id].append(self.scope['user'])
         # await sync_to_async(UserAccount.objects.filter(id=self.scope['user'].id).update)(user_state="in_game")
         self.scope['user'].user_state = "in_game"
@@ -145,6 +146,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         users_states[tournament_id][winner_id] += 1
 
         if users_states[tournament_id][winner_id] == 4:
+            print("THE TOURNAMENT IS ENDED")
             users.pop(tournament_id)
             users_states.pop(tournament_id)
             await self.channel_layer.group_send('notification',
@@ -178,6 +180,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 print("POPPED")
                 users.pop(tournament_id)
 
+            print("channel layer : ", self.channel_layer)
             await self.channel_layer.group_send('notification',
                 {
                     'type' : 'update_tournament',
