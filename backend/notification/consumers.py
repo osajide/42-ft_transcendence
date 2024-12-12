@@ -29,20 +29,17 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 
 	notification_group = 'notification'
 	async def	connect(self):
-		# print('cl: ', self.channel_layer)
 		await self.accept()
-
-		if self.scope['user'].is_authenticated is False:
-			await self.send(text_data=json.dumps({'error': 'user not authenticated'}))
-			await self.close(4000)
 
 		await self.channel_layer.group_add(self.notification_group, self.channel_name)
 		notifications = await get_notifications(self.scope['user'].id)
 		await self.send(text_data=notifications)
 
 	async def	disconnect(self, code):
-		if code != 4000:
-			await self.channel_layer.group_discard(self.notification_group, self.channel_name)
+		await self.channel_layer.group_discard(self.notification_group, self.channel_name)
+		# print('games noti: ', games)
+		# games.clear() #temp
+		# await self.close()
 
 	async def	receive(self, text_data=None, bytes_data=None):
 		
@@ -57,7 +54,7 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 										   'id': self.scope['user'].id
 									   })
 
-		elif 'tournament' in json_text_data:
+		elif 'tournament'  in json_text_data:
 
 			if self.scope['user'].user_state != "offline":
 				await self.send(json.dumps(
@@ -93,14 +90,12 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 		
 		print("UPDATE TOURNAMENT")
 		tournaments[event['id']] = chr(ord(tournaments[event['id']]) + event['value'])
+		print(f"tournament {event['id']} has {tournaments[event['id']]} elements")
 		if tournaments[event['id']] == '0':
-			await self.send(json.dumps(
-				{
-					'empty_tournament': tournaments[event['id']]
-				}
-			))
-		else:
-			print(f"tournament {event['id']} has {tournaments[event['id']]} elements")
+			print("The tournament is empty")
+			await self.send(text_data=json.dumps({
+                'empty_tournament' : event['id']
+            }))
 
 	async def	send_notification(self, event):
 		if self.scope['user'].id == event['receiver']:
@@ -136,3 +131,4 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 
 	async def	release_game_id(self, event):
 		games[event['id']] = '0'
+		

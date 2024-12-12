@@ -4,11 +4,20 @@ import json
 from asgiref.sync import sync_to_async
 from authentication.serializers import UserSerializer
 import random
+from rest_framework.exceptions import ValidationError
+from rest_framework.serializers import ModelSerializer
 import redis 
+from collections import defaultdict
 
 redis_client = redis.Redis(host="localhost", port="6379", db=1)
 
+users_states = {}
 users = {}
+
+class UserAccountSerializer(ModelSerializer):
+    class Meta:
+        model = UserAccount
+        fields = ['id', 'first_name', 'last_name', 'avatar']
 
 class TournamentConsumer(AsyncWebsocketConsumer):
     
@@ -38,6 +47,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             self.channel_name
         ) 
 
+        print("user id : ", self.scope['user'].id)
         max_len = int(redis_client.get("tournament_len").decode())
 
         if tournament_id >= max_len:
@@ -52,29 +62,26 @@ class TournamentConsumer(AsyncWebsocketConsumer):
      
         if tournament_id not in users:
             users[tournament_id] = []
-        
+            users_states[tournament_id] = {}
+            users_states[tournament_id][self.scope['user'].id] = 1
+
         if (len(users[tournament_id]) == 2):
             await self.send(text_data=json.dumps({
-                    'message' : 'Tournament is already Full'
+                    'message' : 'Tournament is Full'
                 }))
             return 
 
         print("name : ", self.scope['user'].first_name)
         users[tournament_id].append(self.scope['user'])
-        await sync_to_async(UserAccount.objects.filter(id=self.scope['user'].id).update)(user_state="in_tournament")
+        await sync_to_async(UserAccount.objects.filter(id=self.scope['user'].id).update)(user_state="in_game")
+        self.scope['user'].user_state = "in_game"
         # user = await sync_to_async(UserAccount.objects.get)(id=self.scope['user'].id)
 
         # print("user state before", user.user_state)
-        await self.channel_layer.group_send('notification',
-            {
-                'type' : 'update_tournament',
-                'id' : tournament_id,
-                'value' : 1
-            })
         
         count = len(users[tournament_id])
 
-        if count == 2:
+        if count == 8:
         #    await self.send(text_data=json.dumps({'message' : 'Tournament is Full'}))
            for tournament in users[tournament_id]:
                 print("user id : ", tournament.id)
@@ -90,8 +97,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 serializer = UserSerializer(user)
                 listed_users.append(serializer.data)  
 
-        #    first_group = listed_users[:4]
-        #    second_group = listed_users[4:]
+           first_group = listed_users[:4]
+           second_group = listed_users[4:]
 
         #    first_pair = (first_group[0], first_group[1])
         #    second_pair = (first_group[2], first_group[3])
@@ -99,33 +106,60 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         #    third_pair = (second_group[0], second_group[1])
         #    fourth_pair = (second_group[2], second_group[3])
 
-        #    final_pairs = [(first_pair, second_pair), (third_pair, fourth_pair)]
+           final_pairs = [(first_group), (second_group)]
 
            await self.channel_layer.group_send(self.group_name,
             {
                 # 'users' : final_pairs
                 'type' : 'users_list',
-                'users' : listed_users
+                'users' : final_pairs
             })
     
     async def	users_list(self, event):
         await self.send(text_data=json.dumps({
                 # 'users' : final_pairs
-                'users' : event['users']
+                'locked' : event['users']
                 }))
 
+    async def	receive(self, text_data=None, bytes_data=None):
+        
+        tournament_id = self.scope["url_route"]["kwargs"]["tournament_id"]
+        json_text_data = json.loads(text_data)
+
+        winner_id = json_text_data["winner"]
+
+        #check if the winner id is included in tha array first
+
+        if winner_id is None:
+             await self.send(text_data=json.dumps({
+                'error' : 'winner id is not provided'
+                }))
+
+        print("winner id : ", winner_id)
+        users_states[tournament_id][winner_id] += 1
+        await self.channel_layer.group_send(self.group_name,
+            {
+                'type' : 'send_winner',
+                'winner' : [self.scope['user'].id, users_states[tournament_id][self.scope['user'].id]]
+            })
+    
+    async def 	send_winner(self, event):
+        await self.send(text_data=json.dumps({
+                'winner' : event['winner']
+            }))
+
     async def	disconnect(self, code):
-        
-        # print("user state", self.scope['user'].user_state)
+
         await sync_to_async(UserAccount.objects.filter(id=self.scope['user'].id).update)(user_state="offline")
+        self.scope['user'].user_state = "offline"
         
-        # user = await sync_to_async(UserAccount.objects.get)(id=self.scope['user'].id)
-
-        # print("user state", user.user_state)
-
         tournament_id = self.scope["url_route"]["kwargs"]["tournament_id"] 
 
         users[tournament_id].remove(self.scope['user'])
+        users_states[tournament_id].pop(self.scope['user'].id)
+
+        if len(users_states[tournament_id]) == 0:
+            users_states.pop(tournament_id)
 
         if len(users[tournament_id]) == 0:
             users.pop(tournament_id)
