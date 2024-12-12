@@ -11,6 +11,7 @@ import redis
 redis_client = redis.Redis(host='localhost', port=6379, db=1)
 
 games = []
+users_and_games = {}
 tournaments = []
 user_index = {}
 
@@ -43,9 +44,13 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 			tournaments[user_index[self.scope['user']]] = chr(ord(tournaments[user_index[self.scope['user']]]) - 1)
 			print(f"tounaments {user_index[self.scope['user']]} count {tournaments[user_index[self.scope['user']]]}")
 
-		# print('games noti: ', games)
-		# games.clear() #temp
-		# await self.close()
+		for key, value in users_and_games:
+			if value == self.scope['user'].id:
+				games[key] = '0'
+				users_and_games.pop(key)
+				break
+
+		
 
 	async def	receive(self, text_data=None, bytes_data=None):
 		
@@ -125,14 +130,16 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 				except ValueError:
 					games.append('1')
 					index = len(games) - 1
-	
+
 			await self.send(json.dumps(
 				{
 					'game_id': index
 				}
 			))
 			redis_client.set('max_games', len(games))
-			# print('games list after: ', games)
+			if not index in users_and_games:
+				users_and_games[index] = []
+			users_and_games[index].append(self.scope['user'].id)
 
 	async def	release_game_id(self, event):
 		games[event['id']] = '0'
