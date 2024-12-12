@@ -32,13 +32,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         print("tournament id : " , tournament_id)
 
-
-        tournament = await sync_to_async(Tournament.objects.filter(id=tournament_id).exists)()
-        if tournament:
-            await self.send(text_data=json.dumps({
-                    'error' : 'you cannot join this tournament'
-                }))
-            return
         
         self.group_name = f'tournament_{tournament_id}'
         # Add user to the group
@@ -50,7 +43,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         print("user id : ", self.scope['user'].id)
         max_len = int(redis_client.get("tournament_len").decode())
 
-        if tournament_id >= max_len:
+        if tournament_id >= max_len or tournament_id < 0:
             await self.send(text_data=json.dumps({
                     'error' : 'Tournament not found'
                 }))
@@ -58,22 +51,34 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             print("connection closed")
             return
 
-        tournament_id = self.scope["url_route"]["kwargs"]["tournament_id"] 
-     
+
         if tournament_id not in users:
             users[tournament_id] = []
             users_states[tournament_id] = {}
             users_states[tournament_id][self.scope['user'].id] = 1
 
-        if (len(users[tournament_id]) == 2):
+        if (len(users[tournament_id]) == 8):
             await self.send(text_data=json.dumps({
                     'message' : 'Tournament is Full'
                 }))
             return 
 
-        print("name : ", self.scope['user'].first_name)
+        found = any(self.scope['user'] in value for value in users.values())
+        if found:
+            print("user already exists")
+            await self.send(text_data=json.dumps({
+                    'message' : 'User already joined an existing tournament'
+                }))
+            return 
+        print("joined user : ", self.scope['user'].first_name)
+        await self.channel_layer.group_send('notification',
+                {
+                    'type' : 'update_tournament',
+                    'id' : tournament_id,
+                    'value' : 1
+                })
         users[tournament_id].append(self.scope['user'])
-        await sync_to_async(UserAccount.objects.filter(id=self.scope['user'].id).update)(user_state="in_game")
+        # await sync_to_async(UserAccount.objects.filter(id=self.scope['user'].id).update)(user_state="in_game")
         self.scope['user'].user_state = "in_game"
         # user = await sync_to_async(UserAccount.objects.get)(id=self.scope['user'].id)
 
@@ -83,6 +88,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         if count == 8:
         #    await self.send(text_data=json.dumps({'message' : 'Tournament is Full'}))
+           print("before shuffling")
            for tournament in users[tournament_id]:
                 print("user id : ", tournament.id)
 
@@ -137,6 +143,17 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         print("winner id : ", winner_id)
         users_states[tournament_id][winner_id] += 1
+
+        if users_states[tournament_id][winner_id] == 4:
+            users.pop(tournament_id)
+            users_states.pop(tournament_id)
+            await self.channel_layer.group_send('notification',
+                {
+                    'type' : 'update_tournament',
+                    'id' : tournament_id,
+                    'value' : -8
+                })
+
         await self.channel_layer.group_send(self.group_name,
             {
                 'type' : 'send_winner',
@@ -150,26 +167,33 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
     async def	disconnect(self, code):
 
-        await sync_to_async(UserAccount.objects.filter(id=self.scope['user'].id).update)(user_state="offline")
+        # await sync_to_async(UserAccount.objects.filter(id=self.scope['user'].id).update)(user_state="offline")
         self.scope['user'].user_state = "offline"
         
         tournament_id = self.scope["url_route"]["kwargs"]["tournament_id"] 
 
-        users[tournament_id].remove(self.scope['user'])
-        users_states[tournament_id].pop(self.scope['user'].id)
 
-        if len(users_states[tournament_id]) == 0:
-            users_states.pop(tournament_id)
+        # users_states[tournament_id].pop(self.scope['user'].id)
 
-        if len(users[tournament_id]) == 0:
-            users.pop(tournament_id)
+        # if len(users_states[tournament_id]) == 0:
+        #     users_states.pop(tournament_id)
 
-        await self.channel_layer.group_send('notification',
-            {
-                'type' : 'update_tournament',
-                'id' : tournament_id,
-                'value' : -1
-            })
+        # users[tournament_id].remove(self.scope['user'])
+        # if len(users[tournament_id]) == 0:
+        #     users.pop(tournament_id)
+
+        if len(users[tournament_id]) < 8:
+            users[tournament_id].remove(self.scope['user'])
+            if len(users[tournament_id]) == 0:
+                print("POPPED")
+                users.pop(tournament_id)
+
+            await self.channel_layer.group_send('notification',
+                {
+                    'type' : 'update_tournament',
+                    'id' : tournament_id,
+                    'value' : -1
+                })
 
         print(f"user {self.scope['user'].last_name} is disconnected")
         await self.channel_layer.group_discard(self.group_name, self.channel_name)

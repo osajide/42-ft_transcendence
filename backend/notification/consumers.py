@@ -69,12 +69,12 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 			while (True): 
 				try:
 					index = tournaments.index(chr(ascii_value))
-					tournaments[index] =  chr(ord(tournaments[index]) + 1)
+					# tournaments[index] =  chr(ord(tournaments[index]) + 1)
 					break
 				except ValueError:
 					ascii_value -= 1
 					if ascii_value < 48:
-						tournaments.append('1')
+						tournaments.append('0')
 						redis_client.set(f"tournament_len", len(tournaments))
 						index = len(tournaments) - 1
 						break
@@ -91,11 +91,11 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 		print("UPDATE TOURNAMENT")
 		tournaments[event['id']] = chr(ord(tournaments[event['id']]) + event['value'])
 		print(f"tournament {event['id']} has {tournaments[event['id']]} elements")
-		if tournaments[event['id']] == '0':
-			print("The tournament is empty")
-			await self.send(text_data=json.dumps({
-                'empty_tournament' : event['id']
-            }))
+		# if tournaments[event['id']] == '0':
+		# 	print("The tournament is empty")
+		# 	await self.send(text_data=json.dumps({
+        #         'empty_tournament' : event['id']
+        #     }))
 
 	async def	send_notification(self, event):
 		if self.scope['user'].id == event['receiver']:

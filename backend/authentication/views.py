@@ -95,7 +95,7 @@ class AddMultipleUsersView(APIView):
     def get(self, request, *args, **kwargs):
         user_data_list = [
         {'first_name': 'Oussama', 'last_name': 'Sajide', 'email': 'osajide@gmail.com', "password": "1", "confirm_password": "1"},
-		{'first_name': 'Mohemmed', 'last_name': 'Taib', 'email': 'mtaib@gmail.com', "password": "1", "confirm_password": "1"},
+		{'first_name': 'Mohamed', 'last_name': 'Taib', 'email': 'mtaib@gmail.com', "password": "1", "confirm_password": "1"},
 		{'first_name': 'Yassine', 'last_name': 'Khayri', 'email': 'ykhayri@gmail.com', "password": "1", "confirm_password": "1"},
 		{'first_name': 'Aymane', 'last_name': 'Bouabra', 'email': 'abouabra@gmail.com', "password": "1", "confirm_password": "1"},
 		{'first_name': 'Bader', 'last_name': 'Elkdioui', 'email': 'bel-kdio@gmail.com', "password": "1", "confirm_password": "1"},
