@@ -22,22 +22,21 @@ def	handle_friendship_deletion(friendship, action, user):
 		if friendship.last_action_by == user.id:
 			friendship.delete()
 		else:
-			raise 403
+			return 403
 
 	elif action == 'decline':
 		if friendship.last_action_by != user.id:
 			friendship.delete()
 		else:
-			raise 403
+			return 403
 
 	else:
 		if friendship.status != 'pending':
 			friendship.delete()
 		else:
-			raise 403
-
-
-	pass
+			return 403
+		
+	return 201
 
 def	notify_user(sender, receiver, action):
 	description = ''
@@ -106,7 +105,10 @@ def	manage_friendship(request, action_target):
 			return Response({'error': 'hbas'}, status=status.HTTP_403_FORBIDDEN)
 
 	elif action in ['decline', 'remove', 'cancel']:
-		handle_friendship_deletion(friendship, action, user1)
+		ret = handle_friendship_deletion(friendship, action, user1)
+		if ret == 403:
+			return Response({'error': 'hbas'}, status=status.HTTP_403_FORBIDDEN)
+		st = ret
 
 	elif action == 'block':
 		if friendship.status == 'accepted':
