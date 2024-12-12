@@ -40,30 +40,30 @@ def	handle_friendship_deletion(friendship, action, user):
 	pass
 
 def	notify_user(sender, receiver, action):
-	sender = UserAccount.objects.get(id=sender)
-	receiver = UserAccount.objects.get(id=receiver)
 	description = ''
 	notification_type = ''
 	channel_layer = get_channel_layer()
 
 	if action == 'invite':
-		description = f'{sender.first_name} sends you an invitation'
+		description = f'{sender.first_name} have sent you an invitation'
 		notification_type = 'invitation'
 	else:
 		description = f'You and {sender.first_name} are friends now!'
-		notification_type = 'accept invitation'
+		notification_type = 'accept'
 
+	print('receiver: ', receiver)
 	notification = Notification.objects.create(
 		description=description, sender=sender, receiver=receiver, type=notification_type
 	)
+	print('notification: ', notification)
 	async_to_sync(channel_layer.group_send)('notification',
 									{
 										'type': 'send_notification',
 										'notification_type': notification_type, 
 										'description': description,
 										'receiver': receiver.id,
-										'sender': sender,
-										'timestamp': notification.timestamp
+										'sender': UserSerializer(sender).data,
+										'timestamp': str(notification.timestamp)
 									}
 	)
 
@@ -81,59 +81,54 @@ def	manage_friendship(request, action_target):
 
 	friendship = Friendship.objects.filter(
 		Q(user1=user1.id, user2=user2.id) | Q(user1=user2.id, user2=user1.id)).first()
-	try:
-		if action == 'invite':
-			if friendship == None and user1.id != user2.id:
-				Friendship.objects.create(user1=request.user.id, user2=user2.id,
-														last_action_by=last_action_by, status='pending')
-				notify_user(request.user.id, user2.id, 'invite')
-				return Response({'relationship': 'pending'}, status=status.HTTP_201_CREATED)
-			raise 403
+	
+	if action == 'invite':
+		if friendship == None and user1.id != user2.id:
+			Friendship.objects.create(user1=request.user.id, user2=user2.id,
+													last_action_by=last_action_by, status='pending')
+			notify_user(user1, user2, 'invite')
+			return Response({'relationship': 'pending'}, status=status.HTTP_201_CREATED)
+		return Response({'error': 'hbas'}, status=status.HTTP_403_FORBIDDEN)
 
-		relationship = ''
+	relationship = ''
 
-		if friendship == None:
-			return Response(status=status.HTTP_404_NOT_FOUND)
+	if friendship == None:
+		return Response(status=status.HTTP_404_NOT_FOUND)
 
-		st = None
-		if action == 'accept':
-			if friendship.status == 'pending':
-				friendship.status = relationship = 'accepted'
-				friendship.last_action_by = last_action_by
-				friendship.save()
-				notify_user(request.user.id, user2.id, 'accept')
-				st = 201
-			else:
-				raise 403
-
-		elif action in ['decline', 'remove', 'cancel']:
-			handle_friendship_deletion(friendship, action)
-			st = 204
-
-		elif action == 'block':
-			if friendship.status == 'accepted':
-				friendship.status = relationship = 'blocked'
-				friendship.last_action_by = last_action_by
-				friendship.save()
-				st = 201
-			else:
-				raise 403
-
-		elif action == 'unblock':
-			if friendship.last_action_by == user1.id and friendship.status == 'block':
-				friendship.status = relationship = 'accepted'
-				friendship.status = relationship = 'accepted'
-				friendship.last_action_by = last_action_by
-				friendship.save()
-				st = 201
-			else:
-				raise 403
+	st = 201
+	if action == 'accept':
+		if friendship.status == 'pending':
+			friendship.status = relationship = 'accepted'
+			friendship.last_action_by = last_action_by
+			friendship.save()
+			notify_user(user1, user2, 'accept')
 		else:
-			raise 405
+			return Response({'error': 'hbas'}, status=status.HTTP_403_FORBIDDEN)
 
-	except int as e:
-		return Response(status=e)
+	elif action in ['decline', 'remove', 'cancel']:
+		handle_friendship_deletion(friendship, action, user1)
 
+	elif action == 'block':
+		if friendship.status == 'accepted':
+			friendship.status = relationship = 'blocked'
+			friendship.last_action_by = last_action_by
+			friendship.save()
+			
+		else:
+			return Response({'error': 'hbas'}, status=status.HTTP_403_FORBIDDEN)
+
+	elif action == 'unblock':
+		if friendship.last_action_by == user1.id and friendship.status == 'block':
+			friendship.status = relationship = 'accepted'
+			friendship.status = relationship = 'accepted'
+			friendship.last_action_by = last_action_by
+			friendship.save()
+			
+		else:
+			return Response({'error': 'hbas'}, status=status.HTTP_403_FORBIDDEN)
+	else:
+		return Response({'error': 'hbas'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+	print('heere: ', {'relationship': relationship})
 	return Response({'relationship': relationship}, status=st)
 
 

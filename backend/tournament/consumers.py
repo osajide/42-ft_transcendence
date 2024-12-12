@@ -172,16 +172,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         
         tournament_id = self.scope["url_route"]["kwargs"]["tournament_id"] 
 
-
-        # users_states[tournament_id].pop(self.scope['user'].id)
-
-        # if len(users_states[tournament_id]) == 0:
-        #     users_states.pop(tournament_id)
-
-        # users[tournament_id].remove(self.scope['user'])
-        # if len(users[tournament_id]) == 0:
-        #     users.pop(tournament_id)
-
         if len(users[tournament_id]) < 8:
             users[tournament_id].remove(self.scope['user'])
             if len(users[tournament_id]) == 0:

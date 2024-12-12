@@ -103,8 +103,8 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 				{
 					'type': event['notification_type'],
 					'description': event['description'],
-					'sender': UserSerializer(event['sender']).data,
-					'timestamp': str(event['timestamp'])
+					'sender': event['sender'],
+					'timestamp': event['timestamp']
 			}]))
 
 	async def	make_match(self, event):

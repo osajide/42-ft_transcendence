@@ -103,7 +103,6 @@ function gameOver(game) {
   game.socket.close();
   game.socket = undefined;
   winner.container.classList.add("winner");
-  console.log(game, winner.id, loser.id);
   loser.container.classList.add("loser");
   document.getElementById("game_dash").classList.add("game_over");
 }
@@ -325,57 +324,71 @@ function scoreGoal(player, game) {
   }, 1000);
 }
 
-function ballMovement(game) {
-  const ball = game.ball;
-  const player = game.playerPaddle;
-  const opponent = game.oppoPaddle;
-  if (game.settings.axis == "y") {
-    if (
-      ball.ballY + ball.ballMoveY - ball.ballSize < 0 ||
-      ball.ballY + ball.ballMoveY + ball.ballSize > game.canvas.height
-    )
-      //if the ball hits the top or bottom border
-      ball.ballMoveY *= -1;
-    else if (ball.ballX + ball.ballMoveX - ball.ballSize < game.width) {
-      //if the ball hits the left border
-      if (ball.ballY < player.y || ball.ballY > player.y + game.height) {
-        scoreGoal(opponent, game);
-      } else ball.ballMoveX *= -1;
-    } else if (
-      ball.ballX + ball.ballMoveX + ball.ballSize >
-      game.canvas.width - game.width
-    ) {
-      //if the ball hits the right border
-      if (ball.ballY < opponent.y || ball.ballY > opponent.y + game.height) {
-        scoreGoal(player, game);
-      } else ball.ballMoveX *= -1;
-    }
-  } else {
-    if (
-      ball.ballX + ball.ballMoveX - ball.ballSize < 0 ||
-      ball.ballX + ball.ballMoveX + ball.ballSize > game.canvas.width
-    ) {
-      //if the ball hits the left or right border
-      ball.ballMoveX *= -1;
-    } else if (ball.ballY + ball.ballMoveY - ball.ballSize < game.height / 2) {
-      //if the ball hits the top border
-      if (ball.ballX < player.x || ball.ballX > player.x + game.width) {
-        scoreGoal(opponent, game);
-      } else ball.ballMoveY *= -1;
-    } else if (
-      ball.ballY + ball.ballMoveY + ball.ballSize >
-      game.canvas.height - game.height / 2
-    ) {
-      //if the ball hits the bottom border
-      if (ball.ballX < opponent.x || ball.ballX > opponent.x + game.width) {
-        scoreGoal(player, game);
-      } else ball.ballMoveY *= -1;
-    }
-  }
-  if (!game.stop) {
-    ball.ballX += ball.ballMoveX;
-    ball.ballY += ball.ballMoveY;
-  }
+// function ballMovement(game) {
+//   const ball = game.ball;
+//   const player = game.playerPaddle;
+//   const opponent = game.oppoPaddle;
+//   if (game.settings.axis == "y") {
+//     if (
+//       ball.ballY + ball.ballMoveY - ball.ballSize < 0 ||
+//       ball.ballY + ball.ballMoveY + ball.ballSize > game.canvas.height
+//     )
+//       //if the ball hits the top or bottom border
+//       ball.ballMoveY *= -1;
+//     else if (ball.ballX + ball.ballMoveX - ball.ballSize < game.width) {
+//       //if the ball hits the left border
+//       if (ball.ballY < player.y || ball.ballY > player.y + game.height) {
+//         scoreGoal(opponent, game);
+//       } else ball.ballMoveX *= -1;
+//     } else if (
+//       ball.ballX + ball.ballMoveX + ball.ballSize >
+//       game.canvas.width - game.width
+//     ) {
+//       //if the ball hits the right border
+//       if (ball.ballY < opponent.y || ball.ballY > opponent.y + game.height) {
+//         scoreGoal(player, game);
+//       } else ball.ballMoveX *= -1;
+//     }
+//   } else {
+//     if (
+//       ball.ballX + ball.ballMoveX - ball.ballSize < 0 ||
+//       ball.ballX + ball.ballMoveX + ball.ballSize > game.canvas.width
+//     ) {
+//       //if the ball hits the left or right border
+//       ball.ballMoveX *= -1;
+//     } else if (ball.ballY + ball.ballMoveY - ball.ballSize < game.height / 2) {
+//       //if the ball hits the top border
+//       if (ball.ballX < player.x || ball.ballX > player.x + game.width) {
+//         scoreGoal(opponent, game);
+//       } else ball.ballMoveY *= -1;
+//     } else if (
+//       ball.ballY + ball.ballMoveY + ball.ballSize >
+//       game.canvas.height - game.height / 2
+//     ) {
+//       //if the ball hits the bottom border
+//       if (ball.ballX < opponent.x || ball.ballX > opponent.x + game.width) {
+//         scoreGoal(player, game);
+//       } else ball.ballMoveY *= -1;
+//     }
+//   }
+//   if (!game.stop) {
+//     ball.ballX += ball.ballMoveX;
+//     ball.ballY += ball.ballMoveY;
+//   }
+// }
+function ballMovement(obj) {
+  if (
+    obj.ball.ballX + obj.ball.ballMoveX - obj.ball.ballSize < 0 ||
+    obj.ball.ballX + obj.ball.ballMoveX + obj.ball.ballSize > obj.canvas.width
+  )
+    obj.ball.ballMoveX *= -1;
+  if (
+    obj.ball.ballY + obj.ball.ballMoveY - obj.ball.ballSize < 0 ||
+    obj.ball.ballY + obj.ball.ballMoveY + obj.ball.ballSize > obj.canvas.height
+  )
+    obj.ball.ballMoveY *= -1;
+  obj.ball.ballX += obj.ball.ballMoveX;
+  obj.ball.ballY += obj.ball.ballMoveY;
 }
 
 function startGame(id) {

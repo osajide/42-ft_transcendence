@@ -41,7 +41,6 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
   };
   if (body) settings.body = JSON.stringify(body);
   const response = await fetch(url + endpoint, settings);
-
   if (response.ok) data = await response.json();
   console.log(data, endpoint);
   // if (endpoint != "/api/register/" && response.status === 401) {
@@ -62,12 +61,8 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
   // }
   if (data.error) {
     raiseWarn(data.error);
-    localStorage.removeItem("user_data");
-  }
-
-  if (data.detail) {
+  } else if (data.detail) {
     raiseWarn(data.detail);
-    localStorage.removeItem("user_data");
   }
 
   if (
@@ -76,8 +71,7 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
     data == "Error"
   ) {
     raiseWarn("User logged out");
-    localStorage.removeItem("user_data");
-    return updateUrl("", "");
+    updateUrl("", "");
   }
   return data;
 };
@@ -135,10 +129,24 @@ let dumb_users = [
   { first_name: "ykhayri", avatar: "user.svg" },
 ];
 
-const network = (e) => {
-  resp = fetchWithToken(glob_endp, `/friend/${e.value}`, "POST", {});
-  console.log(resp);
-  if (resp == "Error" || !resp) raiseWarn("User logged out");
+const network = async (e) => {
+  const choices = {
+    remove: "invite",
+    cancel: "invite",
+    decline: "invite",
+    accept: "remove",
+    invite: "cancel",
+  };
+  resp = await fetchWithToken(glob_endp, `/friend/${e.value}`, "POST", {});
+  if (resp == "Error") return;
+  const old = e.value.split("_");
+  const newVal = choices[old[0]];
+  e.innerHTML = newVal;
+  e.value = `${newVal}_${old[1]}`;
+  if (old[0] == "decline" || old[0] == "accept") {
+    const rem = e.previousElementSibling || e.nextElementSibling;
+    rem.remove();
+  }
 };
 
 /******************** Forms ********************/
@@ -151,7 +159,7 @@ async function authenticate(e) {
   e.preventDefault();
   if (e.target.childElementCount < 5) endpoint = "/api/login/";
   data = await fetchWithToken(glob_endp, endpoint, "POST", data);
-  if (data == "Error" || !data) raiseWarn("User logged out");
+  if (data == "Error") return;
   e.target.reset();
 
   if (endpoint == "/api/register/") {
@@ -191,7 +199,6 @@ function makeSocket(endpoint, socketMethod) {
   if (endpoint) makeSocket.latest = socket;
   socket.onerror = (e) => {
     raiseWarn("User logged out");
-    localStorage.removeItem("user_data");
     return updateUrl("login", "push");
   };
 
@@ -211,6 +218,7 @@ const handleForm = () => {
   let myForm = document.getElementById("my_form");
   if (myForm) {
     if (user_data) return updateUrl("friends", "push");
+    myForm.querySelector("input").focus();
     myForm.addEventListener("submit", authenticate);
   } else {
     myForm = document.getElementById("messenger");
@@ -359,16 +367,18 @@ const components = {
 		<section id="userProfile">
     ${
       Object.keys(user).length
-        ? /* html */`<div class="userBanner">
+        ? /* html */ `<div class="userBanner">
       <img src="${"./assets/avatars/" + user.avatar}" alt="${user.first_name}"/>
       <div class="userInfo">
         <h3>${user.first_name} ${user.last_name}</h3>
         <p>${user.email}</p>
+        <div class="relManager">
         ${choices[user.relationship]
           .map((action) => {
             return /* html */ `<button onclick="network(this)" class='button' value="${action}_${user.id}">${action}</button>`;
           })
           .join("\n")}
+          </div>
       </div>
     </div>`
         : ""
@@ -378,37 +388,57 @@ const components = {
   },
   notification: function () {
     const not = document.createElement("section");
-    // notiSocket = makeSocket("", testNot);
-    const take_to = { invitation: "friends" };
+    const take_to = {
+      invitation: "friends",
+      "accept invitation": "friends",
+      accept: "friends",
+    };
 
     not.setAttribute("id", "notification");
-    not.addEventListener("click", (e) => {
+    not.addEventListener("click", async (e) => {
       const target = e.target;
       const notiCont = document.getElementById("notiList");
-      if (target.parentElement.tagName == "LABEL")
-        if (
-          target.parentElement.id == "notiList" &&
-          target.tagName == "INPUT"
-        ) {
-          const to_go = target.value.split("_");
-          const push =
-            window.location.pathname.replace("/", "") == take_to[to_go[0]]
-              ? ""
-              : "push";
+      // if (target.parentElement.tagName == "LABEL") {
+      if (target.parentElement.id == "notiList" && target.tagName == "INPUT") {
+        const to_go = target.value.split("_");
+        const push =
+          window.location.pathname.replace("/", "") == take_to[to_go[0]]
+            ? ""
+            : "push";
+        if (push.length) updateUrl(take_to[to_go[0]], push, to_go[1]);
+        else {
+          // The element is in the same page
 
-          console.log(take_to[to_go[0]], push, to_go[1]);
-          if (push.length) updateUrl(take_to[to_go[0]], push, to_go[1]);
-          else {
-            // The element is in the same page
-            const targetInput = document.getElementById(to_go[1]);
+          const targetInput = document.getElementById(to_go[1]);
+          if (targetInput) {
             targetInput.checked = true;
             let ev = new Event("change", { bubbles: true });
             targetInput.dispatchEvent(ev);
+          } else {
+            const data = target.id.split("_");
+            const profileSection = document.getElementById("userProfile");
+            response = await fetchWithToken(
+              glob_endp,
+              `${"/friend/profile/"}${data[1]}/`
+            );
+            if (response == "Error") return;
+            response.user = {
+              relationship: response.rel,
+              last_action: response.last_action_by,
+              ...response.user,
+            };
+            profileSection.innerHTML = components["profile"](response.user)
+              .trim()
+              .split("\n")
+              .slice(1, -1)
+              .join("\n");
           }
-          notiSocket.send(JSON.stringify({ seen: +to_go[2] }));
-          target.remove();
-          document.querySelector(`[for=${target.id}]`).remove();
         }
+        notiSocket.send(JSON.stringify({ seen: +to_go[2] }));
+        target.remove();
+        document.querySelector(`[for=${target.id}]`).remove();
+      }
+      // }
       const notifier = document.getElementById("notifier");
       if (!notiCont.childElementCount) notifier.classList.add("hide");
     });
@@ -421,6 +451,8 @@ const components = {
     return not;
   },
   notification_elem: function (noti) {
+    const myIcon =
+      (noti.type != "invitation" ? "invitation" : "invitation") + "Icon";
     return /* html */ `
     <input id="noti_${noti.sender.id}_${
       noti.type
@@ -433,7 +465,7 @@ const components = {
       <img src="${"./assets/avatars/" + noti.sender.avatar}" alt="${
       noti.sender.first_name
     }"/>
-      ${icons[noti.type + "Icon"]}
+      ${icons[myIcon]}
       <p>${noti.description}</p>
     </label>
   `;
@@ -443,7 +475,9 @@ const components = {
 function setNotiValue(noti) {
   const sender = noti.sender;
   const type = noti.type;
-  if (type == "invitation") return sender.first_name + "myFriends" + sender.id;
+  let classlist = "";
+  if (type == "invitation") classlist = "myFriends";
+  return sender.first_name + classlist;
 }
 
 const pages = {
@@ -597,8 +631,7 @@ const pages = {
     id: "friends",
     func: async function () {
       const friends = await fetchWithToken(glob_endp, `/friend/list/`, "GET");
-      console.log(friends);
-      if (friends == "Error" || !friends) raiseWarn("User logged out");
+      if (friends == "Error") return;
       document.querySelector(".list").outerHTML = components.list(
         "Friends",
         "Add friends",
@@ -618,7 +651,7 @@ function listen(id, change, endpoint) {
   document.querySelector("#" + id).addEventListener("change", async (e) => {
     response = await fetchWithToken(glob_endp, `${endpoint}${e.target.value}/`);
 
-    if (response == "Error" || !response) raiseWarn("User logged out");
+    if (response == "Error") return;
     response.user = {
       relationship: response.rel,
       last_action: response.last_action_by,
@@ -680,7 +713,6 @@ const updateUrl = (path = "/", mode = "", targetId = "") => {
     id = "/";
     window.history.replaceState(null, null, "/");
   }
-  console.log(path);
   let currentUrl = window.location.href;
   loadResources(path);
   currentUrl = new URL(currentUrl);
