@@ -39,7 +39,7 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 	async def	disconnect(self, code):
 		await self.channel_layer.group_discard(self.notification_group, self.channel_name)
 		print("=====> DISCONNECTED IN NOTIFICATION")
-		if len(tournaments) > 0 and  tournaments[user_index[self.scope['user']]] != '0':
+		if len(tournaments) > 0 and  tournaments[user_index[self.scope['user']]] != '0' and tournaments[user_index[self.scope['user']]] != '8':
 			tournaments[user_index[self.scope['user']]] = chr(ord(tournaments[user_index[self.scope['user']]]) - 1)
 			print(f"tounaments {user_index[self.scope['user']]} count {tournaments[user_index[self.scope['user']]]}")
 
@@ -97,10 +97,10 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 
 	async def 	update_tournament(self, event):
 		
-		print("UPDATE TOURNAMENT")
-		tournaments[event['id']] = chr(ord(tournaments[event['id']]) + event['value'])
-		print(f"tournament {event['id']} has {tournaments[event['id']]} elements")
-		print("END UP")
+		if (event['user_id'] == self.scope['user'].id):
+			print("UPDATE TOURNAMENT")
+			tournaments[event['id']] = chr(ord(tournaments[event['id']]) + event['value'])
+			print(f"tournament {event['id']} has {tournaments[event['id']]} elements")
 
 	async def	send_notification(self, event):
 		if self.scope['user'].id == event['receiver']:

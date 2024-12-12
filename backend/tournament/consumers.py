@@ -74,6 +74,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send('notification',
                 {
                     'type' : 'update_tournament',
+                    'user_id' : self.scope['user'].id,
                     'id' : tournament_id,
                     'value' : 1
                 })
@@ -152,6 +153,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_send('notification',
                 {
                     'type' : 'update_tournament',
+                    'user_id' : self.scope['user'].id,
                     'id' : tournament_id,
                     'value' : -8
                 })
@@ -184,6 +186,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_send('notification',
                 {
                     'type' : 'update_tournament',
+                    'user_id' : self.scope['user'].id,
                     'id' : tournament_id,
                     'value' : -1
                 })
