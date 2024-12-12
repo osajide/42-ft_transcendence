@@ -141,6 +141,7 @@ body {
   -webkit-user-select: none;
      -moz-user-select: none;
           user-select: none;
+  text-transform: capitalize;
 }
 .button:hover, .button:focus {
   background-color: #31dede;

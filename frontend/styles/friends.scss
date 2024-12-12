@@ -15,10 +15,30 @@
     padding: $global_padding;
     // background-color: $prim_dark;
 
-    img {
-      width: 200px;
-      margin-inline: auto;
+
+    .userBanner{
+      display: flex;
+      gap: 20px;
+    
+      img{
+        min-height: 100px;
+      }
+
+      .userInfo{
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        .button{
+          width: fit-content;
+          padding: 0.5rem 1rem;
+        }
+      }
     }
+    // img {
+    //   width: 200px;
+    //   margin-inline: auto;
+    // }
   }
 
   .popup {

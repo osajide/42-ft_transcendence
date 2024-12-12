@@ -44,9 +44,22 @@
   height: 100%;
   padding: 20px;
 }
-#friends #page #userProfile img {
-  width: 200px;
-  margin-inline: auto;
+#friends #page #userProfile .userBanner {
+  display: flex;
+  gap: 20px;
+}
+#friends #page #userProfile .userBanner img {
+  min-height: 100px;
+}
+#friends #page #userProfile .userBanner .userInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+#friends #page #userProfile .userBanner .userInfo .button {
+  width: -moz-fit-content;
+  width: fit-content;
+  padding: 0.5rem 1rem;
 }
 #friends #page .popup * {
   outline: none;

@@ -137,6 +137,7 @@ let dumb_users = [
 
 const network = (e) => {
   resp = fetchWithToken(glob_endp, `/friend/${e.value}`, "POST", {});
+  console.log(resp);
   if (resp == "Error" || !resp) raiseWarn("User logged out");
 };
 
@@ -171,8 +172,7 @@ function testNot(e) {
   const notContainer = document.getElementById("notiList");
   const data = JSON.parse(e.data);
   console.log(data);
-  if (data.error)
-    console.log(data.error)
+  if (data.error) console.log(data.error);
   else if (data.game_id !== undefined) startGame(data.game_id);
   else if (data.tournament_id !== undefined) {
     playTournament(data.tournament_id);
@@ -349,25 +349,31 @@ const components = {
     `;
   },
   profile: function (user = {}) {
+    const choices = {
+      accepted: ["remove"],
+      pending:
+        user.last_action != user_data?.id ? ["accept", "decline"] : ["cancel"],
+      "": ["invite"],
+    };
     return /* html */ `
 		<section id="userProfile">
-    ${Object.keys(user)
-      .reverse()
-      .map((el) => {
-        if (el == "relationship") {
-          let action = user[el]
-          if (!action.length)
-            action = 'invite'
-          else if (action == 'accepted')
-            action = 'remove'
-          return /* html */ `<button onclick="network(this)" class='button' value="${action}_${user.id}">${action}</button>`;
-        } else if (el != "avatar") return `<h3>${el}:</h3><p> ${user[el]}</p>`;
-        else
-          return `<img src="${"./assets/avatars/" + user.avatar}" alt="${
-            user.first_name
-          }"/>`;
-      })
-      .join("\n")}
+    ${
+      Object.keys(user).length
+        ? /* html */`<div class="userBanner">
+      <img src="${"./assets/avatars/" + user.avatar}" alt="${user.first_name}"/>
+      <div class="userInfo">
+        <h3>${user.first_name} ${user.last_name}</h3>
+        <p>${user.email}</p>
+        ${choices[user.relationship]
+          .map((action) => {
+            return /* html */ `<button onclick="network(this)" class='button' value="${action}_${user.id}">${action}</button>`;
+          })
+          .join("\n")}
+      </div>
+    </div>`
+        : ""
+    }
+
     </section>`;
   },
   notification: function () {
@@ -377,7 +383,6 @@ const components = {
 
     not.setAttribute("id", "notification");
     not.addEventListener("click", (e) => {
-      console.log(e.target.parentElement);
       const target = e.target;
       const notiCont = document.getElementById("notiList");
       if (target.parentElement.tagName == "LABEL")
@@ -391,6 +396,7 @@ const components = {
               ? ""
               : "push";
 
+          console.log(take_to[to_go[0]], push, to_go[1]);
           if (push.length) updateUrl(take_to[to_go[0]], push, to_go[1]);
           else {
             // The element is in the same page
