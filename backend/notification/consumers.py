@@ -102,6 +102,30 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 			tournaments[event['id']] = chr(ord(tournaments[event['id']]) + event['value'])
 			print(f"tournament {event['id']} has {tournaments[event['id']]} elements")
 
+	async def 	generate_games(self, event):
+		if event['user_id'] != self.scope['user'].id:
+			return 
+		indexes = []
+		print("enter for generating games")
+		i = 0
+		count = 4
+		while (i < count):
+			try:
+				index = games.index('0')
+				games[index] = '2'
+			except ValueError:
+				games.append('2')
+				index = len(games) - 1
+
+			indexes.append(index)
+			i += 1
+
+		await self.channel_layer.group_send(event['tournament_group'],
+            {
+                'type' : 'match_making',   
+                'games' : indexes
+            })
+
 	async def	send_notification(self, event):
 		if self.scope['user'].id == event['receiver']:
 			await self.send(text_data=json.dumps([

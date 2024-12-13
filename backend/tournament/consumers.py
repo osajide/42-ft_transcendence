@@ -78,8 +78,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     'id' : tournament_id,
                     'value' : 1
                 })
-        print("HERE")
-        users[tournament_id].append(self.scope['user'])
+        
+        users[tournament_id].append(self)
         # await sync_to_async(UserAccount.objects.filter(id=self.scope['user'].id).update)(user_state="in_game")
         self.scope['user'].user_state = "in_game"
         # user = await sync_to_async(UserAccount.objects.get)(id=self.scope['user'].id)
@@ -92,37 +92,67 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         #    await self.send(text_data=json.dumps({'message' : 'Tournament is Full'}))
            print("before shuffling")
            for tournament in users[tournament_id]:
-                print("user id : ", tournament.id)
+                print("user id : ", tournament.scope['user'].id)
 
            random.shuffle(users[tournament_id])
            print("after shuffling")
 
            for tournament in users[tournament_id]:
-                print("user id : ", tournament.id)
+                print("user id : ", tournament.scope['user'].id)
 
-           listed_users = []
-           for user in users[tournament_id]:
-                serializer = UserSerializer(user)
-                listed_users.append(serializer.data)  
-
-           first_group = listed_users[:4]
-           second_group = listed_users[4:]
-
-        #    first_pair = (first_group[0], first_group[1])
-        #    second_pair = (first_group[2], first_group[3])
-
-        #    third_pair = (second_group[0], second_group[1])
-        #    fourth_pair = (second_group[2], second_group[3])
-
-           final_pairs = [(first_group), (second_group)]
-
-           await self.channel_layer.group_send(self.group_name,
+           await self.channel_layer.group_send('notification',
             {
-                # 'users' : final_pairs
-                'type' : 'users_list',
-                'users' : final_pairs
+                'type' : 'generate_games',   
+                'tournament_group' : self.group_name,
+                'user_id' : self.scope['user'].id
             })
+           
+           
+           
     
+    async def   match_making(self, event):
+        tournament_id = self.scope["url_route"]["kwargs"]["tournament_id"]
+        listed_users = []
+        indexes = event['games']
+        i = 0
+        j = 0
+
+        if self == users[tournament_id][0]:
+            print(self.scope['user'])
+            for user in users[tournament_id]:
+                serializer = UserSerializer(user.scope['user'])
+                listed_users.append(serializer.data)
+                if i == 2:
+                    i = 0
+                    j += 1
+
+                if i < 2:
+                    await user.send(text_data=json.dumps(
+                    {
+                        'game_index' : indexes[j]
+                    }
+                    ))
+                i += 1
+            first_group = listed_users[:4]
+            second_group = listed_users[4:]
+
+            final_pairs = [(first_group), (second_group)]
+            await self.channel_layer.group_send(self.group_name,
+                {
+                    # 'users' : final_pairs
+                    'type' : 'users_list',
+                    'users' : final_pairs
+                })
+
+        
+
+        
+
+
+        
+        
+
+
     async def	users_list(self, event):
         await self.send(text_data=json.dumps({
                 # 'users' : final_pairs
