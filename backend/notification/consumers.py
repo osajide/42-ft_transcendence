@@ -33,7 +33,7 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 	async def	connect(self):
 		await self.accept()
 
-		if self.user.is_authenticated == False:
+		if self.scope['user'].is_authenticated == False:
 			await self.send(text_data=json.dumps({'error': 'user not authenticated'}))
 			await self.close(code=4000)
 			return

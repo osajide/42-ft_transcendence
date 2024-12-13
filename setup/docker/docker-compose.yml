@@ -22,12 +22,16 @@ services:
       context: .
       dockerfile: backendDockerfile
     container_name: backend
+    environment:
+      - PYTHONUNBUFFERED=1 # to see the asgi server's output in docker logs command
+      - PIP_ROOT_USER_ACTION=ignore # for preventing warning of running pip as root
     volumes:
       - ${HOME}/Desktop/42-ft_transcendence/backend:/app
-      - ${HOME}/Desktop/42-ft_transcendence/requirements.txt:/app/requirements.txt
-      - backendVolume:/root/.cache/pip/wheels/
+      - backendVolume:/root/.cache/pip/
     networks:
       - myNet
+    ports:
+      - 8000:8000 # for admin interface
     restart: unless-stopped
     depends_on:
       - redis
@@ -38,6 +42,8 @@ services:
   redis:
     image: redis:bookworm
     container_name: redis
+    volumes:
+      - redisVolume:/data
     networks:
       - myNet
     restart: unless-stopped
@@ -64,3 +70,4 @@ networks:
 volumes:
   postgresVolume:
   backendVolume:
+  redisVolume:

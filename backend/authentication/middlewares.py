@@ -37,6 +37,7 @@ class CookiesMiddleware:
             access_token = cookie['access_token']
             user_id = token_decoder(access_token)
             scope['user'] = await get_user(user_id)
+            print('scope[user]: ', scope['user'])
 
         return await self.app(scope, receive, send)
     
