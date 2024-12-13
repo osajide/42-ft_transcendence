@@ -268,7 +268,7 @@ const components = {
           })
           .join("\n")}
 			</nav>
-			<label class="img_label" for="menu" tabindex="0">
+			<label class="img_label" for="menu" tabindex="1">
 				<img id="logo" src="assets/avatars/${
           user_data?.avatar ? user_data.avatar : "user.svg"
         }" alt="logo" />
@@ -320,7 +320,7 @@ const components = {
       <section class="popup">
         <div class="list_title">
           <h2>${title}</h2>
-          <label class="toggle_popup" for="list_toggler" tabindex="0">+</label>
+          <label class="toggle_popup" for="list_toggler" tabindex="1">+</label>
         </div>`;
     if (title != "Add friends")
       result += /*html */ `
@@ -374,23 +374,26 @@ const components = {
 		<section id="userProfile">
     ${
       Object.keys(user).length
-        ? /* html */ `<div class="userBanner">
-      <img src="${"./assets/avatars/" + user.avatar}" alt="${user.first_name}"/>
-      <div class="userInfo">
-        <h3>${user.first_name} ${user.last_name}</h3>
-        <p>${user.email}</p>
-        <div class="relManager">
-        ${choices[user.relationship]
-          .map((action) => {
-            return /* html */ `<button onclick="network(this)" class='button' value="${action}_${user.id}">${action}</button>`;
-          })
-          .join("\n")}
+        ? /* html */ `
+        <div class="userBanner">
+          <img src="${"./assets/avatars/" + user.avatar}" alt="${
+            user.first_name
+          }"/>
+          <div class="userInfo">
+          <h3>${user.first_name} ${user.last_name}</h3>
+          <p>${user.email}</p>
+          <div class="relManager">
+          ${choices[user.relationship]
+            .map((action) => {
+              return /* html */ `<button onclick="network(this)" class='button' value="${action}_${user.id}">${action}</button>`;
+            })
+            .join("\n")}
           </div>
-      </div>
+        </div>
+        <span id="close" onclick="closeDiv(this)">+</span>
     </div>`
         : ""
     }
-
     </section>`;
   },
   notification: function () {
@@ -483,6 +486,15 @@ function selction(e) {
   if (e.key == "Enter") {
     e.srcElement.control.checked = true;
     e.srcElement.control.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+}
+
+function closeDiv(e) {
+  const target = document.querySelector('[name="myFriends"]:checked');
+  if (target) {
+    target.checked = false;
+    target.dispatchEvent(new Event("change", { bubbles: true }));
+    e.offsetParent.classList.remove('expand');
   }
 }
 
@@ -654,20 +666,26 @@ const pages = {
 
 function listen(id, change, endpoint) {
   document.querySelector("#" + id).addEventListener("change", async (e) => {
-    response = await fetchWithToken(glob_endp, `${endpoint}${e.target.value}/`);
+    if (e.target.checked) {
+      response = await fetchWithToken(
+        glob_endp,
+        `${endpoint}${e.target.value}/`
+      );
 
-    if (response == "Error") return;
-    response.user = {
-      relationship: response.rel,
-      last_action: response.last_action_by,
-      ...response.user,
-    };
-    change.innerHTML = components["profile"](response.user)
-      .trim()
-      .split("\n")
-      .slice(1, -1)
-      .join("\n");
-    document.getElementById("list_toggler").checked = false;
+      if (response == "Error") return;
+      response.user = {
+        relationship: response.rel,
+        last_action: response.last_action_by,
+        ...response.user,
+      };
+      if (window.innerWidth < 480) change.classList.add("expand");
+      change.innerHTML = components["profile"](response.user)
+        .trim()
+        .split("\n")
+        .slice(1, -1)
+        .join("\n");
+      document.getElementById("list_toggler").checked = false;
+    }
   });
 }
 

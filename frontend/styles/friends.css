@@ -73,6 +73,10 @@
   color: #f1f1f1;
 }
 
+#close {
+  display: none;
+}
+
 @media screen and (max-width: 480px) {
   #userProfile {
     height: 100dvh;
@@ -83,6 +87,10 @@
   }
   #userProfile > * {
     width: 100% !important;
+  }
+  #friends #page {
+    gap: 0;
+    position: relative;
   }
   #friends #page > section {
     max-width: 100%;
@@ -95,12 +103,27 @@
     width: 0 !important;
     overflow: hidden;
     transform-origin: right;
-    transition: all 0.25s linear;
+    transition: width 0.25s linear;
     padding: 0;
   }
-  #friends #page input[type=checkbox]:checked + #userProfile {
+  #friends #page .userBanner img {
+    width: 70px;
+  }
+  #friends #page #close {
+    display: initial;
+    margin-left: auto;
+    font-size: 2rem;
+    height: -moz-fit-content;
+    height: fit-content;
+    transform: rotate(45deg);
+    position: absolute;
+    right: 10px;
+    top: 5px;
+  }
+  #friends #page #userProfile.expand {
     width: 100% !important;
     border: 1.5px solid rgba(49, 222, 222, 0.4392156863) !important;
+    padding: 20px;
   }
   .hide:checked + label + .popup {
     width: 90% !important;

@@ -72,6 +72,10 @@
   }
 }
 
+#close{
+  display: none;
+}
+
 @media screen and (max-width: 480px) {
   #userProfile {
     height: 100dvh;
@@ -86,6 +90,9 @@
   }
 
   #friends #page {
+    gap: 0;
+    position: relative;
+
     & > section {
       // width: 100% !important;
       max-width: 100%;
@@ -100,41 +107,31 @@
       width: 0 !important;
       overflow: hidden;
       transform-origin: right;
-      transition: all 0.25s linear;
+      transition: width 0.25s linear;
       padding: 0;
     }
 
-    input[type="checkbox"]:checked + #userProfile {
-      width: 100% !important;
-      border: $global_border !important;
+    .userBanner{
+      img{
+        width: 70px;
+      }
     }
+    #close {
+      display: initial;
+      margin-left: auto;
+      font-size: 2rem;
+      height: fit-content;
+      transform: rotate(45deg);
+      position: absolute;
+      right: 10px;
+      top: 5px;
+    }
+  }
 
-    // .users_list {
-    //   flex-wrap: wrap;
-    //   flex-direction: row;
-    //   justify-content: space-between;
-    //   gap: 10px;
-
-    //   .user_label {
-    //     flex-direction: column;
-    //     width: 30%;
-    //     border: none;
-    //     gap: 5px;
-
-    //     img {
-    //       width: 50%;
-    //       height: fit-content;
-    //     }
-
-    //     h4 {
-    //       overflow: hidden;
-    //       white-space: nowrap;
-    //       width: 100%;
-    //       text-align: center;
-    //       text-overflow: ellipsis;
-    //     }
-    //   }
-    // }
+  #friends #page #userProfile.expand{
+    width: 100% !important;
+    border: $global_border !important;
+    padding: 20px;
   }
 
   .hide:checked + label + .popup {
