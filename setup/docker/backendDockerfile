@@ -1,0 +1,4 @@
+FROM python:3.14.0a2
+COPY backend.sh usr/local/bin/backend
+ENTRYPOINT [ "backend" ]
+CMD [ "manage.py runserver 0.0.0.0:8000" ]
