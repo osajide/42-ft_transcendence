@@ -250,7 +250,7 @@ const components = {
   header: function () {
     let header = document.createElement("header");
     header.innerHTML = /*html*/ `
-			<label class="img_label" for="dashboard">
+			<label class="img_label" for="friends">
 				<img id="logo" src="./assets/42.svg" alt="logo" />
 			</label>
 			<input class="hide togglers" type="checkbox" id="menu"/>
@@ -578,15 +578,6 @@ const pages = {
     id: "signin_page",
     func: handleForm,
     glob: false,
-  },
-  dashboard: {
-    data: /*html*/ `
-			<section id="page">
-			</section>
-		`,
-    id: "dashboard",
-    func: () => {},
-    glob: true,
   },
   chats: {
     data: /*html*/ `

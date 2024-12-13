@@ -107,21 +107,10 @@ function gameOver(game) {
   document.getElementById("game_dash").classList.add("game_over");
 }
 
-function loader() {
-  const loading = document.createElement("section");
-  loading.classList.add("loader");
-  loading.innerHTML = /* html */ `<span id="loaderBall" class="loading"><img src="../assets/avatars/user.svg" alt="loader"/></span>`;
-  return loading;
-}
-
 function server(e, mypong) {
   data = JSON.parse(e.data);
   console.log(data);
   if (data.start) {
-    // const cont = document.querySelector("#game_page");
-    // const loading = loader();
-    // cont.appendChild(loading);
-
     mypong.ball.moves = data.start;
     resetBall(mypong);
     if (window.innerHeight > window.innerWidth) {
@@ -152,7 +141,10 @@ function server(e, mypong) {
     //   );
     //   clearTimeout(timer);
     // }, 1000);
+    let counter = 0
+    let timer = setInterval(() => {
 
+    }, 3500)
     mypong.launch();
   } else if (data.aspect) {
     let { w, h } = { ...data.aspect };
@@ -417,36 +409,43 @@ function startGame(id) {
 }
 
 function tournamentInfo(e) {
-  const data = e.data
-  const players = document.getElementsByClassName('player_img')
-  console.log(data,players)
-  if (data.users) {
-    
+  this.matches = [];
+  const data = JSON.parse(e.data);
+  const players = document.getElementsByClassName("player_img");
+  console.log(data, players);
+  if (data.locked) {
+    const cont = document.getElementsByClassName('tournament')
+    this.matches = data.locked;
+    for (i in cont) {
+      data.locked[i].map((el, index) => {
+        cont[0].querySelector('.player_img' + (index + 1)).setAttribute('src', "../assets/avatars/" + el.avatar)
+      })
+    }
   }
 }
 
 function playTournament(endpoint) {
-  const socket = makeSocket(`tournament/${endpoint}`, tournamentInfo)
+  const socket = makeSocket(`tournament/${endpoint}`, tournamentInfo);
   const board = /* html */ `
     <div class="tournament">
-      <img src="../assets/avatars/user.svg" class="player_img">
-      <img src="../assets/avatars/user.svg" class="player_img">
-      <img src="../assets/avatars/user.svg" class="player_img">
-      <img src="../assets/avatars/user.svg" class="player_img">
-      <img src="../assets/avatars/user.svg" class="player_img">
-      <img src="../assets/avatars/user.svg" class="player_img">
-      <img src="../assets/avatars/user.svg" class="player_img">
+      <img src="../assets/avatars/user.svg" class="player_img player_img1">
+      <img src="../assets/avatars/user.svg" class="player_img player_img5">
+      <img src="../assets/avatars/user.svg" class="player_img player_img2">
+      <img src="../assets/avatars/user.svg" class="player_img player_img7">
+      <img src="../assets/avatars/user.svg" class="player_img player_img3">
+      <img src="../assets/avatars/user.svg" class="player_img player_img6">
+      <img src="../assets/avatars/user.svg" class="player_img player_img4">
       <span class="pair_link"></span>
       <span class="pair_link"></span>
     </div>
     <div class="tournament">
-      <img src="../assets/avatars/user.svg" class="player_img">
-      <img src="../assets/avatars/user.svg" class="player_img">
-      <img src="../assets/avatars/user.svg" class="player_img">
-      <img src="../assets/avatars/user.svg" class="player_img">
-      <img src="../assets/avatars/user.svg" class="player_img">
-      <img src="../assets/avatars/user.svg" class="player_img">
-      <img src="../assets/avatars/user.svg" class="player_img">
+    <img src="../assets/avatars/user.svg" class="player_img player_img1">
+    <img src="../assets/avatars/user.svg" class="player_img player_img5">
+    <img src="../assets/avatars/user.svg" class="player_img player_img2">
+    <img src="../assets/avatars/user.svg" class="player_img player_img7">
+    <img src="../assets/avatars/user.svg" class="player_img player_img3">
+    <img src="../assets/avatars/user.svg" class="player_img player_img6">
+    <img src="../assets/avatars/user.svg" class="player_img player_img4">
       <span class="pair_link"></span>
       <span class="pair_link"></span>
     </div>
@@ -460,25 +459,6 @@ function playTournament(endpoint) {
 function game_choice(type) {
   const choice = {};
   choice[type] = "";
-  // const loading = loader();
-  // land.appendChild(loading);
-
-  // let timer = setTimeout(() => {
-  //   loading.firstElementChild.setAttribute(
-  //     "src",
-  //     `../assets/avatars${mypong.oppoPaddle.data.avatar}`
-  //   );
-  //   console.log(loading)
-  //   // loading.querySelector('#loaderBall').classList.remove('loading')
-  //   clearTimeout(timer);
-  // }, 3000);
-  // timer = setTimeout(() => {
-  //   loading.firstElementChild.setAttribute(
-  //     "src",
-  //     `../assets/avatars${mypong.oppoPaddle.data.avatar}`
-  //   );
-  //   clearTimeout(timer);
-  // }, 1000);
   console.log(type);
   if (!notiSocket.readyState) {
     const interval = setInterval(() => {

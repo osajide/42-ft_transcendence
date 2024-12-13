@@ -38,10 +38,11 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 
 	async def	disconnect(self, code):
 		await self.channel_layer.group_discard(self.notification_group, self.channel_name)
-		print("=====> DISCONNECTED IN NOTIFICATION")
-		if len(tournaments) > 0 and  tournaments[user_index[self.scope['user']]] != '0' and tournaments[user_index[self.scope['user']]] != '8':
-			tournaments[user_index[self.scope['user']]] = chr(ord(tournaments[user_index[self.scope['user']]]) - 1)
-			print(f"tounaments {user_index[self.scope['user']]} count {tournaments[user_index[self.scope['user']]]}")
+		print("=====> DISCONNECTED IN NOTIFICATION", tournaments, user_index[self.scope['user']])
+		if len(tournaments) > 0:
+			if tournaments[user_index[self.scope['user']]] != '0' and tournaments[user_index[self.scope['user']]] != '8':
+				tournaments[user_index[self.scope['user']]] = chr(ord(tournaments[user_index[self.scope['user']]]) - 1)
+				print(f"tounaments {user_index[self.scope['user']]} count {tournaments[user_index[self.scope['user']]]}")
 
 		# print('games noti: ', games)
 		# games.clear() #temp
