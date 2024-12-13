@@ -15,20 +15,6 @@
     transform: scale(1);
   }
 }
-@keyframes bounce {
-  0%, 100% {
-    left: 50%;
-    transform: translateX(-50%);
-  }
-  35% {
-    left: 0%;
-    transform: translateX(0);
-  }
-  70% {
-    left: 100%;
-    transform: translateX(-100%);
-  }
-}
 * {
   box-sizing: border-box;
   color: #f1f1f1;
@@ -127,16 +113,44 @@ body {
   height: 100%;
   top: 0;
   left: 0;
-  color: #f00;
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 9;
+  background-color: rgba(0, 188, 188, 0.7);
 }
 #loader svg {
-  width: 150px;
+  width: 100px;
+  transform-origin: bottom right;
+  animation: hit 0.35s linear infinite alternate;
+}
+#loader .ball {
+  width: 20px;
+  height: 20px;
+  background-color: #f1f1f1;
+  position: absolute;
+  top: 50%;
+  left: 40%;
+  border-radius: 50%;
+  animation: bounce 0.35s linear infinite alternate;
 }
 
-@keyframes bounce {}
+@keyframes hit {
+  0% {
+    transform: rotate(-35deg);
+  }
+  100% {
+    transform: rotate(-10deg);
+  }
+}
+@keyframes bounce {
+  0% {
+    transform: translate(0px, 0px);
+  }
+  100% {
+    transform: translate(20px, -150px);
+  }
+}
 #spa_nav,
 .hide {
   display: none !important;

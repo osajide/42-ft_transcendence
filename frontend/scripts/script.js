@@ -1,6 +1,7 @@
 const errors = document.getElementById("errorCont");
 const baseUrl = window.location.host;
 const background = document.getElementById("backg");
+const loader = document.getElementById("loader");
 let notiSocket;
 let glob_endp = window.location.origin.split(":");
 glob_endp = glob_endp[0] + ":" + glob_endp[1] + ":8000";
@@ -32,6 +33,10 @@ const raiseWarn = (msg, type = "error") => {
 
 const fetchWithToken = async (url, endpoint, method, body = null) => {
   let data = "Error";
+  if (endpoint != "/api/register/" && endpoint != "/api/login/") {
+    loader.classList.add("show");
+    loader.classList.remove("hide");
+  }
   settings = {
     method: method,
     credentials: "include",
@@ -41,6 +46,8 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
   };
   if (body) settings.body = JSON.stringify(body);
   const response = await fetch(url + endpoint, settings);
+  loader.classList.add("hide");
+  loader.classList.remove("show");
   if (response.ok) data = await response.json();
   console.log(data, endpoint);
   // if (endpoint != "/api/register/" && response.status === 401) {
@@ -285,7 +292,7 @@ const components = {
       }" type="radio" class="chat_member hide" name="${name}" value="${
       user?.id
     }"/>
-			<label for="${
+			<label onKeyDown="selction(event)" for="${
         user.first_name + name + user.id
       }" class="user_label" tabindex="0">
 				<img src="${"./assets/avatars/" + user.avatar}" alt="${user.first_name}"/>
@@ -471,6 +478,13 @@ const components = {
   `;
   },
 };
+
+function selction(e) {
+  if (e.key == "Enter") {
+    e.srcElement.control.checked = true;
+    e.srcElement.control.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+}
 
 function setNotiValue(noti) {
   const sender = noti.sender;
@@ -730,11 +744,15 @@ const updateUrl = (path = "/", mode = "", targetId = "") => {
     target.checked = true;
     target.dispatchEvent(new Event("change", { bubbles: true }));
   }
+  loader.classList.add("hide");
+  loader.classList.remove("show");
 };
 
 document.body.onload = () => {
   const path = window.location.pathname;
   user_data = JSON.parse(localStorage.getItem("user_data"));
+  loader.classList.add("show");
+  loader.classList.remove("hide");
   if (!user_data && ["login", "signin", "/"].indexOf(path) < 0)
     return updateUrl("login", "push");
   else if (["login", "signin", "/"].indexOf(path) < 0)

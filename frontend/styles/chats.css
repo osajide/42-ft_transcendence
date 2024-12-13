@@ -15,20 +15,6 @@
     transform: scale(1);
   }
 }
-@keyframes bounce {
-  0%, 100% {
-    left: 50%;
-    transform: translateX(-50%);
-  }
-  35% {
-    left: 0%;
-    transform: translateX(0);
-  }
-  70% {
-    left: 100%;
-    transform: translateX(-100%);
-  }
-}
 #chats #page {
   flex-direction: row;
   flex-wrap: nowrap;

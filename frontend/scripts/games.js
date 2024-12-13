@@ -145,6 +145,8 @@ function server(e, mypong) {
     let timer = setInterval(() => {
 
     }, 3500)
+    loader.classList.add('hide')
+    loader.classList.remove('show')
     mypong.launch();
   } else if (data.aspect) {
     let { w, h } = { ...data.aspect };
@@ -404,6 +406,8 @@ function startGame(id) {
   cont.classList.add("in_game");
   cont.classList.remove("tournament_board");
   mypong = new Game(0, 0, "#31dede", `game/${id}`, 1);
+  loader.classList.add('show')
+  loader.classList.remove('hide')
   if (window.innerWidth < window.innerHeight)
     document.getElementById("game_dash").classList.add("rotate_stats");
 }
