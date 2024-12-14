@@ -14,4 +14,20 @@
   to {
     transform: scale(1);
   }
+}
+@keyframes hit {
+  0% {
+    transform: rotate(-35deg);
+  }
+  100% {
+    transform: rotate(-10deg);
+  }
+}
+@keyframes bounce {
+  0% {
+    transform: translate(0px, 0px);
+  }
+  100% {
+    transform: translate(20px, -150px);
+  }
 }/*# sourceMappingURL=vars.css.map */

@@ -15,6 +15,22 @@
     transform: scale(1);
   }
 }
+@keyframes hit {
+  0% {
+    transform: rotate(-35deg);
+  }
+  100% {
+    transform: rotate(-10deg);
+  }
+}
+@keyframes bounce {
+  0% {
+    transform: translate(0px, 0px);
+  }
+  100% {
+    transform: translate(20px, -150px);
+  }
+}
 #chats #page {
   flex-direction: row;
   flex-wrap: nowrap;
@@ -28,6 +44,35 @@
   width: 100%;
   flex-grow: 1;
   height: 100%;
+}
+#chats .chatBanner {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  padding: 10px;
+  gap: 20px;
+  align-items: center;
+  background-color: #1c1c1c;
+  border-bottom: 1.5px solid rgba(49, 222, 222, 0.4392156863);
+}
+#chats .chatBanner img {
+  height: 40px;
+}
+#chats .chatBanner .friendData,
+#chats .chatBanner .controls {
+  color: rgb(246, 246, 246) !important;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+#chats .chatBanner .friendData h6,
+#chats .chatBanner .controls h6 {
+  min-width: -moz-fit-content;
+  min-width: fit-content;
+  text-align: left;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 #chatCont {
@@ -73,7 +118,7 @@
   display: flex;
   width: 100%;
   overflow: hidden;
-  height: 50px;
+  height: 60px;
   border-top: 1.5px solid rgba(49, 222, 222, 0.4392156863);
 }
 #chatCont form > *:focus {
@@ -209,6 +254,10 @@
   }
   #chats #page input[type=checkbox]:checked + #chatCont {
     width: 10% !important;
+    border: 1.5px solid rgba(49, 222, 222, 0.4392156863) !important;
+  }
+  #chats #page #chatCont.expand {
+    width: 100% !important;
     border: 1.5px solid rgba(49, 222, 222, 0.4392156863) !important;
   }
   .hide:checked + label + .popup {

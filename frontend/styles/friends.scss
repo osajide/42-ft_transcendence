@@ -18,7 +18,7 @@
 
     .userBanner{
       display: flex;
-      gap: 20px;
+      gap: 10px;
     
       img{
         min-height: 100px;
@@ -72,10 +72,6 @@
   }
 }
 
-#close{
-  display: none;
-}
-
 @media screen and (max-width: 480px) {
   #userProfile {
     height: 100dvh;
@@ -112,30 +108,36 @@
     }
 
     .userBanner{
-      img{
-        width: 70px;
+      position: relative;
+      flex-direction: column;
+      align-items: center;
+
+      .relManager{
+        justify-content: center;
       }
-    }
-    #close {
-      display: initial;
-      margin-left: auto;
-      font-size: 2rem;
-      height: fit-content;
-      transform: rotate(45deg);
-      position: absolute;
-      right: 10px;
-      top: 5px;
+
+      img{
+        min-width: 100px;
+      }
     }
   }
 
   #friends #page #userProfile.expand{
     width: 100% !important;
     border: $global_border !important;
-    padding: 20px;
+    padding: 10px;
   }
 
   .hide:checked + label + .popup {
     width: 90% !important;
     height: 90% !important;
+  }
+
+  #close{
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 30px;
+    height: 30px;
   }
 }

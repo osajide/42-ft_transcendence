@@ -15,6 +15,22 @@
     transform: scale(1);
   }
 }
+@keyframes hit {
+  0% {
+    transform: rotate(-35deg);
+  }
+  100% {
+    transform: rotate(-10deg);
+  }
+}
+@keyframes bounce {
+  0% {
+    transform: translate(0px, 0px);
+  }
+  100% {
+    transform: translate(20px, -150px);
+  }
+}
 #friends #page {
   flex-direction: row;
 }
@@ -32,7 +48,7 @@
 }
 #friends #page #userProfile .userBanner {
   display: flex;
-  gap: 20px;
+  gap: 10px;
 }
 #friends #page #userProfile .userBanner img {
   min-height: 100px;
@@ -73,10 +89,6 @@
   color: #f1f1f1;
 }
 
-#close {
-  display: none;
-}
-
 @media screen and (max-width: 480px) {
   #userProfile {
     height: 100dvh;
@@ -106,27 +118,31 @@
     transition: width 0.25s linear;
     padding: 0;
   }
-  #friends #page .userBanner img {
-    width: 70px;
+  #friends #page .userBanner {
+    position: relative;
+    flex-direction: column;
+    align-items: center;
   }
-  #friends #page #close {
-    display: initial;
-    margin-left: auto;
-    font-size: 2rem;
-    height: -moz-fit-content;
-    height: fit-content;
-    transform: rotate(45deg);
-    position: absolute;
-    right: 10px;
-    top: 5px;
+  #friends #page .userBanner .relManager {
+    justify-content: center;
+  }
+  #friends #page .userBanner img {
+    min-width: 100px;
   }
   #friends #page #userProfile.expand {
     width: 100% !important;
     border: 1.5px solid rgba(49, 222, 222, 0.4392156863) !important;
-    padding: 20px;
+    padding: 10px;
   }
   .hide:checked + label + .popup {
     width: 90% !important;
     height: 90% !important;
+  }
+  #close {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 30px;
+    height: 30px;
   }
 }/*# sourceMappingURL=friends.css.map */

@@ -15,6 +15,22 @@
     transform: scale(1);
   }
 }
+@keyframes hit {
+  0% {
+    transform: rotate(-35deg);
+  }
+  100% {
+    transform: rotate(-10deg);
+  }
+}
+@keyframes bounce {
+  0% {
+    transform: translate(0px, 0px);
+  }
+  100% {
+    transform: translate(20px, -150px);
+  }
+}
 #games {
   display: flex;
   align-items: center;
@@ -241,6 +257,28 @@
   .tournament_board .tournament .player_img {
     width: 100%;
     height: auto;
+  }
+}
+@media screen and (max-width: 480px) {
+  #game_page:not(.in_game) {
+    flex-direction: column;
+  }
+  #game_page:not(.in_game) .game_mode:first-child {
+    background: url("../assets/vs1.png"), rgba(49, 222, 222, 0.4392156863) !important;
+    background-size: 100% auto !important;
+    background-position: center;
+    background-repeat: no-repeat;
+    transform-origin: center !important;
+  }
+  #game_page:not(.in_game) .game_mode:last-child {
+    background: url("../assets/vs1.png"), rgba(49, 222, 222, 0.4392156863) !important;
+    background-size: 100% auto !important;
+    transform-origin: center !important;
+  }
+  #game_page:not(.in_game) .game_mode:hover {
+    mix-blend-mode: hard-light;
+    background-size: 150% auto !important;
+    transform-origin: center;
   }
 }
 #game_canvas {

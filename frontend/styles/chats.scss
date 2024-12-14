@@ -20,6 +20,38 @@ $msg_tick_bottom: 14px;
     height: 100%;
     // background-color: $prim_dark;
   }
+
+  .chatBanner {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    padding: 10px;
+    gap: 20px;
+    align-items: center;
+    background-color: $sec_dark;
+    border-bottom: $global_border;
+
+    img {
+      height: 40px;
+    }
+
+    .friendData,
+    .controls {
+      color: $white !important;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+
+      h6 {
+        min-width: fit-content;
+        text-align: left;
+        overflow: hidden;
+        white-space: nowrap;
+        // word-break: keep-all;
+        text-overflow: ellipsis;;
+      }
+    }
+  }
 }
 
 #chatCont {
@@ -60,7 +92,7 @@ $msg_tick_bottom: 14px;
   display: flex;
   width: $box-width;
   overflow: hidden;
-  height: 50px;
+  height: 60px;
   border-top: $global_border;
 
   & > *:focus {
@@ -165,10 +197,6 @@ $msg_tick_bottom: 14px;
   position: relative;
 }
 
-// input[type="checkbox"]{
-// 	display: none;
-// }
-
 @media screen and (max-width: 480px) {
   #chatCont {
     height: 100dvh;
@@ -204,32 +232,10 @@ $msg_tick_bottom: 14px;
       border: $global_border !important;
     }
 
-    // .users_list {
-    //   flex-wrap: wrap;
-    //   flex-direction: row;
-    //   justify-content: space-between;
-    //   gap: 10px;
-
-    //   .user_label {
-    //     flex-direction: column;
-    //     width: 30%;
-    //     border: none;
-    //     gap: 5px;
-
-    //     img {
-    //       width: 50%;
-    //       height: fit-content;
-    //     }
-
-    //     h4 {
-    //       overflow: hidden;
-    //       white-space: nowrap;
-    //       width: 100%;
-    //       text-align: center;
-    //       text-overflow: ellipsis;
-    //     }
-    //   }
-    // }
+    #chatCont.expand {
+      width: 100% !important;
+      border: $global_border !important;
+    }
   }
 
   .hide:checked + label + .popup {

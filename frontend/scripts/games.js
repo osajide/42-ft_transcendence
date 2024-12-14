@@ -126,27 +126,12 @@ function server(e, mypong) {
       mypong.oppoPaddle.y = (window_height - mypong.height) / 2;
       if (mypong.ball.mirror == -1) mypong.ball.ballMoveX *= -1;
     }
+    // let counter = 0
+    // let timer = setInterval(() => {
 
-    // let timer = setTimeout(() => {
-    //   loading.firstElementChild.setAttribute(
-    //     "src",
-    //     `../assets/avatars${mypong.oppoPaddle.data.avatar}`
-    //   );
-    //   clearTimeout(timer);
-    // }, 3000);
-    // timer = setTimeout(() => {
-    //   loading.firstElementChild.setAttribute(
-    //     "src",
-    //     `../assets/avatars${mypong.oppoPaddle.data.avatar}`
-    //   );
-    //   clearTimeout(timer);
-    // }, 1000);
-    let counter = 0
-    let timer = setInterval(() => {
-
-    }, 3500)
-    loader.classList.add('hide')
-    loader.classList.remove('show')
+    // }, 3500)
+    loader.classList.add("hide");
+    loader.classList.remove("show");
     mypong.launch();
   } else if (data.aspect) {
     let { w, h } = { ...data.aspect };
@@ -406,8 +391,8 @@ function startGame(id) {
   cont.classList.add("in_game");
   cont.classList.remove("tournament_board");
   mypong = new Game(0, 0, "#31dede", `game/${id}`, 1);
-  loader.classList.add('show')
-  loader.classList.remove('hide')
+  loader.classList.add("show");
+  loader.classList.remove("hide");
   if (window.innerWidth < window.innerHeight)
     document.getElementById("game_dash").classList.add("rotate_stats");
 }
@@ -418,12 +403,14 @@ function tournamentInfo(e) {
   const players = document.getElementsByClassName("player_img");
   console.log(data, players);
   if (data.locked) {
-    const cont = document.getElementsByClassName('tournament')
+    const cont = document.getElementsByClassName("tournament");
     this.matches = data.locked;
     for (i in cont) {
       data.locked[i].map((el, index) => {
-        cont[0].querySelector('.player_img' + (index + 1)).setAttribute('src', "../assets/avatars/" + el.avatar)
-      })
+        cont[0]
+          .querySelector(".player_img" + (index + 1))
+          .setAttribute("src", "../assets/avatars/" + el.avatar);
+      });
     }
   }
 }

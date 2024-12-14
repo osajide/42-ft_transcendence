@@ -27,13 +27,13 @@ const raiseWarn = (msg, type = "error") => {
   if (type == "error") localStorage.removeItem("user_data");
   let s = setTimeout(() => {
     removeElement(self);
+    clearTimeout(s);
   }, 3000);
-  clearTimeout(s);
 };
 
 const fetchWithToken = async (url, endpoint, method, body = null) => {
   let data = "Error";
-  if (endpoint != "/api/register/" && endpoint != "/api/login/") {
+  if (endpoint != "/api/register/") {
     loader.classList.add("show");
     loader.classList.remove("hide");
   }
@@ -46,8 +46,10 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
   };
   if (body) settings.body = JSON.stringify(body);
   const response = await fetch(url + endpoint, settings);
+
   loader.classList.add("hide");
   loader.classList.remove("show");
+
   if (response.ok) data = await response.json();
   console.log(data, endpoint);
   // if (endpoint != "/api/register/" && response.status === 401) {
@@ -88,13 +90,16 @@ const icons = {
   chats: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M880-80 720-240H320q-33 0-56.5-23.5T240-320v-40h440q33 0 56.5-23.5T760-440v-280h40q33 0 56.5 23.5T880-640v560ZM160-473l47-47h393v-280H160v327ZM80-280v-520q0-33 23.5-56.5T160-880h440q33 0 56.5 23.5T680-800v280q0 33-23.5 56.5T600-440H240L80-280Zm80-240v-280 280Z"/></svg>`,
   friends: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M40-160v-112q0-34 17.5-62.5T104-378q62-31 126-46.5T360-440q66 0 130 15.5T616-378q29 15 46.5 43.5T680-272v112H40Zm720 0v-120q0-44-24.5-84.5T666-434q51 6 96 20.5t84 35.5q36 20 55 44.5t19 53.5v120H760ZM360-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47Zm400-160q0 66-47 113t-113 47q-11 0-28-2.5t-28-5.5q27-32 41.5-71t14.5-81q0-42-14.5-81T544-792q14-5 28-6.5t28-1.5q66 0 113 47t47 113ZM120-240h480v-32q0-11-5.5-20T580-306q-54-27-109-40.5T360-360q-56 0-111 13.5T140-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T440-640q0-33-23.5-56.5T360-720q-33 0-56.5 23.5T280-640q0 33 23.5 56.5T360-560Zm0 320Zm0-400Z"/></svg>`,
   games: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M189-160q-60 0-102.5-43T42-307q0-9 1-18t3-18l84-336q14-54 57-87.5t98-33.5h390q55 0 98 33.5t57 87.5l84 336q2 9 3.5 18.5T919-306q0 61-43.5 103.5T771-160q-42 0-78-22t-54-60l-28-58q-5-10-15-15t-21-5H385q-11 0-21 5t-15 15l-28 58q-18 38-54 60t-78 22Zm3-80q19 0 34.5-10t23.5-27l28-57q15-31 44-48.5t63-17.5h190q34 0 63 18t45 48l28 57q8 17 23.5 27t34.5 10q28 0 48-18.5t21-46.5q0 1-2-19l-84-335q-7-27-28-44t-49-17H285q-28 0-49.5 17T208-659l-84 335q-2 6-2 18 0 28 20.5 47t49.5 19Zm348-280q17 0 28.5-11.5T580-560q0-17-11.5-28.5T540-600q-17 0-28.5 11.5T500-560q0 17 11.5 28.5T540-520Zm80-80q17 0 28.5-11.5T660-640q0-17-11.5-28.5T620-680q-17 0-28.5 11.5T580-640q0 17 11.5 28.5T620-600Zm0 160q17 0 28.5-11.5T660-480q0-17-11.5-28.5T620-520q-17 0-28.5 11.5T580-480q0 17 11.5 28.5T620-440Zm80-80q17 0 28.5-11.5T740-560q0-17-11.5-28.5T700-600q-17 0-28.5 11.5T660-560q0 17 11.5 28.5T700-520Zm-360 60q13 0 21.5-8.5T370-490v-40h40q13 0 21.5-8.5T440-560q0-13-8.5-21.5T410-590h-40v-40q0-13-8.5-21.5T340-660q-13 0-21.5 8.5T310-630v40h-40q-13 0-21.5 8.5T240-560q0 13 8.5 21.5T270-530h40v40q0 13 8.5 21.5T340-460Zm140-20Z"/></svg>`,
-  errorIcon: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#f00"><path d="M480-280q17 0 28.5-11.5T520-320q0-17-11.5-28.5T480-360q-17 0-28.5 11.5T440-320q0 17 11.5 28.5T480-280Zm-40-160h80v-240h-80v240Zm40 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>`,
-  alertIcon: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M280-420q25 0 42.5-17.5T340-480q0-25-17.5-42.5T280-540q-25 0-42.5 17.5T220-480q0 25 17.5 42.5T280-420Zm200 0q25 0 42.5-17.5T540-480q0-25-17.5-42.5T480-540q-25 0-42.5 17.5T420-480q0 25 17.5 42.5T480-420Zm200 0q25 0 42.5-17.5T740-480q0-25-17.5-42.5T680-540q-25 0-42.5 17.5T620-480q0 25 17.5 42.5T680-420ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>`,
-  notIcon: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M160-200v-80h80v-280q0-83 50-147.5T420-792v-28q0-25 17.5-42.5T480-880q25 0 42.5 17.5T540-820v28q80 20 130 84.5T720-560v280h80v80H160Zm320-300Zm0 420q-33 0-56.5-23.5T400-160h160q0 33-23.5 56.5T480-80ZM320-280h320v-280q0-66-47-113t-113-47q-66 0-113 47t-47 113v280Z"/></svg>`,
-  invitationIcon: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M720-400v-120H600v-80h120v-120h80v120h120v80H800v120h-80Zm-360-80q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM40-160v-112q0-34 17.5-62.5T104-378q62-31 126-46.5T360-440q66 0 130 15.5T616-378q29 15 46.5 43.5T680-272v112H40Zm80-80h480v-32q0-11-5.5-20T580-306q-54-27-109-40.5T360-360q-56 0-111 13.5T140-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T440-640q0-33-23.5-56.5T360-720q-33 0-56.5 23.5T280-640q0 33 23.5 56.5T360-560Zm0-80Zm0 400Z"/></svg>`,
-  messageIcon: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M240-400h320v-80H240v80Zm0-120h480v-80H240v80Zm0-120h480v-4q-37-8-67.5-27.5T600-720H240v80ZM80-80v-720q0-33 23.5-56.5T160-880h404q-4 20-4 40t4 40H160v525l46-45h594v-324q23-5 43-13.5t37-22.5v360q0 33-23.5 56.5T800-240H240L80-80Zm80-720v480-480Zm600 80q-50 0-85-35t-35-85q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35Z"/></svg>`,
-  tournementIcon: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M280-120v-80h160v-124q-49-11-87.5-41.5T296-442q-75-9-125.5-65.5T120-640v-40q0-33 23.5-56.5T200-760h80v-80h400v80h80q33 0 56.5 23.5T840-680v40q0 76-50.5 132.5T664-442q-18 46-56.5 76.5T520-324v124h160v80H280Zm0-408v-152h-80v40q0 38 22 68.5t58 43.5Zm200 128q50 0 85-35t35-85v-240H360v240q0 50 35 85t85 35Zm200-128q36-13 58-43.5t22-68.5v-40h-80v152Zm-200-52Z"/></svg>`,
-  challengeIcon: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M762-96 645-212l-88 88-28-28q-23-23-23-57t23-57l169-169q23-23 57-23t57 23l28 28-88 88 116 117q12 12 12 28t-12 28l-50 50q-12 12-28 12t-28-12Zm118-628L426-270l5 4q23 23 23 57t-23 57l-28 28-88-88L198-96q-12 12-28 12t-28-12l-50-50q-12-12-12-28t12-28l116-117-88-88 28-28q23-23 57-23t57 23l4 5 454-454h160v160ZM334-583l24-23 23-24-23 24-24 23Zm-56 57L80-724v-160h160l198 198-57 56-174-174h-47v47l174 174-56 57Zm92 199 430-430v-47h-47L323-374l47 47Zm0 0-24-23-23-24 23 24 24 23Z"/></svg>`,
+  errorIcon: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#db0000"><path d="M480-280q17 0 28.5-11.5T520-320q0-17-11.5-28.5T480-360q-17 0-28.5 11.5T440-320q0 17 11.5 28.5T480-280Zm-40-160h80v-240h-80v240Zm40 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>`,
+  alertIcon: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#f1f1f1"><path d="M280-420q25 0 42.5-17.5T340-480q0-25-17.5-42.5T280-540q-25 0-42.5 17.5T220-480q0 25 17.5 42.5T280-420Zm200 0q25 0 42.5-17.5T540-480q0-25-17.5-42.5T480-540q-25 0-42.5 17.5T420-480q0 25 17.5 42.5T480-420Zm200 0q25 0 42.5-17.5T740-480q0-25-17.5-42.5T680-540q-25 0-42.5 17.5T620-480q0 25 17.5 42.5T680-420ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>`,
+  notIcon: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#f1f1f1"><path d="M160-200v-80h80v-280q0-83 50-147.5T420-792v-28q0-25 17.5-42.5T480-880q25 0 42.5 17.5T540-820v28q80 20 130 84.5T720-560v280h80v80H160Zm320-300Zm0 420q-33 0-56.5-23.5T400-160h160q0 33-23.5 56.5T480-80ZM320-280h320v-280q0-66-47-113t-113-47q-66 0-113 47t-47 113v280Z"/></svg>`,
+  invitationIcon: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#f1f1f1"><path d="M720-400v-120H600v-80h120v-120h80v120h120v80H800v120h-80Zm-360-80q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM40-160v-112q0-34 17.5-62.5T104-378q62-31 126-46.5T360-440q66 0 130 15.5T616-378q29 15 46.5 43.5T680-272v112H40Zm80-80h480v-32q0-11-5.5-20T580-306q-54-27-109-40.5T360-360q-56 0-111 13.5T140-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T440-640q0-33-23.5-56.5T360-720q-33 0-56.5 23.5T280-640q0 33 23.5 56.5T360-560Zm0-80Zm0 400Z"/></svg>`,
+  messageIcon: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#f1f1f1"><path d="M240-400h320v-80H240v80Zm0-120h480v-80H240v80Zm0-120h480v-4q-37-8-67.5-27.5T600-720H240v80ZM80-80v-720q0-33 23.5-56.5T160-880h404q-4 20-4 40t4 40H160v525l46-45h594v-324q23-5 43-13.5t37-22.5v360q0 33-23.5 56.5T800-240H240L80-80Zm80-720v480-480Zm600 80q-50 0-85-35t-35-85q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35Z"/></svg>`,
+  tournementIcon: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#f1f1f1"><path d="M280-120v-80h160v-124q-49-11-87.5-41.5T296-442q-75-9-125.5-65.5T120-640v-40q0-33 23.5-56.5T200-760h80v-80h400v80h80q33 0 56.5 23.5T840-680v40q0 76-50.5 132.5T664-442q-18 46-56.5 76.5T520-324v124h160v80H280Zm0-408v-152h-80v40q0 38 22 68.5t58 43.5Zm200 128q50 0 85-35t35-85v-240H360v240q0 50 35 85t85 35Zm200-128q36-13 58-43.5t22-68.5v-40h-80v152Zm-200-52Z"/></svg>`,
+  challengeIcon: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#00bcbc"><path d="M762-96 645-212l-88 88-28-28q-23-23-23-57t23-57l169-169q23-23 57-23t57 23l28 28-88 88 116 117q12 12 12 28t-12 28l-50 50q-12 12-28 12t-28-12Zm118-628L426-270l5 4q23 23 23 57t-23 57l-28 28-88-88L198-96q-12 12-28 12t-28-12l-50-50q-12-12-12-28t12-28l116-117-88-88 28-28q23-23 57-23t57 23l4 5 454-454h160v160ZM334-583l24-23 23-24-23 24-24 23Zm-56 57L80-724v-160h160l198 198-57 56-174-174h-47v47l174 174-56 57Zm92 199 430-430v-47h-47L323-374l47 47Zm0 0-24-23-23-24 23 24 24 23Z"/></svg>`,
+  logout: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z"/></svg>`,
+  block: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#db0000"><path d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q54 0 104-17.5t92-50.5L228-676q-33 42-50.5 92T160-480q0 134 93 227t227 93Zm252-124q33-42 50.5-92T800-480q0-134-93-227t-227-93q-54 0-104 17.5T284-732l448 448Z"/></svg>`,
+  back: /* svg */ (id)=> { return `<svg xmlns="http://www.w3.org/2000/svg" id="close" onclick="closeDiv(this,'${id}')" height="24px" viewBox="0 -960 960 960" width="24px" fill="#f1f1f1"><path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z"/></svg>`},
 };
 
 window.addEventListener("resize", () => {
@@ -177,12 +182,12 @@ async function authenticate(e) {
   if (data.message == "successfully Logged") {
     user_data = data.user;
     localStorage.setItem("user_data", JSON.stringify(user_data));
-    notiSocket = makeSocket("", testNot);
+    notiSocket = makeSocket("", notified);
     return updateUrl("friends", "push");
   }
 }
 
-function testNot(e) {
+function notified(e) {
   const notifier = document.getElementById("notifier");
   const notContainer = document.getElementById("notiList");
   const data = JSON.parse(e.data);
@@ -223,46 +228,31 @@ function makeSocket(endpoint, socketMethod) {
 
 const handleForm = () => {
   let myForm = document.getElementById("my_form");
-  if (myForm) {
-    if (user_data) return updateUrl("friends", "push");
-    myForm.querySelector("input").focus();
-    myForm.addEventListener("submit", authenticate);
-  } else {
-    myForm = document.getElementById("messenger");
-    const socket = makeSocket("chat/general", receiveMessage);
-
-    myForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      sendMessage(e, socket);
-    });
-  }
+  if (user_data) return updateUrl("friends", "push");
+  myForm.querySelector("input").focus();
+  myForm.addEventListener("submit", authenticate);
 };
 
 /******************** Game ********************/
 let window_width = window.innerWidth - 40;
 let window_height = window.innerHeight - 130;
 
-function lobby() {
-  if (user_data === undefined) return updateUrl("login", "push");
-  document.getElementById("game_mode_nav").addEventListener("change", (e) => {
-    game_choice(e.target.value);
-  });
-}
-
 const components = {
   menu_item: (text) => {
     let name = text.toLowerCase();
-    return /*html*/ `<label for="${name}" tabindex="0">${icons[name]}${text}</label>`;
+    if (name != "logout")
+      return /*html*/ `<label for="${name}" tabindex="0">${icons[name]}${text}</label>`;
+    return /*html*/ `<button onclick="logout(event)" type="submit">${icons[name]}${text}</button>`;
   },
   header: function () {
     let header = document.createElement("header");
     header.innerHTML = /*html*/ `
-			<label class="img_label" for="friends">
+			<label class="img_label" for="games">
 				<img id="logo" src="./assets/42.svg" alt="logo" />
 			</label>
 			<input class="hide togglers" type="checkbox" id="menu"/>
 			<nav>
-				${["Friends", "Chats", "Games"]
+				${["Friends", "Chats", "Games", "logout"]
           .map((a) => {
             return this["menu_item"](a);
           })
@@ -279,9 +269,19 @@ const components = {
   card: (s) => {
     return /*html*/ `<h1>${s}</h1>`;
   },
-  user_info: function (user) {
+  chat_banner: function (user) {
     return /* html */ `
-
+    <div class="chatBanner">
+      <label class="friendData">
+        ${icons.back('friendChat')}
+        <img src="${user.avatar}" alt="${user.name}"/>
+        <h6>${user.name}</h6>
+      </label>
+      <div class="controls">
+        ${icons.challengeIcon}
+        ${icons.block}
+      </div>
+    </div>
     `;
   },
   user_label: function (user, name) {
@@ -345,9 +345,10 @@ const components = {
 			</section>
 		`;
   },
-  chat: function () {
+  chat: function (user) {
     return /* html */ `
 		<section id="chatCont">
+      ${components.chat_banner(user)}
 			<div id="chat">
 			</div>
 			<form id="messenger">
@@ -376,6 +377,7 @@ const components = {
       Object.keys(user).length
         ? /* html */ `
         <div class="userBanner">
+        ${icons.back('myFriends')}
           <img src="${"./assets/avatars/" + user.avatar}" alt="${
             user.first_name
           }"/>
@@ -390,7 +392,6 @@ const components = {
             .join("\n")}
           </div>
         </div>
-        <span id="close" onclick="closeDiv(this)">+</span>
     </div>`
         : ""
     }
@@ -482,6 +483,13 @@ const components = {
   },
 };
 
+function logout(e) {
+  e.preventDefault();
+  localStorage.removeItem("user_data");
+  user_data = undefined;
+  updateUrl("login", "push");
+}
+
 function selction(e) {
   if (e.key == "Enter") {
     e.srcElement.control.checked = true;
@@ -489,12 +497,13 @@ function selction(e) {
   }
 }
 
-function closeDiv(e) {
-  const target = document.querySelector('[name="myFriends"]:checked');
+function closeDiv(e, name) {
+  const target = document.querySelector(`[name="${name}"]:checked`);
+  console.log(name, target);
   if (target) {
     target.checked = false;
     target.dispatchEvent(new Event("change", { bubbles: true }));
-    e.offsetParent.classList.remove('expand');
+    document.querySelector(".expand").classList.remove("expand");
   }
 }
 
@@ -608,12 +617,12 @@ const pages = {
   chats: {
     data: /*html*/ `
 			<section id="page">
-				${components["list"]("Chats", "Start conversation", "friend_chat", dumb_users)}
-				${components["chat"]()}
+				${components["list"]("Chats", "Start conversation", "friendChat", [])}
+				<section id="chatCont"></section>
 			</section>
 		`,
     id: "chats",
-    func: handleForm,
+    func: chatroom,
     glob: true,
   },
   games: {
@@ -646,50 +655,85 @@ const pages = {
   		</section>
   	`,
     id: "friends",
-    func: async function () {
-      const friends = await fetchWithToken(glob_endp, `/friend/list/`, "GET");
-      if (friends == "Error") return;
-      document.querySelector(".list").outerHTML = components.list(
-        "Friends",
-        "Add friends",
-        "myFriends",
-        friends
-      );
-      search();
-      const profileSection = document.getElementById("userProfile");
-      listen("myFriends_class", profileSection, "/friend/profile/");
-      listen("search_friends_class", profileSection, "/friend/profile/");
-    },
+    func: friendsRoom,
     glob: true,
   },
 };
 
-function listen(id, change, endpoint) {
+async function friendsRoom() {
+  const friends = await fetchWithToken(glob_endp, `/friend/list/`, "GET");
+  if (friends == "Error") return;
+  document.querySelector(".list").outerHTML = components.list(
+    "Friends",
+    "Add friends",
+    "myFriends",
+    friends
+  );
+  search();
+  const profileSection = document.getElementById("userProfile");
+  listen("myFriends_class", profileSection, "/friend/profile/", "profile");
+  listen("search_friends_class", profileSection, "/friend/profile/", "profile");
+}
+
+function lobby() {
+  if (user_data === undefined) return updateUrl("login", "push");
+  document.getElementById("game_mode_nav").addEventListener("change", (e) => {
+    game_choice(e.target.value);
+  });
+}
+
+async function chatroom() {
+  const chats = await fetchWithToken(glob_endp, `/friend/list/`, "GET");
+  if (chats == "Error") return;
+  document.querySelector(".list").outerHTML = components.list(
+    "Chats",
+    "Start conversation",
+    "friendChat",
+    chats
+  );
+  const messages = document.getElementById("chatCont");
+  listen("friendChat_class", messages, "/friend/profile/", "chat");
+}
+
+function listen(id, change, endpoint, compo) {
   document.querySelector("#" + id).addEventListener("change", async (e) => {
     if (e.target.checked) {
-      response = await fetchWithToken(
-        glob_endp,
-        `${endpoint}${e.target.value}/`
-      );
+      let data;
+      if (compo == "profile") {
+        response = await fetchWithToken(
+          glob_endp,
+          `${endpoint}${e.target.value}/`
+        );
 
-      if (response == "Error") return;
-      response.user = {
-        relationship: response.rel,
-        last_action: response.last_action_by,
-        ...response.user,
-      };
+        if (response == "Error") return;
+        data = response;
+
+        response.user = {
+          relationship: response.rel,
+          last_action: response.last_action_by,
+          ...response.user,
+        };
+        data = response.user;
+      } else {
+        data = {
+          avatar: e.target.nextElementSibling.firstElementChild.src,
+          name: e.target.nextElementSibling.lastElementChild.innerHTML,
+        };
+      }
       if (window.innerWidth < 480) change.classList.add("expand");
-      change.innerHTML = components["profile"](response.user)
+      console.log(e.target.nextElementSibling);
+      change.innerHTML = components[compo](data)
         .trim()
         .split("\n")
         .slice(1, -1)
         .join("\n");
+      if (compo == "chat") messenger("/chat/" + e.target.value);
       document.getElementById("list_toggler").checked = false;
     }
   });
 }
 
-const makeElement = (tag, attributes) => {
+const makeScriptElement = (tag, attributes) => {
   const element = document.createElement(tag);
   attributes.map((att) => {
     element.setAttribute(att[0], att[1]);
@@ -704,7 +748,7 @@ const loadResources = (path) => {
   if (scriptFile) scriptFile.remove();
   if (["login", "signin", "/"].indexOf(path) > -1) file = "auth";
   styleFile.setAttribute("href", `./styles/${file}.css`);
-  scriptFile = makeElement("script", [
+  scriptFile = makeScriptElement("script", [
     ["id", "pageScript"],
     ["src", `./scripts/${file}.js`],
   ]);
@@ -718,10 +762,12 @@ const updateUrl = (path = "/", mode = "", targetId = "") => {
   const app = document.getElementById("landing");
   const main = document.getElementsByTagName("main")[0];
   const myForm = document.getElementById("messenger");
+
   if (makeSocket.latest) {
     makeSocket.latest.close();
     makeSocket.latest = undefined;
   }
+
   // if (myForm) myForm.removeEventListener("submit", sendMessage);
   if (path != "/" && path[0] == "/") path = path.replace("/", "");
   let id = path;
@@ -771,10 +817,11 @@ document.body.onload = () => {
   user_data = JSON.parse(localStorage.getItem("user_data"));
   loader.classList.add("show");
   loader.classList.remove("hide");
-  if (!user_data && ["login", "signin", "/"].indexOf(path) < 0)
+  if (!user_data && ["login", "signin", "/"].indexOf(path) < 0) {
+    raiseWarn("User logged out");
     return updateUrl("login", "push");
-  else if (["login", "signin", "/"].indexOf(path) < 0)
-    notiSocket = makeSocket("", testNot);
+  } else if (["login", "signin", "/"].indexOf(path) < 0)
+    notiSocket = makeSocket("", notified);
   else if (user_data) {
     return updateUrl("friends", "push");
   }

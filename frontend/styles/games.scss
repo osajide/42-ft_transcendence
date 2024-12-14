@@ -236,6 +236,34 @@
   }
 }
 
+@media screen and (max-width: 480px) {
+  #game_page:not(.in_game) {
+    flex-direction: column;
+
+    .game_mode {
+      &:first-child {
+        background: url("../assets/vs1.png"), $blue_border !important;
+        background-size: 100% auto !important;
+        background-position: center;
+        background-repeat: no-repeat;
+        transform-origin: center !important;
+      }
+
+      &:last-child {
+        background: url("../assets/vs1.png"), $blue_border !important;
+        background-size: 100% auto !important;
+        transform-origin: center !important;
+      }
+
+      &:hover {
+        mix-blend-mode: hard-light;
+        background-size: 150% auto !important;
+        transform-origin: center;
+      }
+    }
+  }
+}
+
 #game_canvas {
   @include container;
 }
