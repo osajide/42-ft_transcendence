@@ -8,7 +8,7 @@ from channels.db import database_sync_to_async
 
 import redis
 
-redis_client = redis.Redis(host='localhost', port=6379, db=1)
+redis_client = redis.Redis(host='redis', port=6379, db=1)
 
 games = []
 users_and_games = {}

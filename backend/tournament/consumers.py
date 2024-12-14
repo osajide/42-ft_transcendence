@@ -9,7 +9,7 @@ from rest_framework.serializers import ModelSerializer
 import redis 
 from collections import defaultdict
 
-redis_client = redis.Redis(host="localhost", port="6379", db=1)
+redis_client = redis.Redis(host="redis", port="6379", db=1)
 
 users_states = {}
 users = {}

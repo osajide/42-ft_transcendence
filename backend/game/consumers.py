@@ -7,7 +7,7 @@ from authentication.models import UserAccount
 from authentication.serializers import UserSerializer
 import redis
 
-redis_client = redis.Redis(host='localhost', port=6379, db=1)
+redis_client = redis.Redis(host='redis', port=6379, db=1)
 
 games = {}
 

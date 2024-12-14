@@ -100,21 +100,22 @@ $red: #db0000;
   }
 }
 
-@keyframes bounce {
-  0%,
+@keyframes hit {
+  0% {
+    transform: rotate(-35deg);
+    // transform: translateX(-10px);
+  }
   100% {
-    // top: 50%;
-    left: 50%;
-    transform: translateX(-50%);
+    transform: rotate(-10deg);
+    // transform: translateX(-0px);
   }
-  35% {
-    // top: 100%;
-    left: 0%;
-    transform: translateX(0);
+}
+
+@keyframes bounce {
+  0% {
+    transform: translate(0px, 0px);
   }
-  70% {
-    // top: 50%;
-    left: 100%;
-    transform: translateX(-100%);
+  100% {
+    transform: translate(20px, -150px);
   }
 }
