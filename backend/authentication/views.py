@@ -189,3 +189,77 @@ class RefreshView(APIView):
             return Response({'error': 'Refresh token expired'}, status=status.HTTP_403_FORBIDDEN)
         except Http404:
                 return Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# class UserProfile(APIView):
+#     def get(self, request):
+#         user = UserAccount.objects.filter(email=request.data['email']).first()
+        
+#         first_name = user.first_name
+#         last_name = user.last_name
+
+#         total_solo_games = Game.objects.filter(game_type='solo').filter(
+#                                             Q(player1=user) | Q(player2=user)).count()
+
+#         total_played_tournament = Tournament_Particapent.objects.filter(user_id=user.id).count()
+
+#         total_win_games = Game.objects.filter(game_type='solo', winner=user.id).filter(
+#                                             Q(player1=user) | Q(player2=user)).count()
+
+#         total_win_tournaments = Tournament.objects.filter(winner=user.id)
+
+#         total_loss_games = Game.objects.filter(game_type='solo').filter(
+#                         Q(player1=user) | Q(player2=user)).exclude(winner=user.id)
+
+#         total_loss_tournaments = Tournament.objects.exclude(winner=user.id)
+
+
+#         recent_games = (
+#                         Game.objects.filter(
+#                             Q(player1=user) | Q(player2=user)
+#                         )
+#                         .annotate(
+#                             user_score=Case(
+#                                 When(player1=user, then=F("player1_score")),
+#                                 When(player2=user, then=F("player2_score")),
+#                                 default=Value(0),
+#                                 output_field=IntegerField(),
+#                             ),
+#                             result=Case(
+#                                 When(winner=user.id, then=Value("Win")),
+#                                 default=Value("Loss"),
+#                                 output_field=CharField(),
+#                             ),
+#                         )
+#                         .order_by("-created_at")[:10]  
+#                         )
+        
+#         total_score = Game.objects.aggregate(
+#                                     Sum(
+#                                         Case(
+#                                             When(player1=user, then=F("player1_score")),
+#                                             When(player2=user, then=F("player2_score")),
+#                                             default=Value(0),
+#                                             output_field=IntegerField(),
+#                                         )
+#                                     )
+#                                             )
+        
+#         response_data = {
+#                 "avatar" : user.avatar,
+#                 "user_id" : user.id,
+#                 "first_name": user.first_name,
+#                 "last_name": user.last_name,
+#                 "total_solo_games": total_solo_games,
+#                 "total_played_tournament": total_played_tournament,
+#                 "total_win_games" : total_win_games,
+#                 "total_win_tournaments" : total_win_tournaments, 
+#                 "total_loss_games" : total_loss_games,
+#                 "total_loss_tournaments" : total_loss_tournaments,
+#                 "recent_games" : recent_games,
+#                 "total_score" : total_score
+#             }
+    
+#         return Response(response_data)
+
+
