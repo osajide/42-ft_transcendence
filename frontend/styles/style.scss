@@ -88,6 +88,57 @@ body {
   }
 }
 
+#loader {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9;
+  // background-color: rgba($prim_blue, 0.3);
+  backdrop-filter: blur(3px);
+
+  &::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    background-color: rgba($prim_blue, 0.2);
+    filter: blur(50px);
+  }
+
+  &.show {
+    svg {
+      z-index: 1;
+      animation: hit 0.3s linear infinite alternate;
+    }
+
+    .ball {
+      z-index: 1;
+      animation: bounce 0.35s linear infinite alternate;
+    }
+  }
+
+  svg {
+    width: 100px;
+    transform-origin: bottom right;
+  }
+
+  .ball {
+    width: 20px;
+    height: 20px;
+    background-color: $white;
+    position: absolute;
+    top: 50%;
+    left: calc(50% - 50px);
+    border-radius: 50%;
+  }
+}
+
 #spa_nav,
 .hide {
   display: none !important
@@ -153,7 +204,8 @@ body {
 }
 
 #page,
-header {
+header,
+.show {
   animation: popIn 0.75s ease-out forwards;
 }
 
@@ -166,18 +218,22 @@ header {
   fill: $sec_blue;
 }
 
+#close {
+  display: none;
+}
+
 #notification {
   // width: 200px;
   height: 200px;
   position: absolute;
   right: -2px;
-  top: 110px;
+  top: 165px;
   @include container;
   background-color: $sec_dark;
   border-radius: 0 0 0 7px;
   z-index: 2;
   height: fit-content;
-  transition: all .15s linear;
+  transition: all 0.15s linear;
 
   .notiBubble {
     position: absolute;
@@ -212,7 +268,7 @@ header {
       cursor: pointer;
       padding: 5px 5px 10px;
       border-radius: 5px;
-      transition: all .15s linear;
+      transition: all 0.15s linear;
 
       img {
         width: 40px;
@@ -265,7 +321,7 @@ header {
     border: $global_border;
     border-radius: 7px 0 0 7px;
     padding: 5px;
-    transition: all .15s linear;
+    transition: all 0.15s linear;
 
     svg {
       width: 35px;
@@ -359,7 +415,8 @@ header {
   border: $global_border;
 
   nav,
-  nav label {
+  nav label,
+  button {
     display: flex;
     align-items: center;
     gap: 7px;
@@ -370,7 +427,8 @@ header {
     gap: 30px;
     // height: 100%;
 
-    label {
+    label,
+    button {
       transition: all 0.15s linear;
       cursor: pointer;
     }
@@ -382,11 +440,27 @@ header {
     min-height: 30px;
   }
 
+  button {
+    background-color: transparent;
+    outline: none;
+    border: none;
+    padding: 0;
+    font-size: 1rem;
+    fill: $red;
+    color: $red;
+  }
+
   nav label:hover,
-  nav label:focus {
+  nav label:focus,
+  button:hover {
     color: $prim_blue;
     fill: $prim_blue;
     scale: 1.1;
+  }
+
+  button:hover {
+    color: $red;
+    fill: $red;
   }
 
   .img_label {
@@ -417,7 +491,7 @@ header {
   input:checked + nav {
     border: $global_border;
     padding: $global_padding;
-    height: calc(1rem * 11.875) !important;
+    height: calc(1rem * 15.725) !important;
   }
 }
 
@@ -561,7 +635,8 @@ header {
 }
 
 @media screen and (max-width: 480px) {
-  #notification {
-    top: 165px;
+  #close {
+    display: initial;
+    cursor: pointer;
   }
 }

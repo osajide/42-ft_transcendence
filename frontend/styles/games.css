@@ -15,18 +15,20 @@
     transform: scale(1);
   }
 }
+@keyframes hit {
+  0% {
+    transform: rotate(-35deg);
+  }
+  100% {
+    transform: rotate(-10deg);
+  }
+}
 @keyframes bounce {
-  0%, 100% {
-    left: 50%;
-    transform: translateX(-50%);
+  0% {
+    transform: translate(0px, 0px);
   }
-  35% {
-    left: 0%;
-    transform: translateX(0);
-  }
-  70% {
-    left: 100%;
-    transform: translateX(-100%);
+  100% {
+    transform: translate(20px, -150px);
   }
 }
 #games {
@@ -257,6 +259,28 @@
     height: auto;
   }
 }
+@media screen and (max-width: 480px) {
+  #game_page:not(.in_game) {
+    flex-direction: column;
+  }
+  #game_page:not(.in_game) .game_mode:first-child {
+    background: url("../assets/vs1.png"), rgba(49, 222, 222, 0.4392156863) !important;
+    background-size: 100% auto !important;
+    background-position: center;
+    background-repeat: no-repeat;
+    transform-origin: center !important;
+  }
+  #game_page:not(.in_game) .game_mode:last-child {
+    background: url("../assets/vs1.png"), rgba(49, 222, 222, 0.4392156863) !important;
+    background-size: 100% auto !important;
+    transform-origin: center !important;
+  }
+  #game_page:not(.in_game) .game_mode:hover {
+    mix-blend-mode: hard-light;
+    background-size: 150% auto !important;
+    transform-origin: center;
+  }
+}
 #game_canvas {
   border-radius: 17px;
   border: 1.5px solid rgba(49, 222, 222, 0.4392156863);
@@ -362,31 +386,4 @@
 
 .winner img {
   border-color: #00b278;
-}
-
-.loader {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(255, 0, 0, 0.3137254902);
-}
-.loader #loaderBall {
-  width: 100px;
-  height: 100px;
-  position: absolute;
-  display: flex;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  transform-origin: center;
-  transition: all 0.15s linear;
-}
-.loader #loaderBall img {
-  width: 100%;
-  height: 100%;
-}
-.loader .loading {
-  animation: scaleIn 0.5s linear 0s forwards, bounce 0.5s linear 0.5s 4 forwards;
 }/*# sourceMappingURL=games.css.map */

@@ -15,18 +15,20 @@
     transform: scale(1);
   }
 }
+@keyframes hit {
+  0% {
+    transform: rotate(-35deg);
+  }
+  100% {
+    transform: rotate(-10deg);
+  }
+}
 @keyframes bounce {
-  0%, 100% {
-    left: 50%;
-    transform: translateX(-50%);
+  0% {
+    transform: translate(0px, 0px);
   }
-  35% {
-    left: 0%;
-    transform: translateX(0);
-  }
-  70% {
-    left: 100%;
-    transform: translateX(-100%);
+  100% {
+    transform: translate(20px, -150px);
   }
 }
 #friends #page {
@@ -46,7 +48,7 @@
 }
 #friends #page #userProfile .userBanner {
   display: flex;
-  gap: 20px;
+  gap: 10px;
 }
 #friends #page #userProfile .userBanner img {
   min-height: 100px;
@@ -98,6 +100,10 @@
   #userProfile > * {
     width: 100% !important;
   }
+  #friends #page {
+    gap: 0;
+    position: relative;
+  }
   #friends #page > section {
     max-width: 100%;
   }
@@ -109,15 +115,34 @@
     width: 0 !important;
     overflow: hidden;
     transform-origin: right;
-    transition: all 0.25s linear;
+    transition: width 0.25s linear;
     padding: 0;
   }
-  #friends #page input[type=checkbox]:checked + #userProfile {
+  #friends #page .userBanner {
+    position: relative;
+    flex-direction: column;
+    align-items: center;
+  }
+  #friends #page .userBanner .relManager {
+    justify-content: center;
+  }
+  #friends #page .userBanner img {
+    min-width: 100px;
+  }
+  #friends #page #userProfile.expand {
     width: 100% !important;
     border: 1.5px solid rgba(49, 222, 222, 0.4392156863) !important;
+    padding: 10px;
   }
   .hide:checked + label + .popup {
     width: 90% !important;
     height: 90% !important;
+  }
+  #close {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 30px;
+    height: 30px;
   }
 }/*# sourceMappingURL=friends.css.map */

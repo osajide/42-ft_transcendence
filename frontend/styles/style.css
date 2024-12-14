@@ -15,18 +15,20 @@
     transform: scale(1);
   }
 }
+@keyframes hit {
+  0% {
+    transform: rotate(-35deg);
+  }
+  100% {
+    transform: rotate(-10deg);
+  }
+}
 @keyframes bounce {
-  0%, 100% {
-    left: 50%;
-    transform: translateX(-50%);
+  0% {
+    transform: translate(0px, 0px);
   }
-  35% {
-    left: 0%;
-    transform: translateX(0);
-  }
-  70% {
-    left: 100%;
-    transform: translateX(-100%);
+  100% {
+    transform: translate(20px, -150px);
   }
 }
 * {
@@ -121,6 +123,50 @@ body {
   fill: #00bcbc;
 }
 
+#loader {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9;
+  -webkit-backdrop-filter: blur(3px);
+          backdrop-filter: blur(3px);
+}
+#loader::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  background-color: rgba(0, 188, 188, 0.2);
+  filter: blur(50px);
+}
+#loader.show svg {
+  z-index: 1;
+  animation: hit 0.3s linear infinite alternate;
+}
+#loader.show .ball {
+  z-index: 1;
+  animation: bounce 0.35s linear infinite alternate;
+}
+#loader svg {
+  width: 100px;
+  transform-origin: bottom right;
+}
+#loader .ball {
+  width: 20px;
+  height: 20px;
+  background-color: #f1f1f1;
+  position: absolute;
+  top: 50%;
+  left: calc(50% - 50px);
+  border-radius: 50%;
+}
+
 #spa_nav,
 .hide {
   display: none !important;
@@ -188,7 +234,8 @@ body {
 }
 
 #page,
-header {
+header,
+.show {
   animation: popIn 0.75s ease-out forwards;
 }
 
@@ -201,11 +248,15 @@ header {
   fill: #31dede;
 }
 
+#close {
+  display: none;
+}
+
 #notification {
   height: 200px;
   position: absolute;
   right: -2px;
-  top: 110px;
+  top: 165px;
   border-radius: 17px;
   border: 1.5px solid rgba(49, 222, 222, 0.4392156863);
   background-color: #232323;
@@ -384,7 +435,8 @@ header {
   border: 1.5px solid rgba(49, 222, 222, 0.4392156863);
 }
 header nav,
-header nav label {
+header nav label,
+header button {
   display: flex;
   align-items: center;
   gap: 7px;
@@ -393,7 +445,8 @@ header nav label {
 header nav {
   gap: 30px;
 }
-header nav label {
+header nav label,
+header nav button {
   transition: all 0.15s linear;
   cursor: pointer;
 }
@@ -402,11 +455,25 @@ header svg {
   height: 100%;
   min-height: 30px;
 }
+header button {
+  background-color: transparent;
+  outline: none;
+  border: none;
+  padding: 0;
+  font-size: 1rem;
+  fill: #db0000;
+  color: #db0000;
+}
 header nav label:hover,
-header nav label:focus {
+header nav label:focus,
+header button:hover {
   color: #00bcbc;
   fill: #00bcbc;
   scale: 1.1;
+}
+header button:hover {
+  color: #db0000;
+  fill: #db0000;
 }
 header .img_label {
   height: 100%;
@@ -430,7 +497,7 @@ header .img_label {
   input:checked + nav {
     border: 1.5px solid rgba(49, 222, 222, 0.4392156863);
     padding: 20px;
-    height: 11.875rem !important;
+    height: 15.725rem !important;
   }
 }
 /**********************     Users list       */
@@ -564,7 +631,8 @@ header .img_label {
 }
 
 @media screen and (max-width: 480px) {
-  #notification {
-    top: 165px;
+  #close {
+    display: initial;
+    cursor: pointer;
   }
 }/*# sourceMappingURL=style.css.map */

@@ -7,7 +7,7 @@ from authentication.models import UserAccount
 from authentication.serializers import UserSerializer
 import redis
 
-redis_client = redis.Redis(host='localhost', port=6379, db=1)
+redis_client = redis.Redis(host='redis', port=6379, db=1)
 
 games = {}
 
@@ -61,10 +61,10 @@ class	GameConsumer(AsyncWebsocketConsumer):
 			await self.send(text_data=json.dumps({'error': f'Invalid game id: {self.game_id}'}))
 			await self.close(code=4000)
 
-		# if self.user.is_authenticated == False:
-		# 	await self.send(text_data=json.dumps)
-		# 	await self.close(code=4000)
-		# 	return
+		if self.user.is_authenticated == False:
+			await self.send(text_data=json.dumps({'error': 'user not authenticated'}))
+			await self.close(code=4000)
+			return
 
 		if not self.game_id in games:
 			games[self.game_id] = {}
@@ -73,7 +73,7 @@ class	GameConsumer(AsyncWebsocketConsumer):
 
 		await self.channel_layer.group_add(self.group_name, self.channel_name)
 
-		if 'host' in games[self.game_id]:
+		if 'host' in games[self.game_id] and games[self.game_id]['host'] is not self: # not the same user trying to connect twice
 			games[self.game_id]['opponent'] = self
 			games[self.game_id]['ready'] = 0
 			await self.channel_layer.group_send(self.group_name,
@@ -96,15 +96,26 @@ class	GameConsumer(AsyncWebsocketConsumer):
 		else:
 			games[self.game_id]['host'] = self
 
-		print('beeefore: ', games[self.game_id])
 
 	async def	disconnect(self, code):
 		if code == 4000:
 			return
 
-		if self.game_id in games and 'stats' not in games[self.game_id]:
-			if self == games[self.game_id]['host']:
-				await games[self.game_id]['opponent'].send(text_data=json.dumps(
+		if self.game_id in games and 'stats' not in games[self.game_id]: # one of them disconnect
+			if not 'opponent' in games[self.game_id]:
+				
+				await self.channel_layer.group_send('notification',
+										{
+											'type': 'release_game_id',
+											'id': self.game_id
+										})
+			else: # both were connected
+				if self == games[self.game_id]['host']:
+					opponnent = games[self.game_id]['host']
+				else:
+					opponnent = games[self.game_id]['opponent']
+
+				await opponnent.send(text_data=json.dumps(
 					{
 						'stats': ''
 					}

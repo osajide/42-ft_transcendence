@@ -42,6 +42,9 @@ class CookiesMiddleware:
             scope['user'] = AnonymousUser()
         else:
             access_token = cookie['access_token']
+#             user_id = token_decoder(access_token)
+#             scope['user'] = await get_user(user_id)
+#             print('scope[user]: ', scope['user'])
             try:
                 user_id = token_decoder(access_token)
                 if user_id == -1:
