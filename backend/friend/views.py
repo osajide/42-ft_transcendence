@@ -152,10 +152,17 @@ def	accept_friendship(request, friendship_name):
 	return Response(status=status.HTTP_201_CREATED)
 
 
-def	get_friends(user):
+def	get_friends(user, status):
 
-	friendships = Friendship.objects.filter(
-		(Q(user1=user) | Q(user2=user)) & Q(status='accepted'))
+	if status == 'pending':
+		friendships = Friendship.objects.filter(
+			(Q(user1=user) | Q(user2=user)) & Q(status=status) & ~Q(last_action_by=user.id))
+	elif status == 'new friend':
+		friendships = Friendship.objects.filter(
+			(Q(user1=user) | Q(user2=user)) & ((Q(status='pending') & ~Q(last_action_by=user.id)) | Q(status='blocked') | Q(status='accepted')))
+	else:
+		friendships = Friendship.objects.filter(
+			(Q(user1=user) | Q(user2=user)) & Q(status=status))
 	
 	friends = []
 
@@ -173,10 +180,12 @@ def	get_friends(user):
 def	list_friends(request):
 
 	user = request.user
-	friends = get_friends(user)
-	serializer = UserSerializer(friends, many=True)
+	friends = get_friends(user, 'accepted')
+	invitations = get_friends(user, 'pending')
+	serializer = UserSerializer(invitations, many=True)
+	serializer1 = UserSerializer(friends, many=True)
 
-	return Response(serializer.data, status=status.HTTP_200_OK)
+	return Response([serializer.data, serializer1.data], status=status.HTTP_200_OK)
 
 @api_view()
 @authentication_classes([CookieJWTAuthentication])
@@ -232,7 +241,7 @@ def get_matched_users(request, search_term):
 			Q(first_name__istartswith=search_term) | Q(last_name__istartswith=search_term)
 		).order_by('match_priority')  # Order by priority
 	
-	friends = get_friends(request.user)
+	friends = get_friends(request.user, 'new friend')
 
 	excluded_ids = []
 	for friend in friends:

@@ -540,6 +540,7 @@ header {
   transition: background-color 0.15s linear;
   cursor: pointer;
   user-select: none;
+  position: relative;
 
   label {
     width: 100%;
@@ -560,6 +561,18 @@ header {
   &:focus {
     background-color: $blue_border;
     border-radius: 7px;
+  }
+
+  &.bubble:after{
+    position: absolute;
+    content: "";
+    width: 10px;
+    height: 10px;
+    background-color: $green;
+    border-radius: 50%;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
   }
 }
 

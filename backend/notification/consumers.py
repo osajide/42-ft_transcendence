@@ -25,7 +25,8 @@ def get_notifications(id):
 @database_sync_to_async
 def	delete_notification(id):
 	notification = Notification.objects.filter(id=id).first()
-	notification.delete()
+	if notification is not None:
+		notification.delete()
 
 class	NotificationConsumer(AsyncWebsocketConsumer):
 

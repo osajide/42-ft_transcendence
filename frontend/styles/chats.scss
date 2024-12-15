@@ -249,4 +249,18 @@ $msg_tick_bottom: 14px;
     width: 90% !important;
     height: 90% !important;
   }
+
+  .chatBanner{
+    padding-left: 30px !important;
+    position: relative;
+  }
+
+  #close{
+    position: absolute;
+    left: 0;
+    width: 30px;
+    height: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
 }

@@ -1,24 +1,26 @@
 function setDimentions(game) {
   const dash = document.getElementById("game_dash");
+
   window_width = window.innerWidth - 40;
   window_height = window.innerHeight - 130;
-  if (game.resize > 1 && window_height < window_width) {
-    if (window_width / game.resize > window.innerHeight - 130)
-      window_width = window_height * game.resize;
-    else window_height = window_width / game.resize;
+
+  if (game.aspect > 1 && window_height < window_width) {
+    if (window_width / game.aspect > window.innerHeight - 130)
+      window_width = window_height * game.aspect;
+    else window_height = window_width / game.aspect;
   }
-  game.width = window_width * 0.02;
   game.height = window_height * 0.2;
+  game.width = game.height / 10;
   game.settings = { axis: "y", depends: "height" };
   dash.classList.remove("rotate_stats");
   if (window_height > window_width) {
     dash.classList.add("rotate_stats");
     [window_width, window_height] = [window_height, window_width];
-    if (game.resize > 1) {
-      window_height = window_width / game.resize;
-      game.width = window_width * 0.02;
+    if (game.aspect > 1) {
+      window_height = window_width / game.aspect;
     }
     game.height = window_height * 0.2;
+    game.width = game.height / 10;
     [game.width, game.height] = [game.height, game.width];
     [game.playerPaddle.x, game.playerPaddle.y] = [
       game.playerPaddle.y,
@@ -31,12 +33,10 @@ function setDimentions(game) {
     ];
     [game.ball.ballX, game.ball.ballY] = [game.ball.ballY, game.ball.ballX];
     [game.ball.ballMoveX, game.ball.ballMoveY] = [
-      game.ball.ballMoveY,
+      -game.ball.ballMoveY,
       game.ball.ballMoveX,
     ];
     game.settings = { axis: "x", depends: "width" };
-    game.oppoPaddle.speed = window_height * 0.02;
-    game.playerPaddle.speed = window_height * 0.02;
     // game.ball.speed = window_width * 0.02;
   }
   let w = window_width;
@@ -44,8 +44,10 @@ function setDimentions(game) {
   if (game.settings.axis == "x") {
     w = window.innerWidth - 40;
     h = window.innerHeight - 130;
-    if (game.resize > 1) w = window_width / game.resize;
+    if (game.aspect > 1) w = window_width / game.aspect;
   }
+  game.oppoPaddle.speed = window_height * 0.02;
+  game.playerPaddle.speed = window_height * 0.02;
   game.canvas.setAttribute("width", w);
   game.canvas.setAttribute("height", h);
   game.ball.ballSize = window_height * 0.02;
@@ -80,7 +82,16 @@ function resetBall(game) {
   if (window.innerHeight > window.innerWidth) {
     mypong.ball.ballX = window_height / 2;
     mypong.ball.ballY = window_width / 2;
+    if (mypong.ball.mirror == -1) mypong.ball.ballMoveY *= -1;
+  } else {
+    if (mypong.ball.mirror == -1) mypong.ball.ballMoveX *= -1;
   }
+  // if (game.rev < 0) {
+  //   [game.ball.ballMoveX, game.ball.ballMoveY] = [
+  //     game.ball.ballMoveY,
+  //     game.ball.ballMoveX,
+  //   ];
+  // }
   game.ball.moves.shift();
 }
 
@@ -114,17 +125,11 @@ function server(e, mypong) {
     mypong.ball.moves = data.start;
     resetBall(mypong);
     if (window.innerHeight > window.innerWidth) {
-      [mypong.ball.ballMoveX, mypong.ball.ballMoveY] = [
-        -mypong.ball.ballMoveY,
-        mypong.ball.ballMoveX,
-      ];
       mypong.playerPaddle.x = (window_height - mypong.width) / 2;
       mypong.oppoPaddle.x = (window_height - mypong.width) / 2;
-      if (mypong.ball.mirror == -1) mypong.ball.ballMoveY *= -1;
     } else {
       mypong.playerPaddle.y = (window_height - mypong.height) / 2;
       mypong.oppoPaddle.y = (window_height - mypong.height) / 2;
-      if (mypong.ball.mirror == -1) mypong.ball.ballMoveX *= -1;
     }
     // let counter = 0
     // let timer = setInterval(() => {
@@ -137,11 +142,11 @@ function server(e, mypong) {
     let { w, h } = { ...data.aspect };
     let diff = +(window_height / h);
     if (diff == 1) diff = window_width / w;
-    let scale = +(w / h);
-    if (diff > 1) mypong.resize = scale;
-    if (window.innerHeight > window.innerWidth)
+    let aspect = +(w / h);
+    if (diff > 1) mypong.aspect = aspect;
+    if (window.innerHeight > window.innerWidth) {
       mypong.oppoPaddle = new Paddle(
-        window_width * (1 - 0.02),
+        window_width - mypong.width,
         mypong.playerPaddle.y,
         mypong.oppoPaddle.id,
         mypong.playerPaddle.color,
@@ -149,12 +154,14 @@ function server(e, mypong) {
         "opp_player",
         mypong.oppoPaddle.data
       );
+      if (w > h) mypong.rev = -1;
+    }
     mypong.ball.ballX = window_width / 2;
     mypong.ball.ballY = window_height / 2;
     setDimentions(mypong);
     if (window.innerHeight < window.innerWidth)
       mypong.oppoPaddle = new Paddle(
-        window_width * (1 - 0.02),
+        window_width - mypong.width,
         mypong.playerPaddle.y,
         mypong.oppoPaddle.id,
         mypong.playerPaddle.color,
@@ -162,6 +169,10 @@ function server(e, mypong) {
         "opp_player",
         mypong.oppoPaddle.data
       );
+    if (diff > 1) {
+      mypong.scale = w / window_width;
+      if (mypong.scale < 1) mypong.scale = window_width / w;
+    }
     mypong.socket.send(JSON.stringify({ ready: "" }));
   } else if (data.key) changePosOpp(mypong, data.key);
   else if (data.locked) {
@@ -179,8 +190,10 @@ function Game(x, y, color, endpoint = "", maxScore) {
   this.socket = makeSocket(endpoint, (event) => {
     server(event, this);
   });
-  this.resize = 1;
+  this.aspect = 1;
+  this.scale = 1;
   this.stop = 0;
+  this.rev = 1;
   this.width = window_width * 0.02;
   this.maxScore = maxScore;
   this.height = window_height * 0.2;
@@ -351,8 +364,8 @@ function ballMovement(game) {
     }
   }
   if (!game.stop) {
-    ball.ballX += ball.ballMoveX;
-    ball.ballY += ball.ballMoveY;
+    ball.ballX += ball.ballMoveX * game.scale;
+    ball.ballY += ball.ballMoveY * game.scale;
   }
 }
 
@@ -391,7 +404,7 @@ function startGame(id) {
   cont.innerHTML = statsBoard;
   cont.classList.add("in_game");
   cont.classList.remove("tournament_board");
-  mypong = new Game(0, 0, "#31dede", `game/${id}`, 1);
+  mypong = new Game(0, 0, "#31dede", `game/${id}`, 11);
   loader.classList.add("show");
   loader.classList.remove("hide");
   if (window.innerWidth < window.innerHeight)

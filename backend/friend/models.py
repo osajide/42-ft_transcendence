@@ -23,3 +23,6 @@ class	Friendship(models.Model):
 
 	def	__str__(self):
 		return f'{self.user1} and {self.user2}, last action made by: {self.last_action_by}'
+	
+	# class Meta:
+	# 	ordering = ['']

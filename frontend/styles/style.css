@@ -543,6 +543,7 @@ header .img_label {
   -webkit-user-select: none;
      -moz-user-select: none;
           user-select: none;
+  position: relative;
 }
 .user_label label {
   width: 100%;
@@ -559,6 +560,17 @@ header .img_label {
 .user_label:hover, .user_label:focus {
   background-color: rgba(49, 222, 222, 0.4392156863);
   border-radius: 7px;
+}
+.user_label.bubble:after {
+  position: absolute;
+  content: "";
+  width: 10px;
+  height: 10px;
+  background-color: #00b278;
+  border-radius: 50%;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .list_title {
