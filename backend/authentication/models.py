@@ -44,6 +44,8 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     avatar = models.ImageField(upload_to=get_upload_path, default='user.svg')
     user_state = models.CharField(max_length=50, default='offline')
     is_staff = models.BooleanField(default=False)  # Required for admin access
+    secret_key = models.CharField(max_length=50, null=True, blank=True)
+    is_2fa_verified = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []  # Leave empty to only require username and password

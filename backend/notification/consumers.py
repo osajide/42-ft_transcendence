@@ -11,7 +11,6 @@ import redis
 redis_client = redis.Redis(host='redis', port=6379, db=1)
 
 games = []
-users_and_games = {}
 tournaments = []
 user_index = {}
 
@@ -33,32 +32,28 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 	async def	connect(self):
 		await self.accept()
 
-		if self.scope['user'].is_authenticated == False:
-			await self.send(text_data=json.dumps({'error': 'user not authenticated'}))
-			await self.close(code=4000)
+		if self.scope['user'].is_authenticated is False:
+			await self.send(json.dumps(
+					{
+						'error': 'Invalid Token'
+					}
+				))
+			# await self.close()
 			return
-
 		await self.channel_layer.group_add(self.notification_group, self.channel_name)
 		notifications = await get_notifications(self.scope['user'].id)
 		await self.send(text_data=notifications)
 
 	async def	disconnect(self, code):
-		if code == 4000:
-			return
-
 		await self.channel_layer.group_discard(self.notification_group, self.channel_name)
 		print("=====> DISCONNECTED IN NOTIFICATION")
 		if len(tournaments) > 0 and  tournaments[user_index[self.scope['user']]] != '0' and tournaments[user_index[self.scope['user']]] != '8':
 			tournaments[user_index[self.scope['user']]] = chr(ord(tournaments[user_index[self.scope['user']]]) - 1)
 			print(f"tounaments {user_index[self.scope['user']]} count {tournaments[user_index[self.scope['user']]]}")
 
-		for key, value in users_and_games:
-			if value == self.scope['user'].id:
-				games[key] = '0'
-				users_and_games.pop(key)
-				break
-
-		
+		# print('games noti: ', games)
+		# games.clear() #temp
+		# await self.close()
 
 	async def	receive(self, text_data=None, bytes_data=None):
 		
@@ -162,16 +157,14 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 				except ValueError:
 					games.append('1')
 					index = len(games) - 1
-
+	
 			await self.send(json.dumps(
 				{
 					'game_id': index
 				}
 			))
 			redis_client.set('max_games', len(games))
-			if not index in users_and_games:
-				users_and_games[index] = []
-			users_and_games[index].append(self.scope['user'].id)
+			# print('games list after: ', games)
 
 	async def	release_game_id(self, event):
 		games[event['id']] = '0'

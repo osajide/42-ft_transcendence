@@ -29,6 +29,14 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 		print('participants before: ', participants)
 		await self.accept()
 
+		if self.scope['user'].is_authenticated is False:
+			await self.send(json.dumps(
+					{
+						'error': 'Invalid Token'
+					}
+				))
+			# await self.close()
+			return
 		if self.user.is_authenticated == False:
 			await self.send(text_data=json.dumps({'error': 'user not authenticated'}))
 			await self.close(code=4000)

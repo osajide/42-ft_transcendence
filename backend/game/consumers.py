@@ -49,6 +49,15 @@ class	GameConsumer(AsyncWebsocketConsumer):
 	async def	connect(self):
 		await self.accept()
 
+		if self.scope['user'].is_authenticated is False:
+			await self.send(json.dumps(
+					{
+						'error': 'Invalid Token'
+					}
+				))
+			# await self.close()
+			return 
+
 		self.user = self.scope['user']
 		self.game_id = self.scope['url_route']['kwargs']['id']
 

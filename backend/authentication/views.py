@@ -86,7 +86,9 @@ class LoginView(APIView):
             'user': serializer.data
             } , status=status.HTTP_200_OK)
 
-        response.set_cookie(key = 'ref_token', value=token['refresh'], httponly=True)
+        print("refresh token", token['refresh'])
+        print("access token", token['access'])
+        response.set_cookie(key = 'refresh_token', value=token['refresh'], httponly=True)
         response.set_cookie(key = 'access_token', value=token['access'], httponly=True)
         return response
 
@@ -130,7 +132,7 @@ class LogoutView(APIView):
         # Corrected typo: access_token instead of acess_token
 
         access_token = request.COOKIES.get('access_token')
-        refresh_token = request.COOKIES.get('ref_token')  # Assuming refresh_token is the name
+        refresh_token = request.COOKIES.get('refresh_token')  # Assuming refresh_token is the name
 
 
         # Log out: print tokens to see the values (optional)
@@ -143,6 +145,9 @@ class LogoutView(APIView):
         # Delete the access and refresh token cookies
         response.delete_cookie('access_token')
         response.delete_cookie('ref_token')
+
+        token = RefreshToken(refresh_token)
+        token.blacklist()
 
         # Provide a message that the user has logged out successfully
         response.data = {
@@ -163,7 +168,7 @@ class LogoutView(APIView):
 class RefreshView(APIView):
     def post(self, request):
 
-        ref_token = request.COOKIES.get('ref_token')
+        ref_token = request.COOKIES.get('refresh_token')
     
         if ref_token is None:
             return Response({'error': 'Authentication credentials needed.'}, status=status.HTTP_403_FORBIDDEN)
@@ -182,7 +187,7 @@ class RefreshView(APIView):
 
             response = Response({'message': 'generate new access token.'}, status=status.HTTP_200_OK)
 
-            response.set_cookie(key='ref_token', value=ref_token, httponly=True, samesite='None', secure=True)
+            response.set_cookie(key='refresh_token', value=ref_token, httponly=True, samesite='None', secure=True)
             response.set_cookie(key='access_token', value=str(refresh.access_token), httponly=True, samesite='None', secure=True)
             return response
         except jwt.ExpiredSignatureError:

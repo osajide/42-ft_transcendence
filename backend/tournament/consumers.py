@@ -22,13 +22,24 @@ class UserAccountSerializer(ModelSerializer):
 class TournamentConsumer(AsyncWebsocketConsumer):
     
     async def connect(self):
+        
+        
 
-        #check if tournament exists in the array and in the table
 
         #check if the user joined already a tournament
 
         await self.accept()
+        if self.scope['user'].is_authenticated is False:
+            await self.send(json.dumps(
+					{
+						'error': 'Invalid Token'
+					}
+				))
+			# await self.close()
+            return
         tournament_id = self.scope["url_route"]["kwargs"]["tournament_id"]
+
+        
 
         print("tournament id : " , tournament_id)
 
@@ -59,17 +70,19 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         if (len(users[tournament_id]) == 8):
             await self.send(text_data=json.dumps({
-                    'message' : 'Tournament is Full'
+                    'error' : 'Tournament is Full'
                 }))
             return 
 
-        # found = any(self.scope['user'] in value for value in users.values())
-        # if found:
-        #     print("user already exists")
-        #     await self.send(text_data=json.dumps({
-        #             'message' : 'User already joined an existing tournament'
-        #         }))
-        #     return 
+        for key, object_list in users.items():
+            for obj in object_list:
+                if obj.scope['user'].id == self.scope['user'].id:
+                    await self.send(text_data=json.dumps({
+                            'error' : 'User already joined an existing tournament'
+                        }))
+                    return 
+        
+
         print("joined user : ", self.scope['user'].first_name)
         await self.channel_layer.group_send('notification',
                 {
@@ -130,7 +143,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     await user.send(text_data=json.dumps(
                     {
                         'game_index' : indexes[j]
-                    }
+                    }   
                     ))
                 i += 1
             first_group = listed_users[:4]
@@ -180,6 +193,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             print("THE TOURNAMENT IS ENDED")
             users.pop(tournament_id)
             users_states.pop(tournament_id)
+            Tournament.create.objects(winner=winner_id)
             await self.channel_layer.group_send('notification',
                 {
                     'type' : 'update_tournament',
@@ -207,12 +221,13 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         tournament_id = self.scope["url_route"]["kwargs"]["tournament_id"] 
 
         if len(users[tournament_id]) < 8:
-            users[tournament_id].remove(self.scope['user'])
+            print("User POPPED")
+
+            users[tournament_id].remove(self)
             if len(users[tournament_id]) == 0:
-                print("POPPED")
+                print("Tournament POPPED")
                 users.pop(tournament_id)
 
-            print("channel layer : ", self.channel_layer)
             await self.channel_layer.group_send('notification',
                 {
                     'type' : 'update_tournament',

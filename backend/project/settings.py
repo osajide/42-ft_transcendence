@@ -56,7 +56,7 @@ INSTALLED_APPS = [
 	'friend',
 	'game',
     'tournament',
-    
+    'rest_framework_simplejwt.token_blacklist',
     # 'social_django',  # Handles social authentication
     # 'rest_framework_social_oauth2',  # DRF OAuth integration
 
@@ -177,7 +177,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=45),  # Set access token expiration time
+    'ACCESS_TOKEN_LIFETIME': timedelta(seconds=1),  # Set access token expiration time
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),     # Set refresh token expiration time
     'ROTATE_REFRESH_TOKENS': False,                   # Set whether refresh tokens should be rotated
     'BLACKLIST_AFTER_ROTATION': True,                 # Optionally blacklist tokens after rotation

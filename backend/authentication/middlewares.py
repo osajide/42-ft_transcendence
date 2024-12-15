@@ -7,20 +7,14 @@ import jwt
 from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
 import re
+from asgiref.sync import sync_to_async
 
 # ------------------------ from channels/auth.py ----------------------------------
 
-@database_sync_to_async
-def get_user(user_id):
-    try:
-        return UserAccount.objects.get(id=user_id)
-    except UserAccount.DoesNotExist:
-        return AnonymousUser()
-        
-class TokenExpiredError(Exception):
-    pass
-
 class CookiesMiddleware:
+    """
+    Custom middleware (insecure) that takes user IDs from the query string.
+    """
 
     def __init__(self, app):
         # Store the ASGI application we were passed
@@ -28,111 +22,33 @@ class CookiesMiddleware:
 
     async def __call__(self, scope, receive, send):
         cookie = ""
-        headers = dict(scope['headers'])
-        if b'cookie' in headers:
-            cookie = headers[b'cookie'].decode('utf-8')
+        headers = scope['headers']
+        for key, value in headers:
+            if key == b'cookie':
+                cookie = value.decode('utf-8')
         cookie = parse_cookie(cookie)
-
-        new_access_token = None
-        print('cookies: ************: ', cookie)
-        
-        if 'access_token' not in cookie:
+        if not 'access_token' in cookie:
             print('cookies: ************: ', cookie)
             print('access token not found')
             scope['user'] = AnonymousUser()
         else:
-            access_token = cookie['access_token']
-#             user_id = token_decoder(access_token)
-#             scope['user'] = await get_user(user_id)
-#             print('scope[user]: ', scope['user'])
             try:
-                user_id = token_decoder(access_token)
-                if user_id == -1:
-                    raise TokenExpiredError("The access token has expired.")
-                scope['user'] = await get_user(user_id)
-                print("getted user")    
-            except TokenExpiredError:
-                print("Token expired, attempting to refresh...")
-                new_access_token = await self.refresh_access_token(cookie['refresh_token'])
-                if new_access_token:
-                    scope['user'] = await get_user(token_decoder(new_access_token))
+                payload = jwt.decode(cookie['refresh_token'], settings.SECRET_KEY, algorithms=['HS256'])
+                jwt.decode(cookie['access_token'], settings.SECRET_KEY, algorithms=["HS256"], options={"verify_exp": False})
+            except jwt.ExpiredSignatureError:
+                print("refresh token expired")
+                scope['user'] = AnonymousUser()
+                return await self.app(scope, receive, send)
+            except jwt.InvalidTokenError:
+                print("invalid access token")
+                scope['user'] = AnonymousUser()
+                return await self.app(scope, receive, send)
+            access_token = cookie['access_token']
+            decoded_data = jwt.decode(access_token, settings.SECRET_KEY, algorithms=["HS256"], options={"verify_exp": False})
+            user_id = decoded_data['user_id']
+            scope['user'] = await sync_to_async(UserAccount.objects.get)(id=user_id)
 
-                    headers = dict(scope['headers']) 
-                    cookie = headers[b'cookie'].decode('utf-8')
-                    
-                    if cookie:
-                        cookie = headers[b'cookie'].decode('utf-8')
-                        new_cookie = re.sub(r'access_token=.*?;', f'access_token={new_access_token};', cookie)
-                        headers[b'cookie'] = new_cookie.encode('utf-8')
-                    else:
-                        print("No existing Cookie in headers.") 
-                    
-                    # Set the updated headers back to the scope
-                    # scope['headers'] = headers
-
-                    # if b'cookie' in headers:
-                    #     cookie = headers[b'cookie'].decode('utf-8')
-                    # cookie = parse_cookie(cookie)
-
-                    # print('cookies: ************: ', cookie)
-
-                else:
-                    print("Failed to refresh token")
-                    scope['user'] = AnonymousUser()
-
-        async def custom_send(event):
-            # Intercept HTTP response events to set a new Authorization header
-            refresh_token = cookie['refresh_token']
-            if event['type'] == 'http.response.start' and new_access_token:
-                print("UPDATE TOKENS IN THE CLIENT SIDE")
-                headers = event.get('headers', [])
-                # Add Set-Cookie header for the new access token
-                headers.append((
-                    b'set-cookie', 
-                    f'access_token={new_access_token}; HttpOnly; Path=/'.encode('utf-8'),
-                    f'refresh_token={refresh_token}; HttpOnly; Path=/'.encode('utf-8')
-
-                ))
-                event['headers'] = headers
-            await send(event)
-
-        return await self.app(scope, receive, custom_send)
-
-    async def refresh_access_token(self, refresh_token):
-        try:
-            refresh = RefreshToken(refresh_token)
-            new_access_token = str(refresh.access_token)
-            return new_access_token
-        except TokenExpiredError:
-            return None
-
-
-# class CookiesMiddleware:
-#     """
-#     Custom middleware (insecure) that takes user IDs from the query string.
-#     """
-
-#     def __init__(self, app):
-#         # Store the ASGI application we were passed
-#         self.app = app
-
-#     async def __call__(self, scope, receive, send):
-#         cookie = ""
-#         headers = scope['headers']
-#         for key, value in headers:
-#             if key == b'cookie':
-#                 cookie = value.decode('utf-8')
-#         cookie = parse_cookie(cookie)
-#         if not 'access_token' in cookie:
-#             print('cookies: ************: ', cookie)
-#             print('access token not found')
-#             scope['user'] = AnonymousUser()
-#         else:
-#             access_token = cookie['access_token']
-#             user_id = token_decoder(access_token)
-#             scope['user'] = await get_user(user_id)
-
-#         return await self.app(scope, receive, send)
+        return await self.app(scope, receive, send)
     
 # ---------------------     from rest_framework_simplejwt/authentication.py ------------------------------
 
@@ -152,6 +68,8 @@ from rest_framework_simplejwt.utils import get_md5_hash_password
 from rest_framework_simplejwt.tokens import AccessToken
 import jwt
 from authentication.models import UserAccount
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+from rest_framework.response import Response
 
 
 AUTH_HEADER_TYPES = api_settings.AUTH_HEADER_TYPES
@@ -319,6 +237,8 @@ def default_user_authentication_rule(user: AuthUser) -> bool:
     # sensible backwards compatibility with older Django versions.
     return user is not None and user.is_active
 
+class TokenBlacklistedException(Exception):
+    pass
 class CookieJWTAuthentication(JWTAuthentication):
     """
     Custom JWT authentication class that retrieves the token from cookies.
@@ -331,7 +251,12 @@ class CookieJWTAuthentication(JWTAuthentication):
         try:
             # Assuming the user_id is stored in the token payload as 'user_id'
             user_id = validated_token['user_id']
+            if OutstandingToken.objects.filter(user_id=user_id).exists():
+                raise TokenBlacklistedException()
             return UserAccount.objects.get(id=user_id)  # Look up the user by id in your custom model
+        except TokenBlacklistedException:
+            print("banned token")
+            raise AuthenticationFailed('Banned Token')
         except UserAccount.DoesNotExist:
             raise AuthenticationFailed('User not found')
         except KeyError:
@@ -339,11 +264,13 @@ class CookieJWTAuthentication(JWTAuthentication):
     
     def authenticate(self, request):
         # Retrieve the token from the cookie
+        print("======HEREEE")
         raw_token = request.COOKIES.get('access_token')
         if raw_token is None:
             return None
         # Validate and return the user and token
         validated_token = self.get_validated_token(raw_token)
+        
 
         user = self.get_user(validated_token)
 
@@ -358,10 +285,12 @@ class CookieJWTAuthentication(JWTAuthentication):
         """
         try:
             # Use AccessToken to validate the token
-            validated_token = AccessToken(raw_token)
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('Token has expired')
+            # validated_token = AccessToken(raw_token)
+            jwt.decode(raw_token, settings.SECRET_KEY, algorithms=["HS256"])
+
         except jwt.InvalidTokenError:
             raise AuthenticationFailed('Invalid token')
+        # except jwt.ExpiredSignatureError:
+        #     raise AuthenticationFailed('Token has expired')
 
-        return validated_token
+        return raw_token
