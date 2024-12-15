@@ -6,6 +6,7 @@ from django.contrib.sites.shortcuts import get_current_site
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import uuid 
 
 def send_email(user, request):
     token = get_tokens_for_user(user)
@@ -53,7 +54,8 @@ class CustomRefreshToken(RefreshToken):
     def for_user(cls, user):
         token = super().for_user(user)
         token["email"] = user.email  # Add the email to the token payload
-        token["user_id"] = user.id
+        token["user_id"] = user.id,
+        token['jti'] = str(uuid.uuid4()) 
         return token
 
 

@@ -71,7 +71,6 @@ from authentication.models import UserAccount
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from rest_framework.response import Response
 
-
 AUTH_HEADER_TYPES = api_settings.AUTH_HEADER_TYPES
 
 if not isinstance(api_settings.AUTH_HEADER_TYPES, (list, tuple)):
@@ -237,6 +236,7 @@ def default_user_authentication_rule(user: AuthUser) -> bool:
     # sensible backwards compatibility with older Django versions.
     return user is not None and user.is_active
 
+
 class TokenBlacklistedException(Exception):
     pass
 class CookieJWTAuthentication(JWTAuthentication):
@@ -251,9 +251,16 @@ class CookieJWTAuthentication(JWTAuthentication):
         try:
             # Assuming the user_id is stored in the token payload as 'user_id'
             user_id = validated_token['user_id']
-            if OutstandingToken.objects.filter(user_id=user_id).exists():
-                raise TokenBlacklistedException()
-            return UserAccount.objects.get(id=user_id)  # Look up the user by id in your custom model
+            print("jti : ", validated_token['jti'])
+            # token = BlacklistedToken.objects.filter(token=validated_token)
+            # blacklisted_tokens = BlacklistedToken.objects.all()
+
+            # # Print the JTI of each blacklisted token
+            # print("Blacklisted Tokens:")
+            # for blacklisted_token in blacklisted_tokens:
+            #     print(f"JTI: {blacklisted_token.token.jti}")
+                # raise TokenBlacklistedException()
+            return UserAccount.objects.get(id__in=user_id)  # Look up the user by id in your custom model
         except TokenBlacklistedException:
             print("banned token")
             raise AuthenticationFailed('Banned Token')
@@ -266,11 +273,27 @@ class CookieJWTAuthentication(JWTAuthentication):
         # Retrieve the token from the cookie
         print("======HEREEE")
         raw_token = request.COOKIES.get('access_token')
+        ref_token = request.COOKIES.get('refresh_token')
         if raw_token is None:
             return None
-        # Validate and return the user and token
+        if ref_token is None:
+            return None
+
+
+        # print("Blacklisted Tokens:")
+        blacklisted_tokens = BlacklistedToken.objects.all()
+        try:
+            token = jwt.decode(ref_token, settings.SECRET_KEY, algorithms=["HS256"])
+        except jwt.InvalidTokenError:
+            raise AuthenticationFailed('Invalid refresh token')
+
+        for blacklisted_token in blacklisted_tokens:
+            if blacklisted_token.token.jti == token['jti']:
+                # print("token is banned")
+                raise AuthenticationFailed('Banned Token')
+            # print(f"JTI: {blacklisted_token.token.jti}")
+
         validated_token = self.get_validated_token(raw_token)
-        
 
         user = self.get_user(validated_token)
 
@@ -286,11 +309,10 @@ class CookieJWTAuthentication(JWTAuthentication):
         try:
             # Use AccessToken to validate the token
             # validated_token = AccessToken(raw_token)
-            jwt.decode(raw_token, settings.SECRET_KEY, algorithms=["HS256"])
-
+            token = jwt.decode(raw_token, settings.SECRET_KEY, algorithms=["HS256"])
         except jwt.InvalidTokenError:
-            raise AuthenticationFailed('Invalid token')
+            raise AuthenticationFailed('Invalid access token')
         # except jwt.ExpiredSignatureError:
         #     raise AuthenticationFailed('Token has expired')
-
-        return raw_token
+        
+        return token
