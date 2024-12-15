@@ -1,4 +1,5 @@
 from django.db import models
+from authentication.models import UserAccount
 
 # Create your models here.
 
@@ -9,13 +10,15 @@ class	Friendship(models.Model):
 		('blocked', 'Blocked'),
 	]
 
-	user1 = models.BigIntegerField()		# Represents the first user
-	user2 = models.BigIntegerField()		# Represents the second user
+	user1 = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='friendship_as_user1')
+	user2 = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='friendship_as_user2')
+
 	status = models.CharField(
 		max_length=10,
 		choices=STATUS_CHOICES,
 		default='pending'
 	)
+
 	last_action_by = models.BigIntegerField()
 
 	def	__str__(self):

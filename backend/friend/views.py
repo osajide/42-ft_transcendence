@@ -79,11 +79,11 @@ def	manage_friendship(request, action_target):
 	last_action_by = user1.id
 
 	friendship = Friendship.objects.filter(
-		Q(user1=user1.id, user2=user2.id) | Q(user1=user2.id, user2=user1.id)).first()
+		Q(user1=user1, user2=user2) | Q(user1=user2, user2=user1)).first()
 	
 	if action == 'invite':
 		if friendship == None and user1.id != user2.id:
-			Friendship.objects.create(user1=request.user.id, user2=user2.id,
+			Friendship.objects.create(user1=request.user, user2=user2,
 													last_action_by=last_action_by, status='pending')
 			notify_user(user1, user2, 'invite')
 			return Response({'relationship': 'pending'}, status=status.HTTP_201_CREATED)
@@ -152,20 +152,30 @@ def	accept_friendship(request, friendship_name):
 	return Response(status=status.HTTP_201_CREATED)
 
 
+def	get_friends(user):
+
+	friendships = Friendship.objects.filter(
+		(Q(user1=user) | Q(user2=user)) & Q(status='accepted'))
+	
+	friends = []
+
+	for friendship in friendships:
+		if friendship.user1 == user:
+			friends.append(friendship.user2)
+		else:
+			friends.append(friendship.user1)
+	
+	return friends
+
 @api_view()
 @authentication_classes([CookieJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def	list_friends(request):
-	id = request.user.id
-	friends = Friendship.objects.filter((Q(user1=id) | Q(user2=id)) & Q(status='accepted') 
-									).annotate(friend_id=Case(When(user1=id, then='user2'
-									), default='user1', output_field=IntegerField()) 
-									).values_list('friend_id', flat=True)
 
-	users = UserAccount.objects.filter(id__in=friends)
-	for user in users:
-		print("friend : ", user)
-	serializer = UserSerializer(users, many=True)
+	user = request.user
+	friends = get_friends(user)
+	serializer = UserSerializer(friends, many=True)
+
 	return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view()
@@ -174,21 +184,26 @@ def	list_friends(request):
 def	get_other_user_profile(request, id):
 
 	user = get_object_or_404(UserAccount, id=id)
-	try:
-		friendship = Friendship.objects.get(Q(user1=request.user.id, user2=user.id)
-									  			| Q(user1=user.id, user2=request.user.id))
-
-		rel = friendship.status
-		last_action_by = friendship.last_action_by
-	except Friendship.DoesNotExist:
+	friendship = Friendship.objects.filter(Q(user1=request.user, user2=user)
+									  			| Q(user1=user, user2=request.user)).first()
+	
+	if friendship is None:
 		rel = ''
 		last_action_by = ''
+
+	else:
+		rel = friendship.status
+		last_action_by = friendship.last_action_by
+
 	serializer = UserSerializer(user)
-	return Response({
-		'user': serializer.data,
-		'rel': rel,
-		'last_action_by': last_action_by
-	}, status=status.HTTP_200_OK)
+
+	return Response(
+		{
+			'user': serializer.data,
+			'rel': rel,
+			'last_action_by': last_action_by
+		}, status=status.HTTP_200_OK
+	)
 
 @api_view()
 @authentication_classes([CookieJWTAuthentication])
@@ -216,15 +231,17 @@ def get_matched_users(request, search_term):
 		).filter(
 			Q(first_name__istartswith=search_term) | Q(last_name__istartswith=search_term)
 		).order_by('match_priority')  # Order by priority
-		
-	id = request.user.id
-	friendships = Friendship.objects.filter((Q(user1=id) | Q(user2=id)) & Q(status='accepted') 
-	).annotate(friend_id=Case(When(user1=id, then='user2'
-	), default='user1', output_field=IntegerField()) 
-	).values_list('friend_id', flat=True)
-	excluded_ids = list(friendships)
+	
+	friends = get_friends(request.user)
 
-	excluded_users = users.exclude(id__in=excluded_ids).exclude(id=request.user.id)
+	excluded_ids = []
+	for friend in friends:
+		excluded_ids.append(friend.id)
+
+	excluded_users = users.exclude(
+		Q(id__in=excluded_ids) | Q(id=request.user.id))
+
 	serializer = UserSerializer(excluded_users, many=True)
-		
+
 	return Response(serializer.data, status=status.HTTP_200_OK)
+
