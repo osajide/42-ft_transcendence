@@ -562,18 +562,18 @@ header {
     background-color: $blue_border;
     border-radius: 7px;
   }
+}
 
-  &.bubble:after{
-    position: absolute;
-    content: "";
-    width: 10px;
-    height: 10px;
-    background-color: $green;
-    border-radius: 50%;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-  }
+#myFriends_class .user_label.bubble:after, .friendChat_class .user_label.bubble:after{
+  position: absolute;
+  content: "";
+  width: 10px;
+  height: 10px;
+  background-color: $green;
+  border-radius: 50%;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .list_title {

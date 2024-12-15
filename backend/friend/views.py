@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from authentication.serializers import UserSerializer
 from django.db.models import Q, Case, When, Value, IntegerField
-from .serializers import FriendshipSerializer
+# from .serializers import FriendshipSerializer
 import re
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -172,7 +172,7 @@ def	get_friends(user, status):
 		else:
 			friends.append(friendship.user1)
 	
-	return friends
+	return sorted(friends, key=lambda friend: (friend.first_name, friend.last_name))
 
 @api_view()
 @authentication_classes([CookieJWTAuthentication])
@@ -252,5 +252,5 @@ def get_matched_users(request, search_term):
 
 	serializer = UserSerializer(excluded_users, many=True)
 
-	return Response(serializer.data, status=status.HTTP_200_OK)
+	return Response([serializer.data], status=status.HTTP_200_OK)
 

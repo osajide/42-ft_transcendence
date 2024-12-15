@@ -289,7 +289,6 @@ const components = {
     `;
   },
   user_label: function (user, name, index) {
-    console.log(user);
     if (name == "search_friends") name = "myFriends";
     return /* html */ `
 			<input id="${
@@ -425,13 +424,11 @@ const components = {
           window.location.pathname.replace("/", "") == take_to[to_go[0]]
             ? ""
             : "push";
-        console.log(push, to_go[1]);
         if (push.length) updateUrl(take_to[to_go[0]], push, to_go[1]);
         else {
           // The element is in the same page
 
           const targetInput = document.getElementById(to_go[1]);
-          console.log(targetInput, to_go[1]);
           if (targetInput) {
             targetInput.checked = true;
             let ev = new Event("change", { bubbles: true });
@@ -510,7 +507,6 @@ function selction(e) {
 
 function closeDiv(e, name) {
   const target = document.querySelector(`[name="${name}"]:checked`);
-  console.log(name, target);
   if (target) {
     target.checked = false;
     target.dispatchEvent(new Event("change", { bubbles: true }));
@@ -694,16 +690,19 @@ function lobby() {
 }
 
 async function chatroom() {
-  const chats = await fetchWithToken(glob_endp, `/friend/list/`, "GET");
-  if (chats == "Error") return;
+  const chats = await fetchWithToken(glob_endp, `/chats/list/`, "GET");
+  const newchats = await fetchWithToken(glob_endp, `/chats/new/`, "GET");
+  if (chats == "Error" || chats == "Error") return;
   document.querySelector(".list").outerHTML = components.list(
     "Chats",
     "Start conversation",
     "friendChat",
     chats
   );
+  document.querySelector("#friend_class").outerHTML = components["friends_list"](newchats, 'friend')
   const messages = document.getElementById("chatCont");
-  listen("friendChat_class", messages, "/friend/profile/", "chat");
+  listen("friendChat_class", messages, "", "chat");
+  listen("friend_class", messages, "/chats/new/", "chat");
 }
 
 function listen(id, change, endpoint, compo) {
@@ -718,7 +717,6 @@ function listen(id, change, endpoint, compo) {
 
         if (response == "Error") return;
         data = response;
-
         response.user = {
           relationship: response.rel,
           last_action: response.last_action_by,
@@ -726,23 +724,21 @@ function listen(id, change, endpoint, compo) {
         };
         data = response.user;
       } else {
-        console.log(e.target);
         data = {
           avatar: e.target.nextElementSibling.firstElementChild.src,
           name: e.target.nextElementSibling.lastElementChild.innerHTML,
           id: e.target.value,
         };
       }
-      console.log("miw");
       change.classList.add("expand");
-      console.log(e.target.nextElementSibling);
       change.innerHTML = components[compo](data)
         .trim()
         .split("\n")
         .slice(1, -1)
         .join("\n");
       if (compo == "chat") {
-        messenger("/chat/" + e.target.value);
+        // console.log()
+        messenger("chats/" + e.target.value);
         document.querySelector(".chatBanner").addEventListener("click", (e) => {
           if (
             e.target.classList.contains("friendData") ||

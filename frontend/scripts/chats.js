@@ -20,7 +20,7 @@ function sendMessage(e, socket) {
     tmp = messenger.innerHTML.replace("animate", "");
     messenger.innerHTML =
       tmp + `<p class="message myMsg animate">${msg.value}</p>`;
-    // socket.send(JSON.stringify({ message: `${msg.value}` }));
+    socket.send(JSON.stringify({ message: `${msg.value}` }));
     msg.value = "";
     messenger.scrollTop = messenger.scrollHeight;
   }
@@ -29,8 +29,7 @@ function sendMessage(e, socket) {
 
 function messenger(endpoint) {
   myForm = document.getElementById("messenger");
-  // const socket = makeSocket(endpoint, receiveMessage);
-  let socket;
+  const socket = makeSocket(endpoint, receiveMessage);
 
   myForm.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
