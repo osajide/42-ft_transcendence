@@ -38,7 +38,7 @@
 #chats #page > section {
   border-radius: 17px;
   border: 1.5px solid rgba(49, 222, 222, 0.4392156863);
-  background-color: #232323;
+  background-color: rgba(35, 35, 35, 0.4);
 }
 #chats #chatCont {
   width: 100%;
@@ -52,7 +52,7 @@
   padding: 10px;
   gap: 20px;
   align-items: center;
-  background-color: #1c1c1c;
+  background-color: rgba(28, 28, 28, 0.7);
   border-bottom: 1.5px solid rgba(49, 222, 222, 0.4392156863);
 }
 #chats .chatBanner img {
@@ -75,6 +75,25 @@
   text-overflow: ellipsis;
 }
 
+.newMsgs {
+  width: 100%;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1254901961);
+  margin: 10px 0px 5px;
+  position: relative;
+}
+.newMsgs::after {
+  position: absolute;
+  content: "New messages";
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  background-color: rgb(246, 246, 246);
+  color: #232323;
+  padding: 5px 10px;
+  border-radius: 7px 7px 0px 0;
+  font-size: 10px;
+}
+
 #chatCont {
   display: flex;
   flex-direction: column;
@@ -93,7 +112,7 @@
   width: 100%;
   height: 100%;
   flex-grow: 1;
-  background-color: #232323;
+  background-color: rgba(35, 35, 35, 0.4);
   border-radius: 17px 17px 0px 0px;
   display: flex;
   flex-direction: column;
@@ -129,7 +148,7 @@
 #chatCont .msg {
   flex-grow: 1;
   color: rgb(246, 246, 246);
-  background-color: #1c1c1c;
+  background-color: rgba(28, 28, 28, 0.7);
   border: none;
 }
 #chatCont input[type=submit] {
@@ -166,13 +185,6 @@
   position: relative;
   text-align: left;
 }
-#chatCont .message:after {
-  content: "";
-  position: absolute;
-  width: 17px;
-  height: 15px;
-  top: 100%;
-}
 #chatCont .message:before {
   content: "";
   position: absolute;
@@ -187,13 +199,10 @@
   transform-origin: bottom right;
   word-break: break-all;
 }
-#chatCont .myMsg:last-child:after, #chatCont .myMsg:has(+ .friend):after {
-  background-color: #232323;
-  right: -10.8px;
-}
-#chatCont .myMsg:last-child:before, #chatCont .myMsg:has(+ .friend):before {
+#chatCont .myMsg:last-child:before, #chatCont .myMsg:has(+ .friend):before, #chatCont .myMsg:has(+ .newMsgs):before {
   border-top: 15px solid rgb(246, 246, 246);
-  right: -10.8px;
+  border-right: 15px;
+  right: 7.5px;
 }
 #chatCont .friend {
   align-self: flex-start;
@@ -202,13 +211,10 @@
   transform-origin: bottom left;
   word-break: break-all;
 }
-#chatCont .friend:last-child:after, #chatCont .friend:has(+ .myMsg):after {
-  background-color: #232323;
-  left: -10.8px;
-}
-#chatCont .friend:last-child:before, #chatCont .friend:has(+ .myMsg):before {
+#chatCont .friend:last-child:before, #chatCont .friend:has(+ .myMsg):before, #chatCont .friend:has(+ .newMsgs):before {
   border-top: 15px solid rgba(49, 222, 222, 0.4392156863);
-  left: -10.8px;
+  border-left: 15px;
+  left: 7.5px;
 }
 #chatCont .animate {
   animation: msgPopIn 0.1s linear;
@@ -263,5 +269,17 @@
   .hide:checked + label + .popup {
     width: 90% !important;
     height: 90% !important;
+  }
+  .chatBanner {
+    padding-left: 30px !important;
+    position: relative;
+  }
+  #close {
+    position: absolute;
+    left: 0;
+    width: 30px;
+    height: 30px;
+    top: 50%;
+    transform: translateY(-50%);
   }
 }/*# sourceMappingURL=chats.css.map */

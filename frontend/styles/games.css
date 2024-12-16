@@ -46,8 +46,8 @@
 .lobby#page {
   border-radius: 17px;
   border: 1.5px solid rgba(49, 222, 222, 0.4392156863);
-  background-color: #232323;
-  background-color: #232323;
+  background-color: rgba(35, 35, 35, 0.4);
+  background-color: rgba(35, 35, 35, 0.4);
   width: 100% !important;
   height: 100% !important;
 }
@@ -127,7 +127,7 @@
   border-radius: 7px;
   z-index: 1;
   position: relative;
-  background-color: #232323;
+  background-color: rgba(35, 35, 35, 0.4);
 }
 .tournament_board .tournament .player_img:nth-child(2n) {
   align-self: center;
@@ -284,7 +284,7 @@
 #game_canvas {
   border-radius: 17px;
   border: 1.5px solid rgba(49, 222, 222, 0.4392156863);
-  background-color: #232323;
+  background-color: rgba(35, 35, 35, 0.4);
 }
 
 #games + header + #notification {

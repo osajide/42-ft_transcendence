@@ -15,7 +15,7 @@ $global_padding: 20px;
 $global_radius: 17px;
 $global_border: 1.5px solid $blue_border;
 $msg_box: 15px;
-$msg_tick: calc(-1 * $msg_box + 4.2px);
+$msg_tick: calc($msg_box / 2);
 $header_gap: calc(100% - 90px);
 $red: #db0000;
 
@@ -31,7 +31,7 @@ $red: #db0000;
 @mixin container {
   border-radius: $global_radius;
   border: $global_border;
-  background-color: $prim_dark;
+  background-color: rgba($prim_dark, 0.4);
 }
 
 @mixin scroll($val) {
@@ -47,13 +47,9 @@ $red: #db0000;
 }
 
 @mixin msg_ticks($rule, $color) {
-  &:after {
-    background-color: $prim_dark;
-    #{$rule}: $msg_tick;
-  }
-
   &:before {
     border-top: $msg_box solid $color;
+    border-#{$rule}: $msg_box;
     #{$rule}: $msg_tick;
   }
 }

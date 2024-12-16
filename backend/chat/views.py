@@ -1,80 +1,95 @@
-# from django.http import HttpResponse
-# from rest_framework import viewsets, status
-# from rest_framework.response import Response
-# from .models import *
-# from .serializers import *
-# from rest_framework.views import APIView
-# from rest_framework.decorators import api_view
-# from django.shortcuts import get_object_or_404
+from authentication.middlewares import CookieJWTAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import authentication_classes, permission_classes
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from rest_framework import status
+from django.db.models import Q, Max
+from .models import Conversation
+from .serializers import ConversationSerializer
+from authentication.models import UserAccount
+from authentication.serializers import UserSerializer
+from friend.models import Friendship
+from friend.views import get_friends
+from django.http import JsonResponse
 
-# # Create your views here.
+# Create your views here.
 
-# # class	UserViewSet(viewsets.ModelViewSet):
-# # 	queryset = User.objects.all()
-# # 	serializer_class = UserSerializer
+def serialize_result(users):
+    users_list = []
+    for user in users:
+        serializer = {
+            'id': user.id,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'avatar': user.avatar.url[1:],
+            'seen': user.seen,
+            'email': user.email,
+            'user_state': user.user_state
+        }
+        users_list.append(serializer)
+    
+    return users_list
 
-# # class	ConversationViewSet(viewsets.ModelViewSet):
-# # 	queryset = Conversation.objects.get()
-# # 	serializer_class = ConversationSerializer
+@api_view()
+@authentication_classes([CookieJWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_conversations(request):
 
-# # class	MessageViewSet(viewsets.ModelViewSet):
-# # 	queryset = Message.objects.all()
-# # 	serializer_class = MessageSerializer
+    user = request.user
 
-# # @login_required(login_url='/salam/')
-# # def	salamView(request):
-# # 	return HttpResponse("salam")
+    conversations = Conversation.objects.filter(
+        Q(user1=user) | Q(user2=user)
+    ).annotate(latest_message_timestamp=Max('messages__timestamp')).order_by('-latest_message_timestamp')
 
-# # def test(request):
-# # 	return HttpResponse('redirection')
-	
+    print('conversations: ', conversations)
 
-# def	creating_testing_users_and_conversations(request):
-# 	users_data = [
-# 		{'first_name': 'Oussama', 'last_name': 'Sajide', 'username': 'osajide', 'email': 'osajide@gmail.com'},
-# 		{'first_name': 'Mohemmed', 'last_name': 'Taib', 'username': 'mtaib', 'email': 'mtaib@gmail.com'},
-# 		{'first_name': 'Yassine', 'last_name': 'Khayri', 'username': 'ykhayri', 'email': 'ykhayri@gmail.com'},
-# 		{'first_name': 'Aymane', 'last_name': 'Bouabra', 'username': 'abouabra', 'email': 'abouabra@gmail.com'},
-# 		{'first_name': 'Bader', 'last_name': 'Elkdioui', 'username': 'bel-kdio', 'email': 'bel-kdio@gmail.com'},
-# 		{'first_name': 'Mohammed', 'last_name': 'Baanni', 'username': 'mbaanni', 'email': 'mbaanni@gmail.com'},
-# 		{'first_name': 'Ali', 'last_name': 'Elamine', 'username': 'ael-amin', 'email': 'ael-amin@gmail.com'},
-# 		{'first_name': 'Youssef', 'last_name': 'Khalil', 'username': 'ykhalil-', 'email': 'ykhali-@gmail.com'}
-# 	]
-# 	for user_data in users_data:
-# 		User.objects.get_or_create(**user_data)
-# 	return HttpResponse("CREATED", status=status.HTTP_201_CREATED)
+    if conversations is not None:
+        users = []
+        for conversation in conversations:
+            last_message = conversation.messages.all().last()
+            print('last content: ', last_message.content)
+            print('seen: ', last_message.seen_by_receiver)
+            if conversation.user1 == user:
+                if last_message.seen_by_receiver == True:
+                    conversation.user2.seen = True
+                elif last_message.seen_by_receiver == False and last_message.owner is not user:
+                    conversation.user2.seen = False
+                users.append(conversation.user2)
+            else:
+                if last_message.seen_by_receiver == True:
+                    conversation.user1.seen = True
+                elif last_message.seen_by_receiver == False and last_message.owner is not user:
+                    conversation.user1.seen = False
+                users.append(conversation.user1)
 
-# @api_view()
-# def	get_conversations(request, id):
-# 	user = get_object_or_404(User, id=id)
-# 	conversations = Conversation.objects.filter(participants=user)
-# 	serializer = ConversationSerializer(conversations, many=True)
-# 	return Response(serializer.data, status=status.HTTP_200_OK)
+        ser = serialize_result(users)
+        print('****ser:::: ', [ser])
+        return JsonResponse([ser], safe=False)
 
-# @api_view(['POST'])
-# def	create_conversation(request):
-# 	print('request.data: ', request.data)
-# 	serializer = ConversationSerializer(data=request.data)
-# 	if serializer.is_valid():
-# 		print('data validated by the serializer')
-# 		serializer.save()
-# 		return Response(serializer.data, status=status.HTTP_201_CREATED)
-# 	return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# @api_view(['POST'])
-# def	get_friends_with_no_conversation(request, id):
-# 	user = get_object_or_404(User, id=id)
-# 	conversations = Conversation.objects.filter(participants=user)
-# 	friends = user.friends
-# 	friends_with_no_conversation = []
+@api_view()
+@authentication_classes([CookieJWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_friend_with_no_conversation(request):
+    user = request.user
+    conversations = Conversation.objects.filter(
+        Q(user1=user) | Q(user2=user)
+    )
 
-# 	found = None
-# 	for friend in friends:
-# 		for conversation in conversations:
-# 			if friend in conversation.participants:
-# 				found = 1
-# 		if found == None:
-# 			friends_with_no_conversation.append(friend)
-# 			found == None
-	
-# 	Response(friends_with_no_conversation, status=status.HTTP_200_OK)
+    friends_with_conversation = []
+    for conversation in conversations:
+        if conversation.user1 == user:
+            friends_with_conversation.append(conversation.user2)
+        else:
+            friends_with_conversation.append(conversation.user1)
+    
+    friends = get_friends(user, 'accepted')
+
+    friends_without_conversation = []
+    for friend in friends:
+        if friend not in friends_with_conversation:
+            friends_without_conversation.append(friend)
+    print(friends_without_conversation)
+    serializer = UserSerializer(friends_without_conversation, many=True)
+    return Response([serializer.data], status=status.HTTP_200_OK)

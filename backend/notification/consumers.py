@@ -24,12 +24,14 @@ def get_notifications(id):
 @database_sync_to_async
 def	delete_notification(id):
 	notification = Notification.objects.filter(id=id).first()
-	notification.delete()
+	if notification is not None:
+		notification.delete()
 
 class	NotificationConsumer(AsyncWebsocketConsumer):
 
 	notification_group = 'notification'
 	async def	connect(self):
+		print('ja')
 		await self.accept()
 
 		if self.scope['user'].is_authenticated is False:
@@ -40,6 +42,8 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 				))
 			# await self.close()
 			return
+
+		print('which user: ', self.scope['user'])
 		await self.channel_layer.group_add(self.notification_group, self.channel_name)
 		notifications = await get_notifications(self.scope['user'].id)
 		await self.send(text_data=notifications)
@@ -62,6 +66,16 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 		json_text_data = json.loads(text_data)
 		if 'seen' in json_text_data:
 			await delete_notification(json_text_data['seen'])
+		elif 'private' in json_text_data:
+			print('jsno pri: ', json_text_data)
+			await self.channel_layer.group_send(self.notification_group,
+									   {
+										   'type': 'make_match',
+										   'id': self.scope['user'].id,
+										   'opponent': json_text_data['private'],
+										   'private' : True
+									   })
+	
 		elif 'solo' in json_text_data:
 			print('receive solo id: ', self.scope['user'].id, ': ', self.scope['user'].first_name)
 			await self.channel_layer.group_send(self.notification_group,
@@ -140,36 +154,71 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
             })
 
 	async def	send_notification(self, event):
-		if self.scope['user'].id == event['receiver']:
-			await self.send(text_data=json.dumps([
-				{
-					'type': event['notification_type'],
-					'description': event['description'],
-					'sender': event['sender'],
-					'timestamp': event['timestamp']
-			}]))
+		if 'receiver' in event:
+			if self.scope['user'].id == event['receiver']['id']:
+				await self.send(text_data=json.dumps([
+					{
+						'type': event['notification_type'],
+						'description': event['description'],
+						'sender': event['sender'],
+						'timestamp': event['timestamp'],
+						'id': event['id']
+				}]))
+		elif 'opponent' in event:
+			if self.scope['user'].id == event['opponent']:
+				print('ana opponent')
+				await self.send(text_data=json.dumps({
+					'game_invite': {
+						# 'type': 'game',
+						'description': f"{event['sender']['first_name'].capitalize()} {event['sender']['last_name'].upper()} invited you to a game",
+						'sender': event['sender'],
+						# 'timestamp': event['timestamp'],
+						'game_id': event['game_id']
+				}}))
+
 
 	async def	make_match(self, event):
 		# print('games list before: ', games)
 		if self.scope['user'].id == event['id']:
-			try:
-				index = games.index('1')
-				games[index] = '2'
-			except ValueError:
+			if 'private' in event:
 				try:
 					index = games.index('0')
-					games[index] = '1'
+					games[index] = '2'
 				except ValueError:
-					games.append('1')
+					games.append('2')
 					index = len(games) - 1
-	
+
+				print('notification sent')
+				await self.channel_layer.group_send('notification',
+						  {
+							  'type': 'send_notification',
+							  'game_id': index,
+							  'sender' : UserSerializer(self.scope['user']).data,
+							  'opponent': int(event['opponent'])
+						  })
+			else:
+				try:
+					index = games.index('1')
+					games[index] = '2'
+				except ValueError:
+					try:
+						index = games.index('0')
+						games[index] = '1'
+					except ValueError:
+						games.append('1')
+						index = len(games) - 1
+
 			await self.send(json.dumps(
 				{
 					'game_id': index
 				}
 			))
+
 			redis_client.set('max_games', len(games))
-			# print('games list after: ', games)
+
+			if not index in users_and_games:
+				users_and_games[index] = []
+			users_and_games[index].append(self.scope['user'].id)
 
 	async def	release_game_id(self, event):
 		games[event['id']] = '0'

@@ -18,7 +18,7 @@ $msg_tick_bottom: 14px;
     width: 100%;
     flex-grow: 1;
     height: 100%;
-    // background-color: $prim_dark;
+    // background-color: rgba($prim_dark, .4);
   }
 
   .chatBanner {
@@ -28,7 +28,7 @@ $msg_tick_bottom: 14px;
     padding: 10px;
     gap: 20px;
     align-items: center;
-    background-color: $sec_dark;
+    background-color: rgba($sec_dark, .7);
     border-bottom: $global_border;
 
     img {
@@ -54,6 +54,26 @@ $msg_tick_bottom: 14px;
   }
 }
 
+.newMsgs{
+  width: 100%;
+  border-bottom: 1px solid #ffffff20;
+  margin: 10px 0px 5px;
+  position: relative;
+
+  &::after{
+    position: absolute;
+    content: "New messages";
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(-50%);
+    background-color: $white;
+    color: $prim_dark;
+    padding: 5px 10px;
+    border-radius: 7px 7px 0px 0;
+    font-size: 10px;
+  }
+}
+
 #chatCont {
   display: flex;
   flex-direction: column;
@@ -73,7 +93,7 @@ $msg_tick_bottom: 14px;
   width: $box-width;
   height: 100%;
   flex-grow: 1;
-  background-color: $prim_dark;
+  background-color: rgba($prim_dark, .4);
   // background-image: url('../assets/chat.webp');
   // background-size: cover;
   // background-repeat: no-repeat;
@@ -108,7 +128,7 @@ $msg_tick_bottom: 14px;
   .msg {
     flex-grow: 1;
     color: $white;
-    background-color: $sec_dark;
+    background-color: rgba($sec_dark, .7);
     border: none;
   }
 
@@ -143,14 +163,6 @@ $msg_tick_bottom: 14px;
     position: relative;
     text-align: left;
 
-    &:after {
-      content: "";
-      position: absolute;
-      width: calc($msg_box + 2px);
-      height: $msg_box;
-      top: 100%;
-    }
-
     &:before {
       content: "";
       position: absolute;
@@ -166,7 +178,7 @@ $msg_tick_bottom: 14px;
     color: $sec_dark;
     transform-origin: bottom right;
     word-break: break-all;
-    &:last-child, &:has(+ .friend) {
+    &:last-child, &:has(+ .friend), &:has(+ .newMsgs) {
       @include msg_ticks(right, $white);
     }
   }
@@ -177,7 +189,7 @@ $msg_tick_bottom: 14px;
     color: $white;
     transform-origin: bottom left;
     word-break: break-all;
-    &:last-child, &:has(+ .myMsg) {
+    &:last-child, &:has(+ .myMsg), &:has(+ .newMsgs) {
       @include msg_ticks(left, $blue_border);
     }
   }
@@ -248,5 +260,19 @@ $msg_tick_bottom: 14px;
   .hide:checked + label + .popup {
     width: 90% !important;
     height: 90% !important;
+  }
+
+  .chatBanner{
+    padding-left: 30px !important;
+    position: relative;
+  }
+
+  #close{
+    position: absolute;
+    left: 0;
+    width: 30px;
+    height: 30px;
+    top: 50%;
+    transform: translateY(-50%);
   }
 }

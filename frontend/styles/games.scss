@@ -16,7 +16,7 @@
 
 .lobby#page {
   @include container;
-  background-color: $prim_dark;
+  background-color: rgba($prim_dark, .4);
   width: 100% !important;
   height: 100% !important;
 
@@ -103,7 +103,7 @@
       border-radius: 7px;
       z-index: 1;
       position: relative;
-      background-color: $prim_dark;
+      background-color: rgba($prim_dark, .4);
 
       &:nth-child(2n) {
         align-self: center;
