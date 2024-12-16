@@ -12,6 +12,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from .tokens import token_decoder
 from .models import UserAccount
+from game.models import Game
+from tournament.models import *
+from django.db.models import Q, F, Sum, Case, When, Value, IntegerField, CharField
 from rest_framework.exceptions import AuthenticationFailed
 import jwt
 from django.conf import settings
@@ -19,6 +22,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password
 from .middlewares import CookieJWTAuthentication
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+from django.http import JsonResponse
+from rest_framework import serializers
 
 # Create your views here.
 
@@ -86,7 +92,9 @@ class LoginView(APIView):
             'user': serializer.data
             } , status=status.HTTP_200_OK)
 
-        response.set_cookie(key = 'ref_token', value=token['refresh'], httponly=True)
+        print("refresh token", token['refresh'])
+        print("access token", token['access'])
+        response.set_cookie(key = 'refresh_token', value=token['refresh'], httponly=True)
         response.set_cookie(key = 'access_token', value=token['access'], httponly=True)
         return response
 
@@ -130,7 +138,7 @@ class LogoutView(APIView):
         # Corrected typo: access_token instead of acess_token
 
         access_token = request.COOKIES.get('access_token')
-        refresh_token = request.COOKIES.get('ref_token')  # Assuming refresh_token is the name
+        refresh_token = request.COOKIES.get('refresh_token')  # Assuming refresh_token is the name
 
 
         # Log out: print tokens to see the values (optional)
@@ -142,9 +150,11 @@ class LogoutView(APIView):
         
         # Delete the access and refresh token cookies
         response.delete_cookie('access_token')
-        response.delete_cookie('ref_token')
+        response.delete_cookie('refresh_token')
 
-        # Provide a message that the user has logged out successfully
+        token = RefreshToken(refresh_token)
+        token.blacklist()
+       
         response.data = {
             'message': 'Logged out successfully'
         }
@@ -161,9 +171,10 @@ class LogoutView(APIView):
 #         user_id = token_decoder(token)
 
 class RefreshView(APIView):
+    
     def post(self, request):
 
-        ref_token = request.COOKIES.get('ref_token')
+        ref_token = request.COOKIES.get('refresh_token')
     
         if ref_token is None:
             return Response({'error': 'Authentication credentials needed.'}, status=status.HTTP_403_FORBIDDEN)
@@ -175,14 +186,10 @@ class RefreshView(APIView):
             get_object_or_404(UserAccount, pk=payload['user_id'])
 
             refresh = RefreshToken(ref_token)
-            
-            # response = Response({
-            #     'access_token': str(refresh.access_token)
-            # })
 
             response = Response({'message': 'generate new access token.'}, status=status.HTTP_200_OK)
 
-            response.set_cookie(key='ref_token', value=ref_token, httponly=True, samesite='None', secure=True)
+            response.set_cookie(key='refresh_token', value=ref_token, httponly=True, samesite='None', secure=True)
             response.set_cookie(key='access_token', value=str(refresh.access_token), httponly=True, samesite='None', secure=True)
             return response
         except jwt.ExpiredSignatureError:
@@ -191,75 +198,95 @@ class RefreshView(APIView):
                 return Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# class UserProfile(APIView):
-#     def get(self, request):
-#         user = UserAccount.objects.filter(email=request.data['email']).first()
+class UserProfile(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = UserAccount.objects.filter(email=request.data['email']).first()
+
+        total_solo_games = Game.objects.filter(game_type='solo').filter(
+                                            Q(player1=user) | Q(player2=user)).count()
         
-#         first_name = user.first_name
-#         last_name = user.last_name
-
-#         total_solo_games = Game.objects.filter(game_type='solo').filter(
-#                                             Q(player1=user) | Q(player2=user)).count()
-
-#         total_played_tournament = Tournament_Particapent.objects.filter(user_id=user.id).count()
-
-#         total_win_games = Game.objects.filter(game_type='solo', winner=user.id).filter(
-#                                             Q(player1=user) | Q(player2=user)).count()
-
-#         total_win_tournaments = Tournament.objects.filter(winner=user.id)
-
-#         total_loss_games = Game.objects.filter(game_type='solo').filter(
-#                         Q(player1=user) | Q(player2=user)).exclude(winner=user.id)
-
-#         total_loss_tournaments = Tournament.objects.exclude(winner=user.id)
-
-
-#         recent_games = (
-#                         Game.objects.filter(
-#                             Q(player1=user) | Q(player2=user)
-#                         )
-#                         .annotate(
-#                             user_score=Case(
-#                                 When(player1=user, then=F("player1_score")),
-#                                 When(player2=user, then=F("player2_score")),
-#                                 default=Value(0),
-#                                 output_field=IntegerField(),
-#                             ),
-#                             result=Case(
-#                                 When(winner=user.id, then=Value("Win")),
-#                                 default=Value("Loss"),
-#                                 output_field=CharField(),
-#                             ),
-#                         )
-#                         .order_by("-created_at")[:10]  
-#                         )
+        total_played_tournament = Tournament_Particapent.objects.filter(user_id=user.id).count()
         
-#         total_score = Game.objects.aggregate(
-#                                     Sum(
-#                                         Case(
-#                                             When(player1=user, then=F("player1_score")),
-#                                             When(player2=user, then=F("player2_score")),
-#                                             default=Value(0),
-#                                             output_field=IntegerField(),
-#                                         )
-#                                     )
-#                                             )
+        print("id : ", user.id)
+        total_win_games = Game.objects.filter(game_type='solo', winner=user.id).filter(
+                                            Q(player1=user) | Q(player2=user)).count()
+
+
+        total_win_tournaments = Tournament.objects.filter(winner=user.id).count()
+
+
+        total_loss_games = Game.objects.filter(game_type='solo').filter(
+                        Q(player1=user) | Q(player2=user)).exclude(winner=user.id).count()
+
+
+        total_loss_tournaments = Tournament.objects.exclude(winner=user.id).count()
+
+
+        recent_games = (
+                        Game.objects.filter(
+                            Q(player1=user) | Q(player2=user)
+                        )
+                        .annotate(
+                            user_score=Case(
+                                When(player1=user, then=F("player1_score")),
+                                When(player2=user, then=F("player2_score")),
+                                default=Value(0),
+                                output_field=IntegerField(),
+                            ),
+                            result=Case(
+                                When(winner=user.id, then=Value("Win")),
+                                default=Value("Loss"),
+                                output_field=CharField(),
+                            ),
+                        )
+                        .order_by("-created_at")[:10]  
+                        )
         
-#         response_data = {
-#                 "avatar" : user.avatar,
-#                 "user_id" : user.id,
-#                 "first_name": user.first_name,
-#                 "last_name": user.last_name,
-#                 "total_solo_games": total_solo_games,
-#                 "total_played_tournament": total_played_tournament,
-#                 "total_win_games" : total_win_games,
-#                 "total_win_tournaments" : total_win_tournaments, 
-#                 "total_loss_games" : total_loss_games,
-#                 "total_loss_tournaments" : total_loss_tournaments,
-#                 "recent_games" : recent_games,
-#                 "total_score" : total_score
-#             }
+
+        total_score = Game.objects.aggregate(
+                                    total_score=Sum(
+                                        Case(
+                                            When(player1=user, then=F("player1_score")),
+                                            When(player2=user, then=F("player2_score")),
+                                            default=Value(0),
+                                            output_field=IntegerField(),
+                                        )
+                                            )
+                                            )
+                                
+                                
+        
+        print("total solo games : ", total_solo_games)
+        print("total_played_tournament : ", total_played_tournament)
+        print("total_win_games : ", total_win_games)
+        print("total_win_tournaments : ", total_win_tournaments)
+        print("total_loss_games : ", total_loss_games)
+        print("total_loss_tournaments : ", total_loss_tournaments)
+        for game in recent_games:
+            print("============")
+            print(f"User Score: {game.user_score}")
+            print(f"Result: {game.result}")
+            print(f"Created At: {game.created_at}")
+        print("============")
+        print("total score : ", total_score)
+
+        response_data = {
+                "avatar" : user.avatar.url[1:],
+                "user_id" : user.id,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "total_solo_games": total_solo_games,
+                "total_played_tournament": total_played_tournament,
+                "total_win_games" : total_win_games,
+                "total_win_tournaments" : total_win_tournaments, 
+                "total_loss_games" : total_loss_games,
+                "total_loss_tournaments" : total_loss_tournaments,
+                'recent_games': list(recent_games.values('id', 'user_score', 'result')),
+                "total_score" : total_score
+            }
     
-#         return Response(response_data)
+        return JsonResponse(response_data)
 
 

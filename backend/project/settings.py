@@ -56,7 +56,7 @@ INSTALLED_APPS = [
 	'friend',
 	'game',
     'tournament',
-    
+    'rest_framework_simplejwt.token_blacklist',
     # 'social_django',  # Handles social authentication
     # 'rest_framework_social_oauth2',  # DRF OAuth integration
 
