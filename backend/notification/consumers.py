@@ -110,7 +110,6 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 		if (event['user_id'] == self.scope['user'].id): 
 			print("UPDATE TOURNAMENT")
 			tournaments[event['id']] = chr(ord(tournaments[event['id']]) + event['value'])
-			print(user_index)
 			if (event['user_id'] in user_index) and (event['state'] == 'disconnect'):
 				print("POPPED FROM NOTIFICATION") 
 				user_index.pop(event['user_id']) 

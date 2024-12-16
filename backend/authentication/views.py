@@ -186,10 +186,6 @@ class RefreshView(APIView):
             get_object_or_404(UserAccount, pk=payload['user_id'])
 
             refresh = RefreshToken(ref_token)
-            
-            # response = Response({
-            #     'access_token': str(refresh.access_token)
-            # })
 
             response = Response({'message': 'generate new access token.'}, status=status.HTTP_200_OK)
 

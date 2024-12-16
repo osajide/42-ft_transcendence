@@ -135,8 +135,9 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         
         if len(indexes) == 4:
-            print("SEND USERS DATA TO ALL USERS")        
             if self == users[tournament_id][0]:
+                print("SEND USERS DATA TO ALL USERS")         
+                # make_game[tournament_id]
                 print(self.scope['user'])
                 for user in users[tournament_id]:
                     serializer = UserSerializer(user.scope['user'])
@@ -170,7 +171,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             pos = make_game[tournament_id][self.scope['user'].id]
             for player in make_game[tournament_id]:
                 if make_game[tournament_id][player] == pos:
-                    arr.append(player) 
+                    arr.append(player)
+                    #pop user from dictionary 
                 
             
             if (len(arr) == 2):
@@ -214,11 +216,12 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         print("winner id : ", winner_id)
 
-        if len(winner_id) == 1 and users_states[tournament_id][winner_id] == 4:
+        if len(winner_id) == 1 and users_states[tournament_id][winner_id] == 3:
             print("THE TOURNAMENT IS ENDED")
             users.pop(tournament_id)
-            users_states.pop(tournament_id)
+            users_states[tournament_id][winner_id] += 1
             Tournament.create.objects(winner=winner_id)
+            make_game.pop(tournament_id)
             await self.channel_layer.group_send('notification',
                 {
                     'type' : 'update_tournament',
@@ -226,9 +229,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     'id' : tournament_id,
                     'value' : -8
                 })
-            return 
-
-        if len(winner_id) == 2:
+        elif len(winner_id) == 2:
             print("SEMI FINAL")
             users_states[tournament_id][winner_id[1]] += 1
             if tournament_id not in make_game:
@@ -263,6 +264,9 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 'type' : 'send_winner',
                 'winner' : [self.scope['user'].id, users_states[tournament_id][self.scope['user'].id]]
             })
+
+        if len(winner_id) == 1 and users_states[tournament_id][winner_id] == 4:
+            users_states.pop(tournament_id)
     
     async def 	send_winner(self, event):
         await self.send(text_data=json.dumps({
