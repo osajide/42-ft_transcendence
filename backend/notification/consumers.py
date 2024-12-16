@@ -165,8 +165,8 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 			if self.scope['user'].id == event['opponent']:
 				await self.send(text_data=json.dumps([
 					{
-						# 'type': ,
-						'description': f"{event['sender']} invited you to a game!!",
+						'type': 'game',
+						'description': f"{event['sender']} invited you to a game",
 						'sender': event['sender'],
 						'timestamp': event['timestamp'],
 						'game_id': event['game_id']
