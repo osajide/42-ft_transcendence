@@ -75,6 +75,12 @@
   text-overflow: ellipsis;
 }
 
+.newMsgs {
+  width: 100%;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1254901961);
+  margin: 10px 0px 5px;
+}
+
 #chatCont {
   display: flex;
   flex-direction: column;
@@ -187,11 +193,11 @@
   transform-origin: bottom right;
   word-break: break-all;
 }
-#chatCont .myMsg:last-child:after, #chatCont .myMsg:has(+ .friend):after {
+#chatCont .myMsg:last-child:after, #chatCont .myMsg:has(+ .friend):after, #chatCont .myMsg:has(+ .newMsgs):after {
   background-color: #232323;
   right: -10.8px;
 }
-#chatCont .myMsg:last-child:before, #chatCont .myMsg:has(+ .friend):before {
+#chatCont .myMsg:last-child:before, #chatCont .myMsg:has(+ .friend):before, #chatCont .myMsg:has(+ .newMsgs):before {
   border-top: 15px solid rgb(246, 246, 246);
   right: -10.8px;
 }
@@ -202,11 +208,11 @@
   transform-origin: bottom left;
   word-break: break-all;
 }
-#chatCont .friend:last-child:after, #chatCont .friend:has(+ .myMsg):after {
+#chatCont .friend:last-child:after, #chatCont .friend:has(+ .myMsg):after, #chatCont .friend:has(+ .newMsgs):after {
   background-color: #232323;
   left: -10.8px;
 }
-#chatCont .friend:last-child:before, #chatCont .friend:has(+ .myMsg):before {
+#chatCont .friend:last-child:before, #chatCont .friend:has(+ .myMsg):before, #chatCont .friend:has(+ .newMsgs):before {
   border-top: 15px solid rgba(49, 222, 222, 0.4392156863);
   left: -10.8px;
 }

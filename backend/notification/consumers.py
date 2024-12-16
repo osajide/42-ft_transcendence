@@ -145,9 +145,11 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 		if self.scope['user'].id == event['receiver']['id']:
 			await self.send(text_data=json.dumps([
 				{
+					'type': event['notification_type'],
 					'description': event['description'],
 					'sender': event['sender'],
-					'timestamp': event['timestamp']
+					'timestamp': event['timestamp'],
+					'id': event['id']
 			}]))
 
 	async def	make_match(self, event):

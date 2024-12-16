@@ -424,6 +424,7 @@ const components = {
       if (target.parentElement.id == "notiList" && target.tagName == "INPUT") {
         const to_go = target.id.split("_");
         let dest = `myFriends`;
+        console.log(to_go)
         if (to_go[0] == "chat") dest = "friendChat";
         const push =
           window.location.pathname.replace("/", "") == take_to[to_go[0]]

@@ -12,22 +12,22 @@ participants = {}
 def	load_and_send_messages(self):
 
 	# seen_messages = self.conversation.messages.all()
-	# seen = self.conversation.messages.filter(seen_by_receiver=True)
-	# unseen = self.conversation.messages.filter(Q(owner=self.friend) & Q(seen_by_receiver=False))
-	# ser1 = MessageSerializer(seen, many=True)
-	# ser2 = MessageSerializer(unseen, many=True)
-	# print('ser1: ', ser1.data)
-	# print('ser2: ', ser2.data)
+	seen = self.conversation.messages.filter(seen_by_receiver=True)
+	unseen = self.conversation.messages.filter(Q(owner=self.friend) & Q(seen_by_receiver=False))
+	ser1 = MessageSerializer(seen, many=True)
+	ser2 = MessageSerializer(unseen, many=True)
+	print('ser1: ', ser1.data)
+	print('ser2: ', ser2.data)
 	# unseen.update(seen_by_receiver=True)
 	# ser3 = MessageSerializer(unseen, many=True)
 	# print('ser3: ', ser3.data)
 
 	
-	serializer1 = MessageSerializer(seen_messages, many=True)
+	# serializer1 = MessageSerializer(seen_messages, many=True)
 	# serializer2 = MessageSerializer(unseen_messages, many=True)
 
-	return [serializer1.data]
-	# return [serializer1.data, serializer2.data]
+	# return [serializer1.data]
+	return [ser1.data, ser2.data]
 
 class	ChatConsumer(AsyncWebsocketConsumer):
 
@@ -58,11 +58,15 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 																	   | Q(user1=self.friend, user2=self.user)).first)()
 				if self.conversation is None:
 					self.conversation = await sync_to_async(Conversation.objects.create)(user1=self.user, user2=self.friend)
-					await self.send(text_data=json.dumps({'empty': 'empty'}))
 				else:
 					msgs = await sync_to_async(load_and_send_messages)(self)
-					# print('msgs: ', msgs)
-					# await self.send(text_data=json.dumps(msgs))
+					await self.send(text_data=json.dumps(
+						{
+							'history': msgs
+						}
+					))
+					temp = await sync_to_async(self.conversation.messages.filter)(Q(owner=self.friend) & Q(seen_by_receiver=False))
+					await sync_to_async(temp.update)(seen_by_receiver=True)
 
 
 				await self.channel_layer.group_add(self.conversation_name, self.channel_name)
@@ -138,7 +142,8 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 											'description': description,
 											'sender': UserSerializer(self.user).data,
 											'receiver': UserSerializer(self.friend).data,
-											'timestamp': str(notificiation.timestamp)
+											'timestamp': str(notificiation.timestamp),
+											'id': notificiation.id
 										})
 
 			await sync_to_async(Message.objects.create)(content=event['message'],

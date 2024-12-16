@@ -54,6 +54,12 @@ $msg_tick_bottom: 14px;
   }
 }
 
+.newMsgs{
+  width: 100%;
+  border-bottom: 1px solid #ffffff20;
+  margin: 10px 0px 5px;
+}
+
 #chatCont {
   display: flex;
   flex-direction: column;
@@ -166,7 +172,7 @@ $msg_tick_bottom: 14px;
     color: $sec_dark;
     transform-origin: bottom right;
     word-break: break-all;
-    &:last-child, &:has(+ .friend) {
+    &:last-child, &:has(+ .friend), &:has(+ .newMsgs) {
       @include msg_ticks(right, $white);
     }
   }
@@ -177,7 +183,7 @@ $msg_tick_bottom: 14px;
     color: $white;
     transform-origin: bottom left;
     word-break: break-all;
-    &:last-child, &:has(+ .myMsg) {
+    &:last-child, &:has(+ .myMsg), &:has(+ .newMsgs) {
       @include msg_ticks(left, $blue_border);
     }
   }
