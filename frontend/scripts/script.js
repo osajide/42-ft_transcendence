@@ -427,15 +427,11 @@ const components = {
           <h3>${user.first_name} ${user.last_name}</h3>
           <p>${user.email}</p>
           <div class="relManager">
-          ${
-            user.relationship
-              ? choices[user.relationship]
-                  .map((action) => {
-                    return /* html */ `<button onclick="network(this)" class='button' value="${action}_${user.id}">${action}</button>`;
-                  })
-                  .join("\n")
-              : ""
-          }
+          ${choices[user.relationship]
+            .map((action) => {
+              return /* html */ `<button onclick="network(this)" class='button' value="${action}_${user.id}">${action}</button>`;
+            })
+            .join("\n")}
           </div>
         </div>
     </div>`
@@ -548,7 +544,7 @@ function logout(e) {
   if (e) e.preventDefault();
   localStorage.removeItem("user_data");
   user_data = undefined;
-  notiSocket.close();
+  if (notiSocket) notiSocket.close();
   notiSocket = undefined;
   updateUrl("login", "push");
 }
