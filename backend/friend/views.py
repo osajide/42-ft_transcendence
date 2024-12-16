@@ -158,7 +158,9 @@ def	get_friends(user, status):
 			(Q(user1=user) | Q(user2=user)) & Q(status=status) & ~Q(last_action_by=user.id))
 	elif status == 'new friend':
 		friendships = Friendship.objects.filter(
-			(Q(user1=user) | Q(user2=user)) & ((Q(status='pending') & ~Q(last_action_by=user.id)) | Q(status='blocked') | Q(status='accepted')))
+			(Q(user1=user) | Q(user2=user))
+				& ((Q(status='pending') & ~Q(last_action_by=user.id))
+	   				| (Q(status='blocked') & ~Q(last_action_by=user.id)) | Q(status='accepted')))
 	else:
 		friendships = Friendship.objects.filter(
 			(Q(user1=user) | Q(user2=user)) & Q(status=status))
