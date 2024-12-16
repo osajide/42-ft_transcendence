@@ -118,7 +118,9 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 'type' : 'generate_games',
                 'nb_of_games' : 4,
                 'tournament_group' : self.group_name,
-                'user_id' : self.scope['user'].id
+                'user_id' : self.scope['user'].id,
+                'last_user' : self.scope['user'].id
+
             })
            
            
@@ -132,7 +134,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         j = 0
 
         
-        if len(indexes) == 4:        
+        if len(indexes) == 4:
+            print("SEND USERS DATA TO ALL USERS")        
             if self == users[tournament_id][0]:
                 print(self.scope['user'])
                 for user in users[tournament_id]:
