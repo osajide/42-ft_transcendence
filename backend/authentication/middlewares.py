@@ -46,8 +46,8 @@ class CookiesMiddleware:
             access_token = cookie['access_token']
             decoded_data = jwt.decode(access_token, settings.SECRET_KEY, algorithms=["HS256"], options={"verify_exp": False})
             user_id = decoded_data['user_id']
-            scope['user'] = await sync_to_async(UserAccount.objects.get)(id=user_id)
-
+            scope['user'] = await sync_to_async(UserAccount.objects.get)(id__in=user_id)
+            print("CONNECTED USER : ", scope['user'].last_name)
         return await self.app(scope, receive, send)
     
 # ---------------------     from rest_framework_simplejwt/authentication.py ------------------------------

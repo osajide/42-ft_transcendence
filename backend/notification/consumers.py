@@ -47,9 +47,11 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 	async def	disconnect(self, code):
 		await self.channel_layer.group_discard(self.notification_group, self.channel_name)
 		print("=====> DISCONNECTED IN NOTIFICATION")
-		if len(tournaments) > 0 and  tournaments[user_index[self.scope['user']]] != '0' and tournaments[user_index[self.scope['user']]] != '8':
-			tournaments[user_index[self.scope['user']]] = chr(ord(tournaments[user_index[self.scope['user']]]) - 1)
-			print(f"tounaments {user_index[self.scope['user']]} count {tournaments[user_index[self.scope['user']]]}")
+		if (len(tournaments) > 0) and (self.scope['user'].id in user_index
+					) and (tournaments[user_index[self.scope['user'].id]] != '0' 
+					) and tournaments[user_index[self.scope['user'].id]] != '8':
+			tournaments[user_index[self.scope['user'].id]] = chr(ord(tournaments[user_index[self.scope['user'].id]]) - 1)
+			print(f"tounaments {user_index[self.scope['user'].id]} still has {tournaments[user_index[self.scope['user'].id]]} players")
 
 		# print('games noti: ', games)
 		# games.clear() #temp
@@ -92,10 +94,10 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 						redis_client.set(f"tournament_len", len(tournaments))
 						index = len(tournaments) - 1
 						break
-			if self.scope['user'] not in user_index:
-				user_index[self.scope['user']] = []
-			user_index[self.scope['user']] = index
-			
+			if self.scope['user'].id not in user_index:
+				user_index[self.scope['user'].id] = []
+			user_index[self.scope['user'].id] = index
+			print("notf array: ", user_index)
 			print(f"tournament : {index} => {tournaments[index]}")
 			await self.send(json.dumps(
 				{
@@ -105,19 +107,22 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 
 	async def 	update_tournament(self, event):
 		
-		if (event['user_id'] == self.scope['user'].id):
+		if (event['user_id'] == self.scope['user'].id): 
 			print("UPDATE TOURNAMENT")
 			tournaments[event['id']] = chr(ord(tournaments[event['id']]) + event['value'])
+			print(user_index)
+			if (event['user_id'] in user_index) and (event['state'] == 'disconnect'):
+				print("POPPED FROM NOTIFICATION") 
+				user_index.pop(event['user_id']) 
 			print(f"tournament {event['id']} has {tournaments[event['id']]} elements")
 
 	async def 	generate_games(self, event):
 		if event['user_id'] != self.scope['user'].id:
 			return 
 		indexes = []
-		print("enter for generating games")
+		print("generating games")
 		i = 0
-		count = 4
-		while (i < count):
+		while (i < event['nb_of_games']):
 			try:
 				index = games.index('0')
 				games[index] = '2'
@@ -131,7 +136,8 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 		await self.channel_layer.group_send(event['tournament_group'],
             {
                 'type' : 'match_making',   
-                'games' : indexes
+                'games' : indexes,
+                'last_user' : event['last_user']
             })
 
 	async def	send_notification(self, event):
