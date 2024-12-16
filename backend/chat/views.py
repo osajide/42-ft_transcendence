@@ -36,7 +36,6 @@ def serialize_result(users):
 @permission_classes([IsAuthenticated])
 def get_conversations(request):
 
-    data = []
     user = request.user
 
     conversations = Conversation.objects.filter(
@@ -49,26 +48,24 @@ def get_conversations(request):
         users = []
         for conversation in conversations:
             last_message = conversation.messages.all().last()
+            print('last content: ', last_message.content)
+            print('seen: ', last_message.seen_by_receiver)
             if conversation.user1 == user:
                 if last_message.seen_by_receiver == True:
                     conversation.user2.seen = True
-                elif last_message.seen_by_reciever == False and last_message.owner is not user:
+                elif last_message.seen_by_receiver == False and last_message.owner is not user:
                     conversation.user2.seen = False
                 users.append(conversation.user2)
             else:
                 if last_message.seen_by_receiver == True:
                     conversation.user1.seen = True
-                elif last_message.seen_by_reciever == False and last_message.owner is not user:
+                elif last_message.seen_by_receiver == False and last_message.owner is not user:
                     conversation.user1.seen = False
                 users.append(conversation.user1)
 
-        # serializer = UserSerializer(users, many=True)
-        # data = [serializer.data]
-    ser = serialize_result(users)
-    print('****ser:::: ', [ser])
-    # print('data::: ', data.__len__())
-    # return Response(data, status=status.HTTP_200_OK)
-    return JsonResponse([ser], safe=False)
+        ser = serialize_result(users)
+        print('****ser:::: ', [ser])
+        return JsonResponse([ser], safe=False)
 
 
 @api_view()

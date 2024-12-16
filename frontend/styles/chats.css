@@ -38,7 +38,7 @@
 #chats #page > section {
   border-radius: 17px;
   border: 1.5px solid rgba(49, 222, 222, 0.4392156863);
-  background-color: rgba(35, 35, 35, 0.4392156863);
+  background-color: rgba(35, 35, 35, 0.4);
 }
 #chats #chatCont {
   width: 100%;
@@ -88,7 +88,7 @@
   bottom: 100%;
   transform: translateX(-50%);
   background-color: rgb(246, 246, 246);
-  color: rgba(35, 35, 35, 0.4392156863);
+  color: #232323;
   padding: 5px 10px;
   border-radius: 7px 7px 0px 0;
   font-size: 10px;
@@ -112,7 +112,7 @@
   width: 100%;
   height: 100%;
   flex-grow: 1;
-  background-color: rgba(35, 35, 35, 0.4392156863);
+  background-color: rgba(35, 35, 35, 0.4);
   border-radius: 17px 17px 0px 0px;
   display: flex;
   flex-direction: column;

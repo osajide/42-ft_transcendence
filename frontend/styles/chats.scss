@@ -18,7 +18,7 @@ $msg_tick_bottom: 14px;
     width: 100%;
     flex-grow: 1;
     height: 100%;
-    // background-color: $prim_dark;
+    // background-color: rgba($prim_dark, .4);
   }
 
   .chatBanner {
@@ -93,7 +93,7 @@ $msg_tick_bottom: 14px;
   width: $box-width;
   height: 100%;
   flex-grow: 1;
-  background-color: $prim_dark;
+  background-color: rgba($prim_dark, .4);
   // background-image: url('../assets/chat.webp');
   // background-size: cover;
   // background-repeat: no-repeat;

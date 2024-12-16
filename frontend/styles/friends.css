@@ -37,7 +37,7 @@
 #friends #page > section {
   border-radius: 17px;
   border: 1.5px solid rgba(49, 222, 222, 0.4392156863);
-  background-color: rgba(35, 35, 35, 0.4392156863);
+  background-color: rgba(35, 35, 35, 0.4);
 }
 #friends #page #userProfile {
   text-align: left;
@@ -62,6 +62,7 @@
   width: -moz-fit-content;
   width: fit-content;
   padding: 0.5rem 1rem;
+  max-width: 100px;
   flex: 1;
 }
 #friends #page .popup * {

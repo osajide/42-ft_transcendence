@@ -2,9 +2,13 @@ function receiveMessage(event) {
   const messenger = document.getElementById("chat");
   const data = JSON.parse(event.data);
   if (data.history) {
-    const lock = document.getElementById("block");
-    if (data.status == "blocked" && data.last_action_by == user_data.id)
-      lock = icons.unblock(lock.value.split("_")[1]);
+    let lock = document.querySelector(".controls");
+    if (data.status == "blocked" && data.last_action_by == user_data.id) {
+      let id = lock.querySelector(".block").id;
+      lock.querySelector(".block").remove();
+      lock.innerHTML += icons.unblock(id.split("_")[1]);
+    } else if (data.status == "blocked")
+      lock.querySelector(".block").removeAttribute("onclick");
     const separator = '<span class="newMsgs"></span>';
     data.history.map((oldMsgs, index) => {
       oldMsgs.map((oldMsg) => {
@@ -68,7 +72,7 @@ function messenger(endpoint) {
       }, 100);
     }
   });
-
+  myForm.querySelector("#msg").focus();
   myForm.addEventListener("submit", (e) => {
     e.preventDefault();
     sendMessage(e, socket);

@@ -68,6 +68,7 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 		if 'seen' in json_text_data:
 			await delete_notification(json_text_data['seen'])
 		elif 'private' in json_text_data:
+			print('jsno pri: ', json_text_data)
 			await self.channel_layer.group_send(self.notification_group,
 									   {
 										   'type': 'make_match',
@@ -163,14 +164,15 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 				}]))
 		elif 'opponent' in event:
 			if self.scope['user'].id == event['opponent']:
-				await self.send(text_data=json.dumps([
-					{
-						'type': 'game',
-						'description': f"{event['sender']} invited you to a game",
+				print('ana opponent')
+				await self.send(text_data=json.dumps({
+					'game_invite': {
+						# 'type': 'game',
+						'description': f"{event['sender']['first_name'].capitalize()} {event['sender']['last_name'].upper()} invited you to a game",
 						'sender': event['sender'],
-						'timestamp': event['timestamp'],
+						# 'timestamp': event['timestamp'],
 						'game_id': event['game_id']
-				}]))
+				}}))
 
 
 	async def	make_match(self, event):
@@ -179,17 +181,17 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 			if 'private' in event:
 				try:
 					index = games.index('0')
-					games[index] = '1'
+					games[index] = '2'
 				except ValueError:
 					games.append('2')
 					index = len(games) - 1
-
-				await self.group_send('notification',
+				print('notification sent')
+				await self.channel_layer.group_send('notification',
 						  {
 							  'type': 'send_notification',
 							  'game_id': index,
 							  'sender' : UserSerializer(self.scope['user']).data,
-							  'opponent': event['opponent']
+							  'opponent': int(event['opponent'])
 						  })
 			else:
 				try:
@@ -208,6 +210,7 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 					'game_id': index
 				}
 			))
+
 			redis_client.set('max_games', len(games))
 
 			if not index in users_and_games:

@@ -16,6 +16,10 @@ let user_data;
 // };
 
 const removeElement = (e) => {
+  if (e.classList.contains("game")) {
+    updateUrl("games", "push", "");
+    startGame(e.id.split("_")[1]);
+  }
   e.remove();
 };
 
@@ -23,10 +27,11 @@ const raiseWarn = (msg, type = "error") => {
   errors.innerHTML += components.warning(msg, type);
   let self = document.getElementsByClassName("warn");
   self = self[self.length - 1];
-  user_data = undefined;
-  if (type == "error") localStorage.removeItem("user_data");
+  if (type == "error") {
+    logout();
+  }
   let s = setTimeout(() => {
-    removeElement(self);
+    self.remove();
     clearTimeout(s);
   }, 3000);
 };
@@ -87,6 +92,7 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
 /******************** Globales ********************/
 
 const icons = {
+  profile: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T560-640q0-33-23.5-56.5T480-720q-33 0-56.5 23.5T400-640q0 33 23.5 56.5T480-560Zm0-80Zm0 400Z"/></svg>`,
   chats: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M880-80 720-240H320q-33 0-56.5-23.5T240-320v-40h440q33 0 56.5-23.5T760-440v-280h40q33 0 56.5 23.5T880-640v560ZM160-473l47-47h393v-280H160v327ZM80-280v-520q0-33 23.5-56.5T160-880h440q33 0 56.5 23.5T680-800v280q0 33-23.5 56.5T600-440H240L80-280Zm80-240v-280 280Z"/></svg>`,
   friends: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M40-160v-112q0-34 17.5-62.5T104-378q62-31 126-46.5T360-440q66 0 130 15.5T616-378q29 15 46.5 43.5T680-272v112H40Zm720 0v-120q0-44-24.5-84.5T666-434q51 6 96 20.5t84 35.5q36 20 55 44.5t19 53.5v120H760ZM360-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47Zm400-160q0 66-47 113t-113 47q-11 0-28-2.5t-28-5.5q27-32 41.5-71t14.5-81q0-42-14.5-81T544-792q14-5 28-6.5t28-1.5q66 0 113 47t47 113ZM120-240h480v-32q0-11-5.5-20T580-306q-54-27-109-40.5T360-360q-56 0-111 13.5T140-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T440-640q0-33-23.5-56.5T360-720q-33 0-56.5 23.5T280-640q0 33 23.5 56.5T360-560Zm0 320Zm0-400Z"/></svg>`,
   games: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M189-160q-60 0-102.5-43T42-307q0-9 1-18t3-18l84-336q14-54 57-87.5t98-33.5h390q55 0 98 33.5t57 87.5l84 336q2 9 3.5 18.5T919-306q0 61-43.5 103.5T771-160q-42 0-78-22t-54-60l-28-58q-5-10-15-15t-21-5H385q-11 0-21 5t-15 15l-28 58q-18 38-54 60t-78 22Zm3-80q19 0 34.5-10t23.5-27l28-57q15-31 44-48.5t63-17.5h190q34 0 63 18t45 48l28 57q8 17 23.5 27t34.5 10q28 0 48-18.5t21-46.5q0 1-2-19l-84-335q-7-27-28-44t-49-17H285q-28 0-49.5 17T208-659l-84 335q-2 6-2 18 0 28 20.5 47t49.5 19Zm348-280q17 0 28.5-11.5T580-560q0-17-11.5-28.5T540-600q-17 0-28.5 11.5T500-560q0 17 11.5 28.5T540-520Zm80-80q17 0 28.5-11.5T660-640q0-17-11.5-28.5T620-680q-17 0-28.5 11.5T580-640q0 17 11.5 28.5T620-600Zm0 160q17 0 28.5-11.5T660-480q0-17-11.5-28.5T620-520q-17 0-28.5 11.5T580-480q0 17 11.5 28.5T620-440Zm80-80q17 0 28.5-11.5T740-560q0-17-11.5-28.5T700-600q-17 0-28.5 11.5T660-560q0 17 11.5 28.5T700-520Zm-360 60q13 0 21.5-8.5T370-490v-40h40q13 0 21.5-8.5T440-560q0-13-8.5-21.5T410-590h-40v-40q0-13-8.5-21.5T340-660q-13 0-21.5 8.5T310-630v40h-40q-13 0-21.5 8.5T240-560q0 13 8.5 21.5T270-530h40v40q0 13 8.5 21.5T340-460Zm140-20Z"/></svg>`,
@@ -99,10 +105,10 @@ const icons = {
   challengeIcon: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" id="challenge" height="24px" viewBox="0 -960 960 960" width="24px" fill="#00bcbc"><path d="M762-96 645-212l-88 88-28-28q-23-23-23-57t23-57l169-169q23-23 57-23t57 23l28 28-88 88 116 117q12 12 12 28t-12 28l-50 50q-12 12-28 12t-28-12Zm118-628L426-270l5 4q23 23 23 57t-23 57l-28 28-88-88L198-96q-12 12-28 12t-28-12l-50-50q-12-12-12-28t12-28l116-117-88-88 28-28q23-23 57-23t57 23l4 5 454-454h160v160ZM334-583l24-23 23-24-23 24-24 23Zm-56 57L80-724v-160h160l198 198-57 56-174-174h-47v47l174 174-56 57Zm92 199 430-430v-47h-47L323-374l47 47Zm0 0-24-23-23-24 23 24 24 23Z"/></svg>`,
   logout: /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z"/></svg>`,
   block: (id) => {
-    return /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" value="block_${id}" onclick="network(this)" id="block" height="24px" viewBox="0 -960 960 960" width="24px" fill="#db0000"><path d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"/></svg>`;
+    return /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" id="block_${id}" onclick="network(this)" class="block" height="24px" viewBox="0 -960 960 960" width="24px" fill="#db0000"><path d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"/></svg>`;
   },
   unblock: (id) => {
-    return /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" value="unblock_${id}" onclick="network(this)" id="block" height="24px" viewBox="0 -960 960 960" width="24px" fill="#db0000"><path d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"/></svg>`;
+    return /* svg */ `<svg xmlns="http://www.w3.org/2000/svg" id="unblock_${id}" onclick="network(this)" class="block" height="24px" viewBox="0 -960 960 960" width="24px" fill="#db0000"><path d="M240-640h360v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85h-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640Zm0 480h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM240-160v-400 400Z"/></svg>`;
   },
   back: /* svg */ (id) => {
     return `<svg xmlns="http://www.w3.org/2000/svg" id="close" onclick="closeDiv(this,'${id}')" height="24px" viewBox="0 -960 960 960" width="24px" fill="#f1f1f1"><path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z"/></svg>`;
@@ -131,6 +137,8 @@ document.addEventListener("keydown", (event) => {
 });
 
 window.addEventListener("click", (e) => {
+  if (e.target.classList.contains("bubble"))
+    e.target.classList.remove("bubble");
   const togglers = document.querySelectorAll(".togglers:checked");
   togglers.forEach((a) => {
     const searcher = document.getElementById("searchUser");
@@ -139,14 +147,6 @@ window.addEventListener("click", (e) => {
       a.checked = false;
   });
 });
-
-// let dumb_users = [
-//   { first_name: "ykhayri", avatar: "user.svg" },
-//   { first_name: "ykhayri", avatar: "user.svg" },
-//   { first_name: "ykhayri", avatar: "user.svg" },
-//   { first_name: "ykhayri", avatar: "user.svg" },
-//   { first_name: "ykhayri", avatar: "user.svg" },
-// ];
 
 const network = async (e) => {
   const choices = {
@@ -158,18 +158,27 @@ const network = async (e) => {
     block: "unblock",
     unblock: "block",
   };
-  resp = await fetchWithToken(glob_endp, `/friend/${e.value}`, "POST", {});
+  let value = e.tagName == "svg" ? e.id : e.value;
+  resp = await fetchWithToken(glob_endp, `/friend/${value}`, "POST", {});
   if (resp == "Error") return;
-  const old = e.value.split("_");
+  const old = value.split("_");
   const newVal = choices[old[0]];
-  e.innerHTML = newVal;
-  e.value = `${newVal}_${old[1]}`;
-  if (old[0] == "decline" || old[0] == "accept" || old[0] == "remove") {
-    const rem = e.previousElementSibling || e.nextElementSibling;
-    rem.remove();
+  if (e.tagName == "svg") {
+    let elId = e.id.split("_");
+    let lock = document.querySelector(".controls");
+    let id = lock.querySelector(".block");
+    id.remove();
+    lock.innerHTML += icons[choices[elId[0]]](elId[1]);
+  } else {
+    e.innerHTML = newVal;
+    value = `${newVal}_${old[1]}`;
+    if (old[0] == "decline" || old[0] == "accept" || old[0] == "remove") {
+      const rem = e.previousElementSibling || e.nextElementSibling;
+      rem.remove();
+    }
+    const userName = e.offsetParent.querySelector("h3").innerHTML.split(" ")[0];
+    updateUrl("friends", "", userName + "myFriends" + value.split("_")[1]);
   }
-  const userName = e.offsetParent.querySelector("h3").innerHTML.split(" ")[0];
-  updateUrl("friends", "", userName + "myFriends" + e.value.split("_")[1]);
 };
 
 /******************** Forms ********************/
@@ -206,14 +215,21 @@ function notified(e) {
   if (data.error) {
     raiseWarn("User logged out");
     return updateUrl("login", "push");
-  } else if (data.game_id !== undefined) startGame(data.game_id);
-  else if (data.tournament_id !== undefined) {
+  } else if (data.game_id !== undefined) {
+    // let timer = setInterval(() => {
+    //   if(startGame){
+    startGame(data.game_id);
+    //   clearInterval(timer)}
+    // }, 10);
+  } else if (data.tournament_id !== undefined) {
     playTournament(data.tournament_id);
+  } else if (data.game_invite) {
+    raiseWarn(data.game_invite, "game");
   } else {
     data.map((n) => {
-      if (n != "game_id" && notContainer)
-        notContainer.innerHTML =
-          components.notification_elem(n) + notContainer.innerHTML;
+      if (n != "game_id" && notContainer) {
+        notContainer.innerHTML += components.notification_elem(n);
+      }
     });
   }
   if (data.length && notifier) notifier.classList.remove("hide");
@@ -265,7 +281,7 @@ const components = {
 			</label>
 			<input class="hide togglers" type="checkbox" id="menu"/>
 			<nav>
-				${["Friends", "Chats", "Games", "logout"]
+				${["profile", "Friends", "Chats", "Games", "logout"]
           .map((a) => {
             return this["menu_item"](a);
           })
@@ -307,7 +323,11 @@ const components = {
     }"/>
 			<label onKeyDown="selction(event)" for="${
         user.first_name + name + user.id
-      }" class="user_label ${!index ? " bubble" : ""}" tabindex="0">
+      }" class="user_label ${
+      (!index && name == "myFriends") || (name == "friendChat" && !user.seen)
+        ? " bubble"
+        : ""
+    }" tabindex="0">
 				<img src="${"./assets/avatars/" + user.avatar}" alt="${user.first_name}"/>
 				<h4>${user.first_name} ${user.last_name}</h4>
 			</label>
@@ -374,11 +394,15 @@ const components = {
 			</form>
 			</section>`;
   },
-  warning: function (error, type) {
-    return /* html */ `
+  warning: function (msg, type) {
+    if (type != "game")
+      return /* html */ `
       <div onclick="removeElement(this)" class="warn ${type}" tabindex="0">${
-      icons[type + "Icon"]
-    }<p>${error}</p></div>
+        icons[type + "Icon"]
+      }<p>${msg}</p></div>
+    `;
+    return /* html */ `
+      <div onclick="removeElement(this)" id="game_${msg.game_id}" class="warn alert ${type}" tabindex="0">${icons.games}<p>${msg.description}</p></div>
     `;
   },
   profile: function (user = {}) {
@@ -403,11 +427,15 @@ const components = {
           <h3>${user.first_name} ${user.last_name}</h3>
           <p>${user.email}</p>
           <div class="relManager">
-          ${choices[user.relationship]
-            .map((action) => {
-              return /* html */ `<button onclick="network(this)" class='button' value="${action}_${user.id}">${action}</button>`;
-            })
-            .join("\n")}
+          ${
+            user.relationship
+              ? choices[user.relationship]
+                  .map((action) => {
+                    return /* html */ `<button onclick="network(this)" class='button' value="${action}_${user.id}">${action}</button>`;
+                  })
+                  .join("\n")
+              : ""
+          }
           </div>
         </div>
     </div>`
@@ -456,22 +484,7 @@ const components = {
               chatLabel.checked = true;
               chatLabel.dispatchEvent(new Event("change", { bubbles: true }));
             } else {
-              const updateCont = document.getElementById("userProfile");
-              response = await fetchWithToken(
-                glob_endp,
-                `${"/friend/profile/"}${to_go[2]}/`
-              );
-              if (response == "Error") return;
-              response.user = {
-                relationship: response.rel,
-                last_action: response.last_action_by,
-                ...response.user,
-              };
-              updateCont.innerHTML = components["profile"](response.user)
-                .trim()
-                .split("\n")
-                .slice(1, -1)
-                .join("\n");
+              await checkUser(to_go[2]);
             }
           }
         }
@@ -512,8 +525,27 @@ const components = {
   },
 };
 
+async function checkUser(endpoint) {
+  const updateCont = document.getElementById("userProfile");
+  response = await fetchWithToken(
+    glob_endp,
+    `${"/friend/profile/"}${endpoint}/`
+  );
+  if (response == "Error") return;
+  response.user = {
+    relationship: response.rel,
+    last_action: response.last_action_by,
+    ...response.user,
+  };
+  updateCont.innerHTML = components["profile"](response.user)
+    .trim()
+    .split("\n")
+    .slice(1, -1)
+    .join("\n");
+}
+
 function logout(e) {
-  e.preventDefault();
+  if (e) e.preventDefault();
   localStorage.removeItem("user_data");
   user_data = undefined;
   notiSocket.close();
@@ -639,6 +671,17 @@ const pages = {
     id: "signin_page",
     func: handleForm,
     glob: false,
+  },
+  profile: {
+    data: /*html*/ `
+			<section id="page">
+        <div id="updatable"></div>
+        <div id="stats"></div>
+			</section>
+		`,
+    id: "profile",
+    func: () => {},
+    glob: true,
   },
   chats: {
     data: /*html*/ `
@@ -773,10 +816,14 @@ function listen(id, change, endpoint, compo) {
             e.target.id == "challenge" ||
             e.target.parentElement.id == "challenge"
           ) {
-            let action =
-              e.target.id == "challenge"
-                ? e.target.id
-                : e.target.parentElement.id;
+            let element =
+              e.target.id == "challenge" ? e.target : e.target.parentElement;
+            notiSocket.send(
+              JSON.stringify({
+                private: element.nextElementSibling.id.split("_")[1],
+              })
+            );
+            updateUrl("games", "push", "");
           }
         });
       }
@@ -855,12 +902,17 @@ const updateUrl = (path = "/", mode = "", targetId = "") => {
   document.querySelector(`.select`)?.classList.remove("select");
   app.querySelector(`[for="${id}"`)?.classList.add("select");
   if (targetId.length) {
-    let timer = setInterval(() => {
+    let i = 0;
+    let timer = setInterval(async () => {
       const target = main.querySelector("#" + targetId);
-      if (target) {
+      i++;
+      if (target && i < 10) {
         target.checked = true;
         target.dispatchEvent(new Event("change", { bubbles: true }));
         clearInterval(timer);
+      } else if (i > 10) {
+        clearInterval(timer);
+        await checkUser(targetId.split("myFriends")[1]);
       }
     }, 10);
   }

@@ -4,7 +4,7 @@ $sec_dark: #1c1c1c;
 $sec_blue: #31dede;
 $white: #f1f1f1;
 $prim_blue: #00bcbc;
-$prim_dark: #23232370;
+$prim_dark: #232323;
 $neo_lue: #05b8d2;
 $green: #00b278;
 $white_border: #f1f1f130;
@@ -31,7 +31,7 @@ $red: #db0000;
 @mixin container {
   border-radius: $global_radius;
   border: $global_border;
-  background-color: $prim_dark;
+  background-color: rgba($prim_dark, 0.4);
 }
 
 @mixin scroll($val) {
