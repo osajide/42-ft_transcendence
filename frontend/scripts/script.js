@@ -770,11 +770,11 @@ function listen(id, change, endpoint, compo) {
               data.name.split(" ")[0] + "myFriends" + data.id
             );
           } else if (
-            ["block", "challenge"].indexOf(e.target.id) > -1 ||
-            ["block", "challenge"].indexOf(e.target.parentElement.id) > -1
+            e.target.id == "challenge" ||
+            e.target.parentElement.id == "challenge"
           ) {
             let action =
-              ["block", "challenge"].indexOf(e.target.id) > -1
+              e.target.id == "challenge"
                 ? e.target.id
                 : e.target.parentElement.id;
           }

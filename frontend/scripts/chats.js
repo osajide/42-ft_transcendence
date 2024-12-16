@@ -1,10 +1,7 @@
 function receiveMessage(event) {
   const messenger = document.getElementById("chat");
   const data = JSON.parse(event.data);
-  if (data.status) {
-    alert("Can't establish connection: " + data.reason);
-    return;
-  } else if (data.history) {
+  if (data.history) {
     const lock = document.getElementById("block");
     if (data.status == "blocked" && data.last_action_by == user_data.id)
       lock = icons.unblock(lock.value.split("_")[1]);

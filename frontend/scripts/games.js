@@ -464,7 +464,6 @@ function playTournament(endpoint) {
 function game_choice(type) {
   const choice = {};
   choice[type] = "";
-  console.log(type);
   if (!notiSocket.readyState) {
     const interval = setInterval(() => {
       if (notiSocket.readyState) {

@@ -28,7 +28,7 @@ $msg_tick_bottom: 14px;
     padding: 10px;
     gap: 20px;
     align-items: center;
-    background-color: $sec_dark;
+    background-color: rgba($sec_dark, .7);
     border-bottom: $global_border;
 
     img {
@@ -128,7 +128,7 @@ $msg_tick_bottom: 14px;
   .msg {
     flex-grow: 1;
     color: $white;
-    background-color: $sec_dark;
+    background-color: rgba($sec_dark, .7);
     border: none;
   }
 
@@ -162,14 +162,6 @@ $msg_tick_bottom: 14px;
     min-width: 30px;
     position: relative;
     text-align: left;
-
-    &:after {
-      content: "";
-      position: absolute;
-      width: calc($msg_box + 2px);
-      height: $msg_box;
-      top: 100%;
-    }
 
     &:before {
       content: "";

@@ -37,7 +37,7 @@
 #friends #page > section {
   border-radius: 17px;
   border: 1.5px solid rgba(49, 222, 222, 0.4392156863);
-  background-color: #232323;
+  background-color: rgba(35, 35, 35, 0.4392156863);
 }
 #friends #page #userProfile {
   text-align: left;
