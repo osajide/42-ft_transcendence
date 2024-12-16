@@ -5,7 +5,9 @@ function receiveMessage(event) {
     alert("Can't establish connection: " + data.reason);
     return;
   } else if (data.history) {
-    console.log(data.history);
+    const lock = document.getElementById("block");
+    if (data.status == "blocked" && data.last_action_by == user_data.id)
+      lock = icons.unblock(lock.value.split("_")[1]);
     const separator = '<span class="newMsgs"></span>';
     data.history.map((oldMsgs, index) => {
       oldMsgs.map((oldMsg) => {
@@ -17,13 +19,17 @@ function receiveMessage(event) {
           `<p class="message ${
             oldMsg.owner == user_data.id ? "myMsg" : "friend"
           } animateF">${oldMsg.content}</p>`;
+        messenger.scrollTop = messenger.scrollHeight;
       });
       if (!index && data.history[1].length > 0)
         messenger.innerHTML += separator;
     });
-    messenger.scrollTop = messenger.scrollHeight;
+    let timer = setTimeout(() => {
+      messenger.scrollTop = messenger.scrollHeight;
+    }, 20);
   } else if (data.message) {
-    console.log(messenger);
+    if (messenger.querySelector(".newMsgs"))
+      messenger.querySelector(".newMsgs").remove();
     tmp = messenger.innerHTML.replace("animateF", "").replace("animate", "");
     messenger.innerHTML =
       tmp + `<p class="message friend animateF">${data.message}</p>`;

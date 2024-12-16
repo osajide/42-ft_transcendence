@@ -51,7 +51,7 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 		if self.friend is not None:
 			self.friendship = await sync_to_async(Friendship.objects.filter(
 					Q(user1=self.user, user2=self.friend) | Q(user1=self.friend, user2=self.user.id)
-					& Q(status='accepted')).first)()
+					& (Q(status='accepted') | (Q(status='blocked') & Q(last_action_by=self.user.id)))).first)()
 
 			if self.friendship is not None:
 				self.conversation =  await sync_to_async(Conversation.objects.filter(Q(user1=self.user, user2=self.friend)
@@ -62,7 +62,9 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 					msgs = await sync_to_async(load_and_send_messages)(self)
 					await self.send(text_data=json.dumps(
 						{
-							'history': msgs
+							'history': msgs,
+							'status': self.friendship.status,
+							'last_action_by': self.friendship.last_action_by
 						}
 					))
 					temp = await sync_to_async(self.conversation.messages.filter)(Q(owner=self.friend) & Q(seen_by_receiver=False))
