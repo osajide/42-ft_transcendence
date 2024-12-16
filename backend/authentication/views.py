@@ -12,6 +12,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from .tokens import token_decoder
 from .models import UserAccount
+from game.models import Game
+from tournament.models import *
+from django.db.models import Q, F, Sum, Case, When, Value, IntegerField, CharField
 from rest_framework.exceptions import AuthenticationFailed
 import jwt
 from django.conf import settings
@@ -20,6 +23,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password
 from .middlewares import CookieJWTAuthentication
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+from django.http import JsonResponse
+from rest_framework import serializers
 
 # Create your views here.
 
@@ -202,26 +207,25 @@ class UserProfile(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         user = UserAccount.objects.filter(email=request.data['email']).first()
-        
-        first_name = user.first_name
-        last_name = user.last_name
 
         total_solo_games = Game.objects.filter(game_type='solo').filter(
                                             Q(player1=user) | Q(player2=user)).count()
         
-        print(total_solo_games)
-        return Response({'ok'})
         total_played_tournament = Tournament_Particapent.objects.filter(user_id=user.id).count()
-
+        
+        print("id : ", user.id)
         total_win_games = Game.objects.filter(game_type='solo', winner=user.id).filter(
                                             Q(player1=user) | Q(player2=user)).count()
 
-        total_win_tournaments = Tournament.objects.filter(winner=user.id)
+
+        total_win_tournaments = Tournament.objects.filter(winner=user.id).count()
+
 
         total_loss_games = Game.objects.filter(game_type='solo').filter(
-                        Q(player1=user) | Q(player2=user)).exclude(winner=user.id)
+                        Q(player1=user) | Q(player2=user)).exclude(winner=user.id).count()
 
-        total_loss_tournaments = Tournament.objects.exclude(winner=user.id)
+
+        total_loss_tournaments = Tournament.objects.exclude(winner=user.id).count()
 
 
         recent_games = (
@@ -244,19 +248,36 @@ class UserProfile(APIView):
                         .order_by("-created_at")[:10]  
                         )
         
+
         total_score = Game.objects.aggregate(
-                                    Sum(
+                                    total_score=Sum(
                                         Case(
                                             When(player1=user, then=F("player1_score")),
                                             When(player2=user, then=F("player2_score")),
                                             default=Value(0),
                                             output_field=IntegerField(),
                                         )
-                                    )
                                             )
+                                            )
+                                
+                                
         
+        print("total solo games : ", total_solo_games)
+        print("total_played_tournament : ", total_played_tournament)
+        print("total_win_games : ", total_win_games)
+        print("total_win_tournaments : ", total_win_tournaments)
+        print("total_loss_games : ", total_loss_games)
+        print("total_loss_tournaments : ", total_loss_tournaments)
+        for game in recent_games:
+            print("============")
+            print(f"User Score: {game.user_score}")
+            print(f"Result: {game.result}")
+            print(f"Created At: {game.created_at}")
+        print("============")
+        print("total score : ", total_score)
+
         response_data = {
-                "avatar" : user.avatar,
+                "avatar" : user.avatar.url[1:],
                 "user_id" : user.id,
                 "first_name": user.first_name,
                 "last_name": user.last_name,
@@ -266,10 +287,10 @@ class UserProfile(APIView):
                 "total_win_tournaments" : total_win_tournaments, 
                 "total_loss_games" : total_loss_games,
                 "total_loss_tournaments" : total_loss_tournaments,
-                "recent_games" : recent_games,
+                'recent_games': list(recent_games.values('id', 'user_score', 'result')),
                 "total_score" : total_score
             }
     
-        return Response(response_data)
+        return JsonResponse(response_data)
 
 
