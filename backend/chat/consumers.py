@@ -11,14 +11,17 @@ participants = {}
 
 def	load_and_send_messages(self):
 
-	seen_messages = self.conversation.messages.all()
-	# print('me: ', self.user.id)
-	# seen_messages = self.conversation.messages.all().exclude(
-	# 	~Q(owner=self.user) & Q(seen_by_receiver=True)
-	# )
-	# unseen_messages = self.conversation.messages.all().exclude(
-	# 	~Q(owner=self.user) & Q(seen_by_receiver=False)
-	# )
+	# seen_messages = self.conversation.messages.all()
+	# seen = self.conversation.messages.filter(seen_by_receiver=True)
+	# unseen = self.conversation.messages.filter(Q(owner=self.friend) & Q(seen_by_receiver=False))
+	# ser1 = MessageSerializer(seen, many=True)
+	# ser2 = MessageSerializer(unseen, many=True)
+	# print('ser1: ', ser1.data)
+	# print('ser2: ', ser2.data)
+	# unseen.update(seen_by_receiver=True)
+	# ser3 = MessageSerializer(unseen, many=True)
+	# print('ser3: ', ser3.data)
+
 	
 	serializer1 = MessageSerializer(seen_messages, many=True)
 	# serializer2 = MessageSerializer(unseen_messages, many=True)

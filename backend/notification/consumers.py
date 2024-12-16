@@ -142,9 +142,7 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
             })
 
 	async def	send_notification(self, event):
-		print('****event: ', event)
 		if self.scope['user'].id == event['receiver']['id']:
-			print('****************user in: ', self.scope['user'])
 			await self.send(text_data=json.dumps([
 				{
 					'description': event['description'],

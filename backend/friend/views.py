@@ -60,7 +60,7 @@ def	notify_user(sender, receiver, action):
 										'type': 'send_notification',
 										'notification_type': notification_type, 
 										'description': description,
-										'receiver': receiver.id,
+										'receiver': UserSerializer(receiver).data,
 										'sender': UserSerializer(sender).data,
 										'timestamp': str(notification.timestamp)
 									}
