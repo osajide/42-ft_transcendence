@@ -161,6 +161,8 @@ const network = async (e) => {
     const rem = e.previousElementSibling || e.nextElementSibling;
     rem.remove();
   }
+  const userName = e.offsetParent.querySelector("h3").innerHTML.split(" ")[0];
+  updateUrl("friends", "", userName + "myFriends" + e.value.split("_")[1]);
 };
 
 /******************** Forms ********************/
@@ -298,7 +300,7 @@ const components = {
     }"/>
 			<label onKeyDown="selction(event)" for="${
         user.first_name + name + user.id
-      }" class="user_label ${(!index ? ' bubble' : '')}" tabindex="0">
+      }" class="user_label ${!index ? " bubble" : ""}" tabindex="0">
 				<img src="${"./assets/avatars/" + user.avatar}" alt="${user.first_name}"/>
 				<h4>${user.first_name} ${user.last_name}</h4>
 			</label>
@@ -411,6 +413,7 @@ const components = {
       invitation: "friends",
       "accept invitation": "friends",
       accept: "friends",
+      chat: "chats",
     };
 
     not.setAttribute("id", "notification");
@@ -424,8 +427,12 @@ const components = {
           window.location.pathname.replace("/", "") == take_to[to_go[0]]
             ? ""
             : "push";
-        if (push.length) updateUrl(take_to[to_go[0]], push, to_go[1]);
-        else {
+        if (push.length) {
+          let dest = to_go[1]
+          if (to_go[0] == 'chat')
+            dest = `${target.value.split('_')[1]}friendChat${target.id.split("_")[1]}`
+          updateUrl(take_to[to_go[0]], push, dest);
+        } else {
           // The element is in the same page
 
           const targetInput = document.getElementById(to_go[1]);
@@ -435,27 +442,36 @@ const components = {
             targetInput.dispatchEvent(ev);
           } else {
             const data = target.id.split("_");
-            const profileSection = document.getElementById("userProfile");
-            response = await fetchWithToken(
-              glob_endp,
-              `${"/friend/profile/"}${data[1]}/`
-            );
-            if (response == "Error") return;
-            response.user = {
-              relationship: response.rel,
-              last_action: response.last_action_by,
-              ...response.user,
-            };
-            profileSection.innerHTML = components["profile"](response.user)
-              .trim()
-              .split("\n")
-              .slice(1, -1)
-              .join("\n");
+            if (data[2] == "chat") {
+              const chatLabel = document.getElementById(
+                `${target.value.split("_")[1]}friendChat${data[1]}`
+              );
+              chatLabel.checked = true;
+              chatLabel.dispatchEvent(new Event("change", { bubbles: true }));
+            } else {
+              const updateCont = document.getElementById("userProfile");
+              response = await fetchWithToken(
+                glob_endp,
+                `${"/friend/profile/"}${data[1]}/`
+              );
+              if (response == "Error") return;
+              response.user = {
+                relationship: response.rel,
+                last_action: response.last_action_by,
+                ...response.user,
+              };
+              console.log(push, response);
+              updateCont.innerHTML = components["profile"](response.user)
+                .trim()
+                .split("\n")
+                .slice(1, -1)
+                .join("\n");
+            }
           }
         }
         notiSocket.send(JSON.stringify({ seen: +to_go[2] }));
+        notiCont.querySelector(`[for="${target.id}"]`).remove();
         target.remove();
-        document.querySelector(`[for=${target.id}]`).remove();
       }
       // }
       const notifier = document.getElementById("notifier");
@@ -699,7 +715,9 @@ async function chatroom() {
     "friendChat",
     chats
   );
-  document.querySelector("#friend_class").outerHTML = components["friends_list"](newchats, 'friend')
+  document.querySelector("#friend_class").outerHTML = components[
+    "friends_list"
+  ](newchats, "friend");
   const messages = document.getElementById("chatCont");
   listen("friendChat_class", messages, "", "chat");
   listen("friend_class", messages, "/chats/new/", "chat");
@@ -794,7 +812,6 @@ const updateUrl = (path = "/", mode = "", targetId = "") => {
   const app = document.getElementById("landing");
   const main = document.getElementsByTagName("main")[0];
   const myForm = document.getElementById("messenger");
-
   if (makeSocket.latest) {
     makeSocket.latest.close();
     makeSocket.latest = undefined;

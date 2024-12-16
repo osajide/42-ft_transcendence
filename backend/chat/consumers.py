@@ -94,7 +94,7 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 		print('event: ', event)
 		if self.user.id == event['sender']:
 			if participants.__len__() < 2:
-				description = f"{event['sender']} sends you a message!"
+				description = f"{self.user} sends you a message!"
 				notificiation = await sync_to_async(Notification.objects.create)(
 					description=description,
 					sender=self.user,
