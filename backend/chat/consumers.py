@@ -109,16 +109,12 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 															'message': json_text_data['message'],
 															'sender': self.user.id
 														})
+			elif self.friendship.status == 'blocked':
+				if self.friendship.last_action_by == self.user.id:
+					await self.send(text_data=json.dumps({"alert": f"you blocked {self.user}"}))
+				else:
+					await self.send(text_data=json.dumps({"alert": f"you've been blocked by {self.friend}"}))
 
-					# await sync_to_async(Message.objects.create)(content=json_text_data['message'],
-					# 							conversation=self.conversation,
-					# 								owner=self.user)
-			# else:
-			# 	if 'unblock' in json_text_data and self.friendship.last_action_by == self.user.id:
-			# 		self.friendship.status = 'accepted'
-			# 		self.friendship.last_action_by = self.user.id
-			# 		self.friendship.save()
-			
 		except json.JSONDecodeError:
 			await self.send(text_data=json.dumps({'error': 'Invalid json format'}))
 
