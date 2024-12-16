@@ -111,7 +111,7 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 														})
 			elif self.friendship.status == 'blocked':
 				if self.friendship.last_action_by == self.user.id:
-					await self.send(text_data=json.dumps({"alert": f"you blocked {self.user}"}))
+					await self.send(text_data=json.dumps({"alert": f"you have blocked {self.user}"}))
 				else:
 					await self.send(text_data=json.dumps({"alert": f"you've been blocked by {self.friend}"}))
 
