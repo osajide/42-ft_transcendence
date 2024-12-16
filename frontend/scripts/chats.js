@@ -6,6 +6,7 @@ function receiveMessage(event) {
     alert("Can't establish connection: " + data.reason);
     return;
   }
+  console.log(messenger)
   tmp = messenger.innerHTML.replace("animateF", "").replace("animate", "");
   messenger.innerHTML =
     tmp + `<p class="message friend animateF">${data.message}</p>`;
@@ -29,6 +30,10 @@ function sendMessage(e, socket) {
 
 function messenger(endpoint) {
   myForm = document.getElementById("messenger");
+  if (makeSocket.latest) {
+    makeSocket.latest.close();
+    makeSocket.latest = undefined;
+  }
   const socket = makeSocket(endpoint, receiveMessage);
 
   myForm.addEventListener("keydown", (event) => {

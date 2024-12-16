@@ -422,29 +422,28 @@ const components = {
       const notiCont = document.getElementById("notiList");
       // if (target.parentElement.tagName == "LABEL") {
       if (target.parentElement.id == "notiList" && target.tagName == "INPUT") {
-        const to_go = target.value.split("_");
+        const to_go = target.id.split("_");
+        let dest = `myFriends`;
+        if (to_go[0] == "chat") dest = "friendChat";
         const push =
           window.location.pathname.replace("/", "") == take_to[to_go[0]]
             ? ""
             : "push";
         if (push.length) {
-          let dest = to_go[1]
-          if (to_go[0] == 'chat')
-            dest = `${target.value.split('_')[1]}friendChat${target.id.split("_")[1]}`
-          updateUrl(take_to[to_go[0]], push, dest);
+          updateUrl(take_to[to_go[0]], push, `${to_go[1]}${dest}${to_go[2]}`);
         } else {
           // The element is in the same page
-
-          const targetInput = document.getElementById(to_go[1]);
+          const targetInput = document.getElementById(
+            `${to_go[1]}${dest}${to_go[2]}`
+          );
           if (targetInput) {
             targetInput.checked = true;
             let ev = new Event("change", { bubbles: true });
             targetInput.dispatchEvent(ev);
           } else {
-            const data = target.id.split("_");
-            if (data[2] == "chat") {
+            if (to_go[0] == "chat") {
               const chatLabel = document.getElementById(
-                `${target.value.split("_")[1]}friendChat${data[1]}`
+                `${to_go[1]}${dest}${to_go[2]}`
               );
               chatLabel.checked = true;
               chatLabel.dispatchEvent(new Event("change", { bubbles: true }));
@@ -452,7 +451,7 @@ const components = {
               const updateCont = document.getElementById("userProfile");
               response = await fetchWithToken(
                 glob_endp,
-                `${"/friend/profile/"}${data[1]}/`
+                `${"/friend/profile/"}${to_go[2]}/`
               );
               if (response == "Error") return;
               response.user = {
@@ -460,7 +459,6 @@ const components = {
                 last_action: response.last_action_by,
                 ...response.user,
               };
-              console.log(push, response);
               updateCont.innerHTML = components["profile"](response.user)
                 .trim()
                 .split("\n")
@@ -469,13 +467,14 @@ const components = {
             }
           }
         }
-        notiSocket.send(JSON.stringify({ seen: +to_go[2] }));
+        notiSocket.send(JSON.stringify({ seen: +to_go[3] }));
         notiCont.querySelector(`[for="${target.id}"]`).remove();
         target.remove();
       }
       // }
       const notifier = document.getElementById("notifier");
-      if (!notiCont.childElementCount) notifier.classList.add("hide");
+      if (!notiCont.childElementCount && notifier)
+        notifier.classList.add("hide");
     });
 
     not.innerHTML = /* html */ `
@@ -489,13 +488,11 @@ const components = {
     const myIcon =
       (noti.type != "invitation" ? "invitation" : "invitation") + "Icon";
     return /* html */ `
-    <input id="noti_${noti.sender.id}_${
+    <input type="radio" class="hide noti_member togglers" name="nots" id="${
       noti.type
-    }" type="radio" class="hide noti_member togglers" name="nots" value="${
-      noti.type
-    }_${setNotiValue(noti)}_${noti.id}"/>
-    <label for="noti_${noti.sender.id}_${
-      noti.type
+    }_${noti.sender.first_name}_${noti.sender.id}_${noti.id}"/>
+    <label for="${noti.type}_${noti.sender.first_name}_${noti.sender.id}_${
+      noti.id
     }" class="notiLabel" tabindex="0">
       <img src="${"./assets/avatars/" + noti.sender.avatar}" alt="${
       noti.sender.first_name
@@ -527,15 +524,11 @@ function closeDiv(e, name) {
     target.checked = false;
     target.dispatchEvent(new Event("change", { bubbles: true }));
     document.querySelector(".expand").classList.remove("expand");
+    if (makeSocket.latest) {
+      makeSocket.latest.close();
+      makeSocket.latest = undefined;
+    }
   }
-}
-
-function setNotiValue(noti) {
-  const sender = noti.sender;
-  const type = noti.type;
-  let classlist = "";
-  if (type == "invitation") classlist = "myFriends";
-  return sender.first_name + classlist;
 }
 
 const pages = {
@@ -755,7 +748,6 @@ function listen(id, change, endpoint, compo) {
         .slice(1, -1)
         .join("\n");
       if (compo == "chat") {
-        // console.log()
         messenger("chats/" + e.target.value);
         document.querySelector(".chatBanner").addEventListener("click", (e) => {
           if (

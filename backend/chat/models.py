@@ -25,6 +25,7 @@ class	Message(models.Model):
 	timestamp = models.DateTimeField(auto_now_add=True)
 	conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
 	owner = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='messages')
+	seen_by_receiver = models.BooleanField(default=False)
 
 	def	__str__(self):
 		return f'{self.content}'
