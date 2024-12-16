@@ -120,9 +120,8 @@ def	manage_friendship(request, action_target):
 			return Response({'error': 'hbas'}, status=status.HTTP_403_FORBIDDEN)
 
 	elif action == 'unblock':
-		if friendship.last_action_by == user1.id and friendship.status == 'block':
-			friendship.status = relationship = 'accepted'
-			friendship.status = relationship = 'accepted'
+		if friendship.last_action_by == user1.id and friendship.status == 'blocked':
+			friendship.status = relationship = 'accepted' 
 			friendship.last_action_by = last_action_by
 			friendship.save()
 			
