@@ -10,13 +10,6 @@ class	Conversation(models.Model):
 	def	__str__(self):
 		return f'{self.user1} and {self.user2}'
 	
-	# def	save(self, *args, **kwargs):
-	# 	if self.user1.id < self.user2.id:
-	# 		self.name = f'{self.user1.id}_{self.user2.id}'
-	# 	else:
-	# 		self.name = f'{self.user2.id}_{self.user1.id}'
-	# 	return super().save(*args, **kwargs)
-	
 	# class Meta:
 	# 	ordering = ['messages__timestamp']
 
