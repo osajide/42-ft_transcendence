@@ -32,13 +32,14 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 
 	notification_group = 'notification'
 	async def	connect(self):
+		print('ja')
 		await self.accept()
 
 		if self.scope['user'].is_authenticated == False:
 			await self.send(text_data=json.dumps({'error': 'user not authenticated'}))
 			await self.close(code=4000)
 			return
-
+		print('which user: ', self.scope['user'])
 		await self.channel_layer.group_add(self.notification_group, self.channel_name)
 		notifications = await get_notifications(self.scope['user'].id)
 		await self.send(text_data=notifications)
@@ -141,10 +142,11 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
             })
 
 	async def	send_notification(self, event):
-		if self.scope['user'].id == event['receiver']:
+		print('****event: ', event)
+		if self.scope['user'].id == event['receiver']['id']:
+			print('****************user in: ', self.scope['user'])
 			await self.send(text_data=json.dumps([
 				{
-					'type': event['notification_type'],
 					'description': event['description'],
 					'sender': event['sender'],
 					'timestamp': event['timestamp']

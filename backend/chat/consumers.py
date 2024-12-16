@@ -9,9 +9,27 @@ from friend.models import Friendship
 
 participants = {}
 
+def	load_and_send_messages(self):
+
+	seen_messages = self.conversation.messages.all()
+	# print('me: ', self.user.id)
+	# seen_messages = self.conversation.messages.all().exclude(
+	# 	~Q(owner=self.user) & Q(seen_by_receiver=True)
+	# )
+	# unseen_messages = self.conversation.messages.all().exclude(
+	# 	~Q(owner=self.user) & Q(seen_by_receiver=False)
+	# )
+	
+	serializer1 = MessageSerializer(seen_messages, many=True)
+	# serializer2 = MessageSerializer(unseen_messages, many=True)
+
+	return [serializer1.data]
+	# return [serializer1.data, serializer2.data]
+
 class	ChatConsumer(AsyncWebsocketConsumer):
 
 	async def	connect(self):
+
 		print('participants before: ', participants)
 		await self.accept()
 
@@ -37,6 +55,12 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 																	   | Q(user1=self.friend, user2=self.user)).first)()
 				if self.conversation is None:
 					self.conversation = await sync_to_async(Conversation.objects.create)(user1=self.user, user2=self.friend)
+					await self.send(text_data=json.dumps({'empty': 'empty'}))
+				else:
+					msgs = await sync_to_async(load_and_send_messages)(self)
+					# print('msgs: ', msgs)
+					# await self.send(text_data=json.dumps(msgs))
+
 
 				await self.channel_layer.group_add(self.conversation_name, self.channel_name)
 
@@ -77,9 +101,9 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 															'sender': self.user.id
 														})
 
-					await sync_to_async(Message.objects.create)(content=json_text_data['message'],
-												conversation=self.conversation,
-													owner=self.user)
+					# await sync_to_async(Message.objects.create)(content=json_text_data['message'],
+					# 							conversation=self.conversation,
+					# 								owner=self.user)
 			# else:
 			# 	if 'unblock' in json_text_data and self.friendship.last_action_by == self.user.id:
 			# 		self.friendship.status = 'accepted'
@@ -91,10 +115,13 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 
 
 	async def	broadcast_message(self, event):
-		print('event: ', event)
+		seen = True
+
 		if self.user.id == event['sender']:
-			if participants.__len__() < 2:
+			if participants[self.conversation_name] < 2:
+				seen = False
 				description = f"{self.user} sends you a message!"
+				print('desc: ', description)
 				notificiation = await sync_to_async(Notification.objects.create)(
 					description=description,
 					sender=self.user,
@@ -107,9 +134,14 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 											'notification_type': 'chat',
 											'description': description,
 											'sender': UserSerializer(self.user).data,
-											'receiver': UserSerializer(self.friend,).data,
+											'receiver': UserSerializer(self.friend).data,
 											'timestamp': str(notificiation.timestamp)
 										})
+
+			await sync_to_async(Message.objects.create)(content=event['message'],
+												conversation=self.conversation,
+													owner=self.user,
+														seen_by_receiver=seen)
 
 		if self.user.id != event['sender']:
 			await self.send(text_data=json.dumps(
