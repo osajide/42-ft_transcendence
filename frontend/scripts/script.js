@@ -548,6 +548,7 @@ function logout(e) {
   if (e) e.preventDefault();
   localStorage.removeItem("user_data");
   user_data = undefined;
+  if (notiSocket)
   notiSocket.close();
   notiSocket = undefined;
   updateUrl("login", "push");

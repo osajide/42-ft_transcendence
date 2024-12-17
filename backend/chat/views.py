@@ -49,17 +49,21 @@ def get_conversations(request):
         for conversation in conversations:
             last_message = conversation.messages.all().last()
             print('last content: ', last_message.content)
-            print('seen: ', last_message.seen_by_receiver)
+            # print('seen: ', last_message.seen_by_receiver)
+            # print('ownert: ', last_message.owner.id)
+            # print('usert: ', user.id)
             if conversation.user1 == user:
-                if last_message.seen_by_receiver == True:
+                if last_message.seen_by_receiver == True or (last_message.seen_by_receiver == False and last_message.owner.id is user.id):
+                    print('seeeeeeeen*******')
                     conversation.user2.seen = True
-                elif last_message.seen_by_receiver == False and last_message.owner is not user:
+                elif last_message.seen_by_receiver == False and last_message.owner.id is not user.id:
                     conversation.user2.seen = False
                 users.append(conversation.user2)
             else:
-                if last_message.seen_by_receiver == True:
+                if last_message.seen_by_receiver == True or (last_message.seen_by_receiver == False and last_message.owner.id is user.id):
+                    print('seeeeeeeen---------')
                     conversation.user1.seen = True
-                elif last_message.seen_by_receiver == False and last_message.owner is not user:
+                elif last_message.seen_by_receiver == False and last_message.owner.id is not user.id:
                     conversation.user1.seen = False
                 users.append(conversation.user1)
 
