@@ -103,6 +103,13 @@ function gameOver(game) {
       : game.oppoPaddle;
   const loser =
     game.playerPaddle.id == winner.id ? game.oppoPaddle : game.playerPaddle;
+    console.log(
+      JSON.stringify({
+        stats: {
+          winner: { id: winner.id, score: winner.score },
+          loser: { id: loser.id, score: loser.score },
+        },
+      }))
   game.socket.send(
     JSON.stringify({
       stats: {
@@ -120,7 +127,7 @@ function gameOver(game) {
 
 function server(e, mypong) {
   data = JSON.parse(e.data);
-  console.log(data);
+  console.log(data, data.game_over);
   if (data.start) {
     mypong.ball.moves = data.start;
     resetBall(mypong);
@@ -182,6 +189,11 @@ function server(e, mypong) {
     if (data.view) mypong.ball.mirror = -1;
     mypong.oppoPaddle.id = data.opponent.id;
     mypong.oppoPaddle.data = data.opponent.data;
+  } else if (data.game_over != undefined) {
+    console.log('yes')
+    mypong.oppoPaddle.score = -1
+    mypong.maxScore = mypong.playerPaddle.score
+    gameOver(mypong)
   }
 }
 
@@ -283,7 +295,7 @@ function changePosOpp(obj, press) {
   } else if (
     press == "ArrowDown" &&
     obj.oppoPaddle[obj.settings.axis] + obj[obj.settings.depends] <=
-      obj.canvas[obj.settings.depends]
+    obj.canvas[obj.settings.depends]
   ) {
     obj.oppoPaddle[obj.settings.axis] += obj.oppoPaddle.speed;
   }
@@ -297,7 +309,7 @@ function changePos(obj) {
   } else if (
     obj.press == "ArrowDown" &&
     obj.playerPaddle[obj.settings.axis] + obj[obj.settings.depends] <=
-      obj.canvas[obj.settings.depends]
+    obj.canvas[obj.settings.depends]
   ) {
     obj.playerPaddle[obj.settings.axis] += obj.playerPaddle.speed;
     move = 1;
@@ -396,9 +408,8 @@ function startGame(id) {
           <img src="../assets/avatars/${user_data.avatar}"/>
         </div>
       </div>
-      <canvas id="game_canvas" width="${window.innerWidth - 40}" height="${
-    window.innerHeight - 130
-  }"></canvas>
+      <canvas id="game_canvas" width="${window.innerWidth - 40}" height="${window.innerHeight - 130
+    }"></canvas>
   `;
   const cont = document.querySelector("#game_page");
   cont.innerHTML = statsBoard;
