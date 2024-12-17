@@ -75,6 +75,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         for key, object_list in users.items():
             for obj in object_list:
+                print("user already exist")
                 if obj.scope['user'].id == self.scope['user'].id:
                     await self.send(text_data=json.dumps({
                             'error' : 'User already joined an existing tournament'

@@ -216,11 +216,11 @@ function notified(e) {
     raiseWarn("User logged out");
     return updateUrl("login", "push");
   } else if (data.game_id !== undefined) {
-    // let timer = setInterval(() => {
-    //   if(startGame){
+    let timer = setInterval(() => {
+      if(startGame){
     startGame(data.game_id);
-    //   clearInterval(timer)}
-    // }, 10);
+      clearInterval(timer)}
+    }, 10);
   } else if (data.tournament_id !== undefined) {
     playTournament(data.tournament_id);
   } else if (data.game_invite) {

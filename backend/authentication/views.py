@@ -140,7 +140,7 @@ class LogoutView(APIView):
         access_token = request.COOKIES.get('access_token')
         refresh_token = request.COOKIES.get('refresh_token')  # Assuming refresh_token is the name
 
-
+        print("==========USER LOGGED OUT")
         # Log out: print tokens to see the values (optional)
         print("Access Token:", access_token)
         print("Refresh Token:", refresh_token)

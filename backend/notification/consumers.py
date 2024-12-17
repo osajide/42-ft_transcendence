@@ -13,6 +13,7 @@ redis_client = redis.Redis(host='redis', port=6379, db=1)
 games = []
 tournaments = []
 user_index = {}
+users_and_games = {}
 
 @database_sync_to_async
 def get_notifications(id):
@@ -123,6 +124,7 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 		
 		if (event['user_id'] == self.scope['user'].id): 
 			print("UPDATE TOURNAMENT")
+			print("user state : ", event['state'])
 			tournaments[event['id']] = chr(ord(tournaments[event['id']]) + event['value'])
 			if (event['user_id'] in user_index) and (event['state'] == 'disconnect'):
 				print("POPPED FROM NOTIFICATION") 
