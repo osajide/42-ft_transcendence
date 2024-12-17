@@ -202,6 +202,8 @@ class UserProfile(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
     def get(self, request):
+
+        print("request : ", request)
         user = UserAccount.objects.filter(email=request.data['email']).first()
 
         total_solo_games = Game.objects.filter(game_type='solo').filter(
@@ -274,6 +276,7 @@ class UserProfile(APIView):
 
         response_data = {
                 "avatar" : user.avatar.url[1:],
+                "email" : user.email, 
                 "user_id" : user.id,
                 "first_name": user.first_name,
                 "last_name": user.last_name,

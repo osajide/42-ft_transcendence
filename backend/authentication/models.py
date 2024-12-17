@@ -38,7 +38,7 @@ def get_upload_path(instance, filename):
 class UserAccount(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    email = models.EmailField( validators=[EmailValidator()], unique=True) # add email to be unique
+    email = models.EmailField(validators=[EmailValidator()], unique=True) # add email to be unique
     password = models.CharField(max_length=128)
     verified_mail = models.BooleanField(default=True)
     avatar = models.ImageField(upload_to=get_upload_path, default='user.svg')
