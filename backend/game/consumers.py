@@ -157,7 +157,8 @@ class	GameConsumer(AsyncWebsocketConsumer):
 			await self.channel_layer.group_send('notification',
 									{
 										'type': 'release_game_id',
-										'id': self.game_id,
+										'index': self.game_id,
+										'user_id': self.user.id,
 										'salam': 'cv' # for debugging
 									})
 		elif 'stat' not in games[self.game_id]: # one left before game ends
@@ -172,12 +173,12 @@ class	GameConsumer(AsyncWebsocketConsumer):
 					'stats': ''
 				}
 			))
-			return
-
-		if self.game_id in games:
-			games.pop(self.game_id)
-			await self.channel_layer.group_send("notification",
-									   {
-										   'type': 'release_game_id',
-										   'id': self.game_id
-									   })
+		else:
+			if self.game_id in games:
+				games.pop(self.game_id)
+				await self.channel_layer.group_send("notification",
+										{
+											'type': 'release_game_id',
+											'index': self.game_id,
+											'user_id': self.user.id
+										})

@@ -55,6 +55,7 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 			print(f"tounaments {user_index[self.scope['user']]} count {tournaments[user_index[self.scope['user']]]}")
 
 		for key, value in users_and_games:
+			print(f'key = {key}, value = {value}')
 			if value == self.scope['user'].id:
 				games[key] = '0'
 				users_and_games.pop(key)
@@ -68,7 +69,9 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 		if 'seen' in json_text_data:
 			await delete_notification(json_text_data['seen'])
 		elif 'private' in json_text_data:
-			print('jsno pri: ', json_text_data)
+			if self.scope['user'].user_state == 'in_game':
+				await self.send(text_data=json.dumps({'error': 'already in game'}))
+				return
 			await self.channel_layer.group_send(self.notification_group,
 									   {
 										   'type': 'make_match',
@@ -78,6 +81,10 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 									   })
 	
 		elif 'solo' in json_text_data:
+			# postman
+			if self.scope['user'].user_state == 'in_game':
+				await self.send(text_data=json.dumps({'error': 'already in game'}))
+				return
 			print('receive solo id: ', self.scope['user'].id, ': ', self.scope['user'].first_name)
 			await self.channel_layer.group_send(self.notification_group,
 									   {
@@ -218,5 +225,8 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 			users_and_games[index].append(self.scope['user'].id)
 
 	async def	release_game_id(self, event):
-		games[event['id']] = '0'
+		if self.scope['user'].id == event['user_id']:
+			print('type event[index]: ', type(event['index']))
+			print('event[index] = ', event['index'])
+			games[event['index']] = '0'
 		
