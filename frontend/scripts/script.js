@@ -691,7 +691,7 @@ const pages = {
     func: async () => {
       console.log(user_data);
       const data = await fetchWithToken(glob_endp, `/api/profile/`, "GET");
-      document.getElementById('updatable').innerHTML = fillProfile(data)
+      document.getElementById("updatable").innerHTML = fillProfile(data);
     },
     glob: true,
   },
@@ -931,8 +931,10 @@ const updateUrl = (path = "/", mode = "", targetId = "") => {
         target.dispatchEvent(new Event("change", { bubbles: true }));
         clearInterval(timer);
       } else if (i > 10) {
-        clearInterval(timer);
-        await checkUser(targetId.split("myFriends")[1]);
+        if (targetId.indexOf("myFriends") > -1) {
+          clearInterval(timer);
+          await checkUser(targetId.split("myFriends")[1]);
+        } else i = 0;
       }
     }, 10);
   }
