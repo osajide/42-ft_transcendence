@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import UserAccount
 from django.contrib.auth.hashers import make_password
 
+
 class UserSerializer(serializers.ModelSerializer):
 	confirm_password = serializers.CharField(write_only=True)  # For validation only
 	avatar = serializers.SerializerMethodField(method_name='get_avatar_path')
@@ -36,4 +37,20 @@ class UserSerializer(serializers.ModelSerializer):
 		# print('instance.avatar.url: ', instance.avatar.url)
 		return instance.avatar.url[1:]
 
-	
+
+class UserAccountUpdateSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = UserAccount
+		fields = ['first_name', 'last_name', 'avatar', 'nickname', 'email']
+		extra_kwargs = {
+			'first_name': {'required': True},
+			'last_name': {'required': True},
+			'avatar': {'required': True},
+			'nickname': {'required': True},
+			'email': {'required': True}
+        				}
+
+	def validate(self, data):
+
+		if UserAccount.objects.filter(nick_name=data['nickname']).exclude(id=self.instance.id).exists():
+			raise serializers.ValidationError("This nickname is already taken.")

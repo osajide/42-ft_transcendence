@@ -94,7 +94,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 })
         
         users[tournament_id].append(self)
-        # await sync_to_async(UserAccount.objects.filter(id=self.scope['user'].id).update)(user_state="in_game")
+        await sync_to_async(UserAccount.objects.filter(id=self.scope['user'].id).update)(user_state="in_game")
         self.scope['user'].user_state = "in_game"
         # user = await sync_to_async(UserAccount.objects.get)(id=self.scope['user'].id)
 
@@ -169,12 +169,18 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 return 
 
             arr = []
-            pos = make_game[tournament_id][self.scope['user'].id]
-            for player in make_game[tournament_id]:
-                if make_game[tournament_id][player] == pos:
-                    arr.append(player)
-                    #pop user from dictionary 
-                
+            if users_states[tournament_id][self.scope['user'].id] != 3:
+                pos = make_game[tournament_id][self.scope['user'].id]
+                for player in make_game[tournament_id]:
+                    if make_game[tournament_id][player] == pos:
+                        arr.append(player)
+                        #pop user from dictionary 
+            else:
+                for user in users_states[tournament_id]:
+                    if users_states[tournament_id][user] == 3:
+                        print("winner_id final => ", user)
+                        arr.append(user)
+                          
             
             if (len(arr) == 2):
                 print(f"{self.scope['user'].last_name} IS READY TO PLAY")
@@ -217,7 +223,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         print("winner id : ", winner_id)
 
-        if len(winner_id) == 1 and users_states[tournament_id][winner_id] == 3:
+        if type(winner_id) is int and users_states[tournament_id][winner_id] == 3:
             print("THE TOURNAMENT IS ENDED")
             users.pop(tournament_id)
             users_states[tournament_id][winner_id] += 1
@@ -230,21 +236,26 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     'id' : tournament_id,
                     'value' : -8
                 })
-        elif len(winner_id) == 2:
+        elif type(winner_id) != int:
             print("SEMI FINAL")
             users_states[tournament_id][winner_id[1]] += 1
             if tournament_id not in make_game:
                 make_game[tournament_id] = {}
             make_game[tournament_id][winner_id[1]] = winner_id[0]
-            print(make_game)
+            # print(make_game)
             # for player_pos in  make_game[tournament_id]:
             #     print("pos : ", make_game[tournament_id][player_pos])
             if len(make_game[tournament_id]) >= 2:
                 i = 0
-                for player_pos in  make_game[tournament_id]:
-                    if  make_game[tournament_id][player_pos] == winner_id[0]:
-                        i += 1
-
+                if users_states[tournament_id][winner_id[1]] != 3:
+                    for player_pos in  make_game[tournament_id]:
+                        if  make_game[tournament_id][player_pos] == winner_id[0]:
+                            i += 1
+                else:
+                    # users_states[tournament_id][winner_id]
+                    for user in  users_states[tournament_id]:
+                        if  users_states[tournament_id][user] == 3:
+                            i += 1
                 if i == 2:
                     await self.channel_layer.group_send('notification',
                         {
@@ -266,7 +277,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 'winner' : [self.scope['user'].id, users_states[tournament_id][self.scope['user'].id]]
             })
 
-        if len(winner_id) == 1 and users_states[tournament_id][winner_id] == 4:
+        if (type(winner_id) is int) and users_states[tournament_id][winner_id] == 4: 
             users_states.pop(tournament_id)
     
     async def 	send_winner(self, event):
@@ -276,7 +287,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
     async def	disconnect(self, code):
 
-        # await sync_to_async(UserAccount.objects.filter(id=self.scope['user'].id).update)(user_state="offline")
+        await sync_to_async(UserAccount.objects.filter(id=self.scope['user'].id).update)(user_state="offline")
         self.scope['user'].user_state = "offline"
         
         tournament_id = self.scope["url_route"]["kwargs"]["tournament_id"] 
