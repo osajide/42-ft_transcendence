@@ -678,12 +678,21 @@ const pages = {
   profile: {
     data: /*html*/ `
 			<section id="page">
-        <div id="updatable"></div>
+        <div id="updatable">
+          <img id="user_avatar" src="./assets/avatars/user.svg" alt="" />
+          <h3 id="user_name">L3arbi 1337</h3>
+          <p id="user_email">l3arbi.1337.ma</p>
+          <h5 id="user_nickname">l337</h5>
+        </div>
         <div id="stats"></div>
 			</section>
 		`,
     id: "profile",
-    func: () => {},
+    func: async () => {
+      console.log(user_data);
+      const data = await fetchWithToken(glob_endp, `/api/profile/`, "GET");
+      document.getElementById('updatable').innerHTML = fillProfile(data)
+    },
     glob: true,
   },
   chats: {
@@ -731,6 +740,14 @@ const pages = {
     glob: true,
   },
 };
+
+function fillProfile(data) {
+  return /* html */ `
+  <img id="user_avatar" src="./assets/avatars/${data.avatar}" alt="${data.first_name}" />
+  <h3 id="user_name">${data.first_name} ${data.last_name}</h3>
+  <p id="user_email">${data.email}</p>
+  <h5 id="user_nickname">l337</h5>`;
+}
 
 async function friendsRoom() {
   const friends = await fetchWithToken(glob_endp, `/friend/list/`, "GET");
@@ -924,7 +941,8 @@ const updateUrl = (path = "/", mode = "", targetId = "") => {
 };
 
 document.body.onload = () => {
-  const path = window.location.pathname;
+  let path = window.location.pathname.replace("/", "");
+  if (!path.length) path = "/";
   user_data = JSON.parse(localStorage.getItem("user_data"));
   loader.classList.add("show");
   loader.classList.remove("hide");
