@@ -164,13 +164,15 @@ class	GameConsumer(AsyncWebsocketConsumer):
 		elif 'stat' not in games[self.game_id]: # one left before game ends
 			# means that the host is the one who left
 			if self == games[self.game_id]['host']:
+				print('host li khrej')
 				op = games[self.game_id]['opponent']
 			else:
+				print('opponent li khrej')
 				op = games[self.game_id]['host']
 
 			await op.send(text_data=json.dumps(
 				{
-					'stats': ''
+					'over': ''
 				}
 			))
 		else:

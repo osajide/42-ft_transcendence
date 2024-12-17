@@ -32,7 +32,6 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 
 	notification_group = 'notification'
 	async def	connect(self):
-		print('ja')
 		await self.accept()
 
 		if self.scope['user'].is_authenticated == False:
@@ -54,12 +53,14 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 			tournaments[user_index[self.scope['user']]] = chr(ord(tournaments[user_index[self.scope['user']]]) - 1)
 			print(f"tounaments {user_index[self.scope['user']]} count {tournaments[user_index[self.scope['user']]]}")
 
-		for key, value in users_and_games:
+		print('users_and_games before: ', users_and_games)
+		for key, value in users_and_games.items():
 			print(f'key = {key}, value = {value}')
-			if value == self.scope['user'].id:
+			if self.scope['user'].id in value:
 				games[key] = '0'
 				users_and_games.pop(key)
 				break
+		print('users_and_games after: ', users_and_games)
 
 		
 
@@ -225,8 +226,11 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 			users_and_games[index].append(self.scope['user'].id)
 
 	async def	release_game_id(self, event):
+		print('games before--> ', games)
+		print('event::::::: ', event)
 		if self.scope['user'].id == event['user_id']:
 			print('type event[index]: ', type(event['index']))
 			print('event[index] = ', event['index'])
 			games[event['index']] = '0'
+		print('games after--> ', games)
 		
