@@ -142,8 +142,6 @@ document.addEventListener("keydown", (event) => {
 });
 
 window.addEventListener("click", (e) => {
-  if (e.target.classList.contains("bubble"))
-    e.target.classList.remove("bubble");
   const togglers = document.querySelectorAll(".togglers:checked");
   togglers.forEach((a) => {
     const searcher = document.getElementById("searchUser");
@@ -289,15 +287,14 @@ const components = {
 			<input class="hide togglers" type="checkbox" id="menu"/>
 			<nav>
 				${["profile", "Friends", "Chats", "Games", "logout"]
-          .map((a) => {
-            return this["menu_item"](a);
-          })
-          .join("\n")}
+        .map((a) => {
+          return this["menu_item"](a);
+        })
+        .join("\n")}
 			</nav>
 			<label class="img_label" for="menu" tabindex="1">
-				<img id="logo" src="assets/avatars/${
-          user_data?.avatar ? user_data.avatar : "user.svg"
-        }" alt="logo" />
+				<img id="logo" src="assets/avatars/${user_data?.avatar ? user_data.avatar : "user.svg"
+      }" alt="logo" />
 			</label>
 		`;
     return header;
@@ -323,18 +320,14 @@ const components = {
   user_label: function (user, name, index) {
     if (name == "search_friends") name = "myFriends";
     return /* html */ `
-			<input id="${
-        user.first_name + name + user.id
-      }" type="radio" class="chat_member hide" name="${name}" value="${
-      user?.id
-    }"/>
-			<label onKeyDown="selction(event)" for="${
-        user.first_name + name + user.id
-      }" class="user_label ${
-      (!index && name == "myFriends") || (name == "friendChat" && !user.seen)
+			<input id="${user.first_name + name + user.id
+      }" type="radio" class="chat_member hide" name="${name}" value="${user?.id
+      }"/>
+			<label onKeyDown="selction(event)" for="${user.first_name + name + user.id
+      }" class="user_label ${(!index && name == "myFriends") || (name == "friendChat" && !user.seen)
         ? " bubble"
         : ""
-    }" tabindex="0">
+      }" tabindex="0">
 				<img src="${"./assets/avatars/" + user.avatar}" alt="${user.first_name}"/>
 				<h4>${user.first_name} ${user.last_name}</h4>
 			</label>
@@ -344,14 +337,14 @@ const components = {
     return /* html */ `
 			<section id="${name + "_class"}" class="users_list">
 				${usersList
-          .map((users, index) => {
-            return users
-              .map((user) => {
-                return this.user_label(user, name, index);
-              })
-              .join("\n");
-          })
-          .join("\n")}
+        .map((users, index) => {
+          return users
+            .map((user) => {
+              return this.user_label(user, name, index);
+            })
+            .join("\n");
+        })
+        .join("\n")}
 			</section>
 		`;
   },
@@ -404,9 +397,8 @@ const components = {
   warning: function (msg, type) {
     if (type != "game")
       return /* html */ `
-      <div onclick="removeElement(this)" class="warn ${type}" tabindex="0">${
-        icons[type + "Icon"]
-      }<p>${msg}</p></div>
+      <div onclick="removeElement(this)" class="warn ${type}" tabindex="0">${icons[type + "Icon"]
+        }<p>${msg}</p></div>
     `;
     return /* html */ `
       <div onclick="removeElement(this)" id="game_${msg.game_id}" class="warn alert ${type}" tabindex="0">${icons.games}<p>${msg.description}</p></div>
@@ -422,28 +414,26 @@ const components = {
     };
     return /* html */ `
 		<section id="userProfile">
-    ${
-      Object.keys(user).length
+    ${Object.keys(user).length
         ? /* html */ `
         <div class="userBanner">
         ${icons.back("myFriends")}
-          <img src="${"./assets/avatars/" + user.avatar}" alt="${
-            user.first_name
-          }"/>
+          <img src="${"./assets/avatars/" + user.avatar}" alt="${user.first_name
+        }"/>
           <div class="userInfo">
           <h3>${user.first_name} ${user.last_name}</h3>
           <p>${user.email}</p>
           <div class="relManager">
           ${choices[user.relationship]
-            .map((action) => {
-              return /* html */ `<button onclick="network(this)" class='button' value="${action}_${user.id}">${action}</button>`;
-            })
-            .join("\n")}
+          .map((action) => {
+            return /* html */ `<button onclick="network(this)" class='button' value="${action}_${user.id}">${action}</button>`;
+          })
+          .join("\n")}
           </div>
         </div>
     </div>`
         : ""
-    }
+      }
     </section>`;
   },
   notification: function () {
@@ -512,15 +502,12 @@ const components = {
     const myIcon =
       (noti.type != "invitation" ? "invitation" : "invitation") + "Icon";
     return /* html */ `
-    <input type="radio" class="hide noti_member togglers" name="nots" id="${
-      noti.type
-    }_${noti.sender.first_name}_${noti.sender.id}_${noti.id}"/>
-    <label for="${noti.type}_${noti.sender.first_name}_${noti.sender.id}_${
-      noti.id
-    }" class="notiLabel" tabindex="0">
-      <img src="${"./assets/avatars/" + noti.sender.avatar}" alt="${
-      noti.sender.first_name
-    }"/>
+    <input type="radio" class="hide noti_member togglers" name="nots" id="${noti.type
+      }_${noti.sender.first_name}_${noti.sender.id}_${noti.id}"/>
+    <label for="${noti.type}_${noti.sender.first_name}_${noti.sender.id}_${noti.id
+      }" class="notiLabel" tabindex="0">
+      <img src="${"./assets/avatars/" + noti.sender.avatar}" alt="${noti.sender.first_name
+      }"/>
       ${icons[myIcon]}
       <p>${noti.description}</p>
     </label>
@@ -597,7 +584,7 @@ const pages = {
 			</section>
 		`,
     id: "landing_page",
-    func: () => {},
+    func: () => { },
     glob: false,
   },
   login: {
@@ -792,6 +779,8 @@ async function chatroom() {
 function listen(id, change, endpoint, compo) {
   document.querySelector("#" + id).addEventListener("change", async (e) => {
     if (e.target.checked) {
+      console.log(e.target)
+      if (e.target.nextElementSibling.classList.contains("bubble")) e.target.nextElementSibling.classList.remove("bubble");
       let data;
       if (compo == "profile") {
         response = await fetchWithToken(
