@@ -174,7 +174,7 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 						'description': event['description'],
 						'sender': event['sender'],
 						'timestamp': event['timestamp'],
-						'id': event['id']
+						# 'id': event['id']
 				}]))
 		elif 'opponent' in event:
 			if self.scope['user'].id == event['opponent']:
