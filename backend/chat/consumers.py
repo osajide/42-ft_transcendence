@@ -9,12 +9,12 @@ from friend.models import Friendship
 
 participants = {}
 
-def	load_and_send_messages(self):
-
-	seen = self.conversation.messages.filter(seen_by_receiver=True)
+def	load_messages(self):
+	seen = self.conversation.messages.filter(Q(seen_by_receiver=True) | (Q(seen_by_receiver=False) & (Q(owner=self.user))))
 	unseen = self.conversation.messages.filter(Q(owner=self.friend) & Q(seen_by_receiver=False))
 	ser1 = MessageSerializer(seen, many=True)
 	ser2 = MessageSerializer(unseen, many=True)
+	# print('ser22222::::: ', ser2.data)
 	return [ser1.data, ser2.data]
 
 class	ChatConsumer(AsyncWebsocketConsumer):
@@ -47,7 +47,7 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 				if self.conversation is None:
 					self.conversation = await sync_to_async(Conversation.objects.create)(user1=self.user, user2=self.friend)
 				else:
-					msgs = await sync_to_async(load_and_send_messages)(self)
+					msgs = await sync_to_async(load_messages)(self)
 					await self.send(text_data=json.dumps(
 						{
 							'history': msgs,

@@ -204,8 +204,7 @@ class UserProfile(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
 
-        print("request : ", request)
-        user = UserAccount.objects.filter(email=request.data['email']).first()
+        user = UserAccount.objects.filter(email=request.user.email).first()
 
         total_solo_games = Game.objects.filter(game_type='solo').filter(
                                             Q(player1=user) | Q(player2=user)).count()
@@ -279,6 +278,7 @@ class UserProfile(APIView):
                 "avatar" : user.avatar.url[1:],
                 "email" : user.email, 
                 "user_id" : user.id,
+                "email": user.email,
                 "first_name": user.first_name,
                 "last_name": user.last_name,
                 "total_solo_games": total_solo_games,

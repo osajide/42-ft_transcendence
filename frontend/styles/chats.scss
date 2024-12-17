@@ -51,6 +51,16 @@ $msg_tick_bottom: 14px;
         text-overflow: ellipsis;
       }
     }
+
+    .controls{
+      svg{
+        transition: all .15s linear;
+        cursor: pointer;
+        &:hover{
+          scale: 1.3;
+        }
+      }
+    }
   }
 }
 

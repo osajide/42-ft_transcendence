@@ -32,7 +32,6 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 
 	notification_group = 'notification'
 	async def	connect(self):
-		print('ja')
 		await self.accept()
 
 		if self.scope['user'].is_authenticated is False:
@@ -60,9 +59,14 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 			tournaments[user_index[self.scope['user'].id]] = chr(ord(tournaments[user_index[self.scope['user'].id]]) - 1)
 			print(f"tounaments {user_index[self.scope['user'].id]} still has {tournaments[user_index[self.scope['user'].id]]} players")
 
-		# print('games noti: ', games)
-		# games.clear() #temp
-		# await self.close()
+		print('users_and_games before: ', users_and_games)
+		for key, value in users_and_games.items():
+			print(f'key = {key}, value = {value}')
+			if self.scope['user'].id in value:
+				games[key] = '0'
+				users_and_games.pop(key)
+				break
+		print('users_and_games after: ', users_and_games)
 
 	async def	receive(self, text_data=None, bytes_data=None):
 		
@@ -70,7 +74,9 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 		if 'seen' in json_text_data:
 			await delete_notification(json_text_data['seen'])
 		elif 'private' in json_text_data:
-			print('jsno pri: ', json_text_data)
+			if self.scope['user'].user_state == 'in_game':
+				await self.send(text_data=json.dumps({'error': 'already in game'}))
+				return
 			await self.channel_layer.group_send(self.notification_group,
 									   {
 										   'type': 'make_match',
@@ -80,6 +86,10 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 									   })
 	
 		elif 'solo' in json_text_data:
+			# postman
+			if self.scope['user'].user_state == 'in_game':
+				await self.send(text_data=json.dumps({'error': 'already in game'}))
+				return
 			print('receive solo id: ', self.scope['user'].id, ': ', self.scope['user'].first_name)
 			await self.channel_layer.group_send(self.notification_group,
 									   {
@@ -166,7 +176,7 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 						'description': event['description'],
 						'sender': event['sender'],
 						'timestamp': event['timestamp'],
-						'id': event['id']
+						# 'id': event['id']
 				}]))
 		elif 'opponent' in event:
 			if self.scope['user'].id == event['opponent']:
@@ -225,5 +235,11 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 			users_and_games[index].append(self.scope['user'].id)
 
 	async def	release_game_id(self, event):
-		games[event['id']] = '0'
+		print('games before--> ', games)
+		print('event::::::: ', event)
+		if self.scope['user'].id == event['user_id']:
+			print('type event[index]: ', type(event['index']))
+			print('event[index] = ', event['index'])
+			games[event['index']] = '0'
+		print('games after--> ', games)
 		
