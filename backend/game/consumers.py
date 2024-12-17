@@ -153,7 +153,7 @@ class	GameConsumer(AsyncWebsocketConsumer):
 		# await sync_to_async(self.user.update)(user_state='offline')
 		await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
-		print('json:::::>>>>>> ', games)
+		print('gamessss in disconnect of one of them:::::>>>>>> ', games)
 		# in case one started game and left before opponent join
 		if not 'opponent' in games[self.game_id]:
 			await self.channel_layer.group_send('notification',
@@ -163,16 +163,16 @@ class	GameConsumer(AsyncWebsocketConsumer):
 										'user_id': self.user.id,
 										'salam': 'cv' # for debugging
 									})
-		elif 'stat' not in games[self.game_id]: # one left before game ends
+		elif 'stats' not in games[self.game_id]: # one left before game ends
 			# means that the host is the one who left
 			print('host.user: ', games[self.game_id]['host'].user)
 			print('opponent.user: ', games[self.game_id]['opponent'].user)
 			if self == games[self.game_id]['host']:
-				print('host li khrej')
 				op = games[self.game_id]['opponent']
+				print(f'{op.user} li khrej')
 			else:
-				print('opponent li khrej')
 				op = games[self.game_id]['host']
+				print(f'{op.user} li khrej')
 			
 			print('op ===?  ', op.user)
 			await op.send(text_data=json.dumps(
