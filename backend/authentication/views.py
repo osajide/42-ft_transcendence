@@ -293,8 +293,9 @@ class UserProfile(APIView):
     
         return JsonResponse(response_data)
 
-
+from rest_framework.parsers import MultiPartParser, FormParser
 class UpdateProfile(APIView):
+    parser_classes = [MultiPartParser, FormParser]
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -302,9 +303,17 @@ class UpdateProfile(APIView):
         
         print("UPDATE PROFILE")
         user = request.user
-        data = request.data 
-
-
+        data = request.data
+        print('req: ', data)
+        print("Request Files:", request.FILES)
+        print('user avatar: ', user.avatar)
+        profile_instance = UserAccount.objects.get(user=request.user)
+        ser = UserSerializer(profile_instance, data=request.FILES, partial=True)
+        print('ser ok: ', ser.data)
+        if ser.is_valid():
+            print('ser----->: ', ser.data)
+        print('khrej')
+        return
         first_name  = request.data.get('first_name')
         last_name  = request.data.get('last_name')
         email  = request.data.get('email')
@@ -323,11 +332,11 @@ class UpdateProfile(APIView):
         if avatar:
             user.avatar = avatar
         
-        print("first_name : ", first_name)
-        print("last_name : ", last_name)
-        print("email : ", email)
-        print("nickname : ", nickname)
-        print("avatar : ", avatar)
+        # print("first_name : ", first_name)
+        # print("last_name : ", last_name)
+        # print("email : ", email)
+        # print("nickname : ", nickname)
+        # print("avatar : ", avatar)
 
         try :
             user.full_clean()

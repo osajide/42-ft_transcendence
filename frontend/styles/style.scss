@@ -4,8 +4,8 @@
   box-sizing: border-box;
   color: $white;
   font-family: "Poppins", sans-serif;
-  user-select: none;
   caret-color: $neo_lue;
+  user-select: none !important;
 
   &:focus {
     border: 0;
@@ -13,16 +13,16 @@
   }
 }
 
-p,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-label {
-  user-select: initial !important;
-}
+// p,
+// h1,
+// h2,
+// h3,
+// h4,
+// h5,
+// h6,
+// label {
+//   user-select: initial !important;
+// }
 
 ::-webkit-scrollbar {
   width: 7px;
@@ -72,6 +72,7 @@ body {
     cursor: pointer;
     max-width: 200px;
     background-color: $prim_dark !important;
+    align-items: center;
 
     p {
       margin: 0;
@@ -80,7 +81,6 @@ body {
 
   .game {
     background-color: $prim_dark !important;
-    align-items: center;
     svg {
       width: 45px;
     }

@@ -54,7 +54,11 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
       "Content-Type": "application/json",
     },
   };
-  if (body) settings.body = JSON.stringify(body);
+  if (body && body instanceof FormData) {
+    settings.body = body;
+    delete settings.headers
+  }
+  else if (body) settings.body = JSON.stringify(body);
   const response = await fetch(url + endpoint, settings);
 
   loader.classList.add("hide");
@@ -287,14 +291,15 @@ const components = {
 			<input class="hide togglers" type="checkbox" id="menu"/>
 			<nav>
 				${["profile", "Friends", "Chats", "Games", "logout"]
-        .map((a) => {
-          return this["menu_item"](a);
-        })
-        .join("\n")}
+          .map((a) => {
+            return this["menu_item"](a);
+          })
+          .join("\n")}
 			</nav>
 			<label class="img_label" for="menu" tabindex="1">
-				<img id="logo" src="assets/avatars/${user_data?.avatar ? user_data.avatar : "user.svg"
-      }" alt="logo" />
+				<img id="logo" src="assets/avatars/${
+          user_data?.avatar ? user_data.avatar : "user.svg"
+        }" alt="logo" />
 			</label>
 		`;
     return header;
@@ -320,14 +325,18 @@ const components = {
   user_label: function (user, name, index) {
     if (name == "search_friends") name = "myFriends";
     return /* html */ `
-			<input id="${user.first_name + name + user.id
-      }" type="radio" class="chat_member hide" name="${name}" value="${user?.id
-      }"/>
-			<label onKeyDown="selction(event)" for="${user.first_name + name + user.id
-      }" class="user_label ${(!index && name == "myFriends") || (name == "friendChat" && !user.seen)
+			<input id="${
+        user.first_name + name + user.id
+      }" type="radio" class="chat_member hide" name="${name}" value="${
+      user?.id
+    }"/>
+			<label onKeyDown="selction(event)" for="${
+        user.first_name + name + user.id
+      }" class="user_label ${
+      (!index && name == "myFriends") || (name == "friendChat" && !user.seen)
         ? " bubble"
         : ""
-      }" tabindex="0">
+    }" tabindex="0">
 				<img src="${"./assets/avatars/" + user.avatar}" alt="${user.first_name}"/>
 				<h4>${user.first_name} ${user.last_name}</h4>
 			</label>
@@ -337,14 +346,14 @@ const components = {
     return /* html */ `
 			<section id="${name + "_class"}" class="users_list">
 				${usersList
-        .map((users, index) => {
-          return users
-            .map((user) => {
-              return this.user_label(user, name, index);
-            })
-            .join("\n");
-        })
-        .join("\n")}
+          .map((users, index) => {
+            return users
+              .map((user) => {
+                return this.user_label(user, name, index);
+              })
+              .join("\n");
+          })
+          .join("\n")}
 			</section>
 		`;
   },
@@ -397,8 +406,9 @@ const components = {
   warning: function (msg, type) {
     if (type != "game")
       return /* html */ `
-      <div onclick="removeElement(this)" class="warn ${type}" tabindex="0">${icons[type + "Icon"]
-        }<p>${msg}</p></div>
+      <div onclick="removeElement(this)" class="warn ${type}" tabindex="0">${
+        icons[type + "Icon"]
+      }<p>${msg}</p></div>
     `;
     return /* html */ `
       <div onclick="removeElement(this)" id="game_${msg.game_id}" class="warn alert ${type}" tabindex="0">${icons.games}<p>${msg.description}</p></div>
@@ -414,26 +424,28 @@ const components = {
     };
     return /* html */ `
 		<section id="userProfile">
-    ${Object.keys(user).length
+    ${
+      Object.keys(user).length
         ? /* html */ `
         <div class="userBanner">
         ${icons.back("myFriends")}
-          <img src="${"./assets/avatars/" + user.avatar}" alt="${user.first_name
-        }"/>
+          <img src="${"./assets/avatars/" + user.avatar}" alt="${
+            user.first_name
+          }"/>
           <div class="userInfo">
           <h3>${user.first_name} ${user.last_name}</h3>
           <p>${user.email}</p>
           <div class="relManager">
           ${choices[user.relationship]
-          .map((action) => {
-            return /* html */ `<button onclick="network(this)" class='button' value="${action}_${user.id}">${action}</button>`;
-          })
-          .join("\n")}
+            .map((action) => {
+              return /* html */ `<button onclick="network(this)" class='button' value="${action}_${user.id}">${action}</button>`;
+            })
+            .join("\n")}
           </div>
         </div>
     </div>`
         : ""
-      }
+    }
     </section>`;
   },
   notification: function () {
@@ -502,12 +514,15 @@ const components = {
     const myIcon =
       (noti.type != "invitation" ? "invitation" : "invitation") + "Icon";
     return /* html */ `
-    <input type="radio" class="hide noti_member togglers" name="nots" id="${noti.type
-      }_${noti.sender.first_name}_${noti.sender.id}_${noti.id}"/>
-    <label for="${noti.type}_${noti.sender.first_name}_${noti.sender.id}_${noti.id
-      }" class="notiLabel" tabindex="0">
-      <img src="${"./assets/avatars/" + noti.sender.avatar}" alt="${noti.sender.first_name
-      }"/>
+    <input type="radio" class="hide noti_member togglers" name="nots" id="${
+      noti.type
+    }_${noti.sender.first_name}_${noti.sender.id}_${noti.id}"/>
+    <label for="${noti.type}_${noti.sender.first_name}_${noti.sender.id}_${
+      noti.id
+    }" class="notiLabel" tabindex="0">
+      <img src="${"./assets/avatars/" + noti.sender.avatar}" alt="${
+      noti.sender.first_name
+    }"/>
       ${icons[myIcon]}
       <p>${noti.description}</p>
     </label>
@@ -584,7 +599,7 @@ const pages = {
 			</section>
 		`,
     id: "landing_page",
-    func: () => { },
+    func: () => {},
     glob: false,
   },
   login: {
@@ -665,20 +680,94 @@ const pages = {
   profile: {
     data: /*html*/ `
 			<section id="page">
-        <div id="updatable">
+        <div id="updatable" class="list">
           <img id="user_avatar" src="./assets/avatars/user.svg" alt="" />
           <h3 id="user_name">L3arbi 1337</h3>
           <p id="user_email">l3arbi.1337.ma</p>
           <h5 id="user_nickname">l337</h5>
         </div>
-        <div id="stats"></div>
+        <div id="stats">
+          <form id="updateProfile" class="auth_form">
+            <label class="form_inp">
+              Avatar:
+              <input type="file" id="new_avatar" placeholder="test" name="avatar" accept="image/png, image/jpeg, image/svg, image/jpg" />
+            </label>
+            <label class="form_inp">
+              First name:
+              <input name="first_name" type="text" placeholder="Laarbi"/>
+            </label>
+            <label class="form_inp">
+              Last name:
+              <input name="last_name" type="text" placeholder="Treize"/>
+            </label>
+            <label class="form_inp">
+              Username:
+              <input name="username" type="text" placeholder="L337"/>
+            </label>
+            <input class="button" type="submit" value="Update profile"/>
+          </form>
+        </div>
 			</section>
 		`,
     id: "profile",
     func: async () => {
-      console.log(user_data);
       const data = await fetchWithToken(glob_endp, `/api/profile/`, "GET");
       document.getElementById("updatable").innerHTML = fillProfile(data);
+      document
+        .getElementById("updateProfile")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const form = new FormData(e.target);
+          const formData = new FormData();
+          let count = 0
+          // Convert FormData entries to an object
+
+          for (let [key, value] of form.entries()) {
+            if (value.length && typeof value === "string") {
+              formData.append(key, value);
+              count++
+            } else if (typeof value === "object" && value.size) {
+              // formData.append(key, value);
+              const fileInput = document.getElementById('new_avatar');
+  
+              if (fileInput.files.length > 0) {
+                formData.append("avatar", fileInput.files[0]); // Appending the image file
+              } 
+              count++
+            }
+          }
+          // const promises = [];
+          // for (let [key, value] of form.entries()) {
+          //   if (value.length && typeof value === "string") {
+          //     formData[key] = value;
+          //   } else if (typeof value === "object" && value.size) {
+          //     // Create a promise for reading the file
+          //     const filePromise = new Promise((resolve) => {
+          //       const reader = new FileReader();
+          //       reader.onload = () => {
+          //         formData[key] = reader.result
+          //         resolve();
+          //       };
+          //       reader.readAsDataURL(value);
+          //     });
+          //     promises.push(filePromise);
+          //   }
+          // }
+
+          // // Wait for all file reading promises to complete
+          // await Promise.all(promises);
+          if (count) {
+            resp = fetchWithToken(
+              glob_endp,
+              "/api/update_profile/",
+              "PATCH",
+              formData
+            );
+            // updateUrl("profile");
+          } else {
+            raiseWarn("Nothing to update", "alert");
+          }
+        });
     },
     glob: true,
   },
@@ -730,7 +819,7 @@ const pages = {
 
 function fillProfile(data) {
   return /* html */ `
-  <img id="user_avatar" src="./assets/avatars/${data.avatar}" alt="${data.first_name}" />
+  <img id="user_avatar" src="assets/avatars/${data.avatar}" alt="${data.first_name}" />
   <h3 id="user_name">${data.first_name} ${data.last_name}</h3>
   <p id="user_email">${data.email}</p>
   <h5 id="user_nickname">l337</h5>`;
@@ -779,8 +868,9 @@ async function chatroom() {
 function listen(id, change, endpoint, compo) {
   document.querySelector("#" + id).addEventListener("change", async (e) => {
     if (e.target.checked) {
-      console.log(e.target)
-      if (e.target.nextElementSibling.classList.contains("bubble")) e.target.nextElementSibling.classList.remove("bubble");
+      console.log(e.target);
+      if (e.target.nextElementSibling.classList.contains("bubble"))
+        e.target.nextElementSibling.classList.remove("bubble");
       let data;
       if (compo == "profile") {
         response = await fetchWithToken(
@@ -931,12 +1021,13 @@ const updateUrl = (path = "/", mode = "", targetId = "") => {
   loader.classList.remove("show");
 };
 
+loader.classList.add("show");
+loader.classList.remove("hide");
+
 document.body.onload = () => {
   let path = window.location.pathname.replace("/", "");
   if (!path.length) path = "/";
   user_data = JSON.parse(localStorage.getItem("user_data"));
-  loader.classList.add("show");
-  loader.classList.remove("hide");
   if (!user_data && ["login", "signin", "/"].indexOf(path) < 0) {
     raiseWarn("User logged out");
     return updateUrl("login", "push");
