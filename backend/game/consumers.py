@@ -95,41 +95,6 @@ class	GameConsumer(AsyncWebsocketConsumer):
 			))
 		else:
 			games[self.game_id]['host'] = self
-
-
-	async def	disconnect(self, code):
-		if code == 4000:
-			return
-
-		if self.game_id in games and 'stats' not in games[self.game_id]: # one of them disconnect
-			if not 'opponent' in games[self.game_id]:
-				
-				await self.channel_layer.group_send('notification',
-										{
-											'type': 'release_game_id',
-											'id': self.game_id
-										})
-			else: # both were connected
-				if self == games[self.game_id]['host']:
-					opponnent = games[self.game_id]['host']
-				else:
-					opponnent = games[self.game_id]['opponent']
-
-				await opponnent.send(text_data=json.dumps(
-					{
-						'stats': ''
-					}
-				))
-
-		await self.channel_layer.group_discard(self.group_name, self.channel_name)
-
-		if self.game_id in games:
-			games.pop(self.game_id)
-			await self.channel_layer.group_send("notification",
-									   {
-										   'type': 'release_game_id',
-										   'id': self.game_id
-									   })
 		
 
 	async def	receive(self, text_data=None, bytes_data=None):
@@ -180,3 +145,40 @@ class	GameConsumer(AsyncWebsocketConsumer):
 					'aspect': event['aspect']
 				}
 			))
+
+	async def	disconnect(self, code):
+		if code == 4000:
+			return
+				
+		await self.channel_layer.group_discard(self.group_name, self.channel_name)
+
+		# in case one started game and left before opponent join
+		if not 'opponent' in games[self.game_id]:
+			await self.channel_layer.group_send('notification',
+									{
+										'type': 'release_game_id',
+										'id': self.game_id,
+										'salam': 'cv' # for debugging
+									})
+		elif 'stat' not in games[self.game_id]: # one left before game ends
+			# means that the host is the one who left
+			if self == games[self.game_id]['host']:
+				op = games[self.game_id]['opponent']
+			else:
+				op = games[self.game_id]['host']
+
+			await op.send(text_data=json.dumps(
+				{
+					'stats': ''
+				}
+			))
+			return
+
+		if self.game_id in games:
+			games.pop(self.game_id)
+			await self.channel_layer.group_send("notification",
+									   {
+										   'type': 'release_game_id',
+										   'id': self.game_id
+									   })
+
