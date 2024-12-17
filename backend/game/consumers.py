@@ -181,4 +181,3 @@ class	GameConsumer(AsyncWebsocketConsumer):
 										   'type': 'release_game_id',
 										   'id': self.game_id
 									   })
-
