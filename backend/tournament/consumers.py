@@ -94,7 +94,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 })
         
         users[tournament_id].append(self)
-        # await sync_to_async(UserAccount.objects.filter(id=self.scope['user'].id).update)(user_state="in_game")
+        await sync_to_async(UserAccount.objects.filter(id=self.scope['user'].id).update)(user_state="in_game")
         self.scope['user'].user_state = "in_game"
         # user = await sync_to_async(UserAccount.objects.get)(id=self.scope['user'].id)
 
@@ -287,7 +287,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
     async def	disconnect(self, code):
 
-        # await sync_to_async(UserAccount.objects.filter(id=self.scope['user'].id).update)(user_state="offline")
+        await sync_to_async(UserAccount.objects.filter(id=self.scope['user'].id).update)(user_state="offline")
         self.scope['user'].user_state = "offline"
         
         tournament_id = self.scope["url_route"]["kwargs"]["tournament_id"] 

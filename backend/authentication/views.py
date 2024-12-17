@@ -2,7 +2,7 @@ from django.conf import settings
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import UserSerializer
+from .serializers import *
 from .tokens import get_tokens_for_user
 from .tokens import send_email
 from django.shortcuts import get_object_or_404
@@ -25,6 +25,7 @@ from .middlewares import CookieJWTAuthentication
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from django.http import JsonResponse
 from rest_framework import serializers
+from django.core.exceptions import ValidationError
 
 # Create your views here.
 
@@ -293,3 +294,46 @@ class UserProfile(APIView):
         return JsonResponse(response_data)
 
 
+class UpdateProfile(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        
+        print("UPDATE PROFILE")
+        user = request.user
+        data = request.data 
+
+
+        first_name  = request.data.get('first_name')
+        last_name  = request.data.get('last_name')
+        email  = request.data.get('email')
+        nickname  = request.data.get('nickname')
+        avatar = request.data.get('avatar')
+
+        
+        if first_name:
+            user.first_name = first_name
+        if last_name:
+            user.last_name = last_name
+        if email:
+            user.email = email
+        if nickname:
+            user.nickname = nickname
+        if avatar:
+            user.avatar = avatar
+        
+        print("first_name : ", first_name)
+        print("last_name : ", last_name)
+        print("email : ", email)
+        print("nickname : ", nickname)
+        print("avatar : ", avatar)
+
+        try :
+            user.full_clean()
+            user.save()
+            return Response({'success': 'User updated successfully.'}, status=status.HTTP_200_OK)
+
+        except ValidationError as e:
+            print(e)
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

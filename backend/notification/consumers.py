@@ -50,7 +50,9 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 		await self.send(text_data=notifications)
 
 	async def	disconnect(self, code):
+		await sync_to_async(UserAccount.objects.filter(id=self.scope['user'].id).update)(user_state="offline")
 		await self.channel_layer.group_discard(self.notification_group, self.channel_name)
+
 		print("=====> DISCONNECTED IN NOTIFICATION")
 		if (len(tournaments) > 0) and (self.scope['user'].id in user_index
 					) and (tournaments[user_index[self.scope['user'].id]] != '0' 
