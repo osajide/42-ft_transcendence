@@ -1,0 +1,24 @@
+@use 'vars' as *;
+
+#profile #page{
+    @include container;
+    flex-direction: row;
+
+    & > div {
+        height: 100%;
+        @include container;
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+        gap: 10px;
+    }
+
+    #updatable{
+        width: 30%;
+    }
+
+    #stats{
+        width: 100%;
+        flex: 1;
+    }
+}

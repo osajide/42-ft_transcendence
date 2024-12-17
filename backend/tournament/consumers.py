@@ -13,6 +13,7 @@ redis_client = redis.Redis(host="redis", port="6379", db=1)
 
 users_states = {}
 users = {}
+make_game = {}
 
 class UserAccountSerializer(ModelSerializer):
     class Meta:
@@ -22,13 +23,21 @@ class UserAccountSerializer(ModelSerializer):
 class TournamentConsumer(AsyncWebsocketConsumer):
     
     async def connect(self):
-
-        #check if tournament exists in the array and in the table
-
+        
         #check if the user joined already a tournament
 
         await self.accept()
+        if self.scope['user'].is_authenticated is False:
+            await self.send(json.dumps(
+					{
+						'error': 'Invalid Token'
+					}
+				))
+			# await self.close()
+            return
         tournament_id = self.scope["url_route"]["kwargs"]["tournament_id"]
+
+        
 
         print("tournament id : " , tournament_id)
 
@@ -55,28 +64,33 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         if tournament_id not in users:
             users[tournament_id] = []
             users_states[tournament_id] = {}
-            users_states[tournament_id][self.scope['user'].id] = 1
+        
+        users_states[tournament_id][self.scope['user'].id] = 1
 
         if (len(users[tournament_id]) == 8):
             await self.send(text_data=json.dumps({
-                    'message' : 'Tournament is Full'
+                    'error' : 'Tournament is Full'
                 }))
             return 
 
-        # found = any(self.scope['user'] in value for value in users.values())
-        # if found:
-        #     print("user already exists")
-        #     await self.send(text_data=json.dumps({
-        #             'message' : 'User already joined an existing tournament'
-        #         }))
-        #     return 
+        for key, object_list in users.items():
+            for obj in object_list:
+                print("user already exist")
+                if obj.scope['user'].id == self.scope['user'].id:
+                    await self.send(text_data=json.dumps({
+                            'error' : 'User already joined an existing tournament'
+                        }))
+                    return 
+        
+
         print("joined user : ", self.scope['user'].first_name)
         await self.channel_layer.group_send('notification',
                 {
                     'type' : 'update_tournament',
                     'user_id' : self.scope['user'].id,
                     'id' : tournament_id,
-                    'value' : 1
+                    'value' : 1,
+                    'state' : 'connected'
                 })
         
         users[tournament_id].append(self)
@@ -102,9 +116,12 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
            await self.channel_layer.group_send('notification',
             {
-                'type' : 'generate_games',   
+                'type' : 'generate_games',
+                'nb_of_games' : 4,
                 'tournament_group' : self.group_name,
-                'user_id' : self.scope['user'].id
+                'user_id' : self.scope['user'].id,
+                'last_user' : self.scope['user'].id
+
             })
            
            
@@ -117,41 +134,66 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         i = 0
         j = 0
 
-        if self == users[tournament_id][0]:
-            print(self.scope['user'])
-            for user in users[tournament_id]:
-                serializer = UserSerializer(user.scope['user'])
-                listed_users.append(serializer.data)
-                if i == 2:
-                    i = 0
-                    j += 1
+        
+        if len(indexes) == 4:
+            if self == users[tournament_id][0]:
+                print("SEND USERS DATA TO ALL USERS")         
+                # make_game[tournament_id]
+                print(self.scope['user'])
+                for user in users[tournament_id]:
+                    serializer = UserSerializer(user.scope['user'])
+                    listed_users.append(serializer.data)
+                    if i == 2:
+                        i = 0
+                        j += 1
 
-                if i < 2:
-                    await user.send(text_data=json.dumps(
+                    if i < 2:
+                        await user.send(text_data=json.dumps(
+                        {
+                            'game_index' : indexes[j]
+                        }   
+                        ))
+                    i += 1
+                first_group = listed_users[:4]
+                second_group = listed_users[4:]
+
+                final_pairs = [(first_group), (second_group)]
+                await self.channel_layer.group_send(self.group_name,
                     {
-                        'game_index' : indexes[j]
-                    }
-                    ))
-                i += 1
-            first_group = listed_users[:4]
-            second_group = listed_users[4:]
+                        # 'users' : final_pairs
+                        'type' : 'users_list',
+                        'users' : final_pairs
+                    })
+        else:
+            if self.scope['user'].id != event['last_user']:
+                return 
 
-            final_pairs = [(first_group), (second_group)]
-            await self.channel_layer.group_send(self.group_name,
-                {
-                    # 'users' : final_pairs
-                    'type' : 'users_list',
-                    'users' : final_pairs
-                })
-
-        
-
-        
-
-
-        
-        
-
+            arr = []
+            pos = make_game[tournament_id][self.scope['user'].id]
+            for player in make_game[tournament_id]:
+                if make_game[tournament_id][player] == pos:
+                    arr.append(player)
+                    #pop user from dictionary 
+                
+            
+            if (len(arr) == 2):
+                print(f"{self.scope['user'].last_name} IS READY TO PLAY")
+                for user in users[tournament_id]: 
+                    if (user.scope['user'].id == arr[0]) or (user.scope['user'].id == arr[1]):
+                        serializer = UserSerializer(user.scope['user'])
+                        listed_users.append(serializer.data)
+                        await user.send(text_data=json.dumps(
+                        {
+                            'game_index' : indexes[0]
+                        } ))
+                await self.channel_layer.group_send(self.group_name,
+                    {
+                        # 'users' : final_pairs
+                        'type' : 'users_list',
+                        'users' : listed_users
+                    })
+                
+    
 
     async def	users_list(self, event):
         await self.send(text_data=json.dumps({
@@ -174,12 +216,13 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 }))
 
         print("winner id : ", winner_id)
-        users_states[tournament_id][winner_id] += 1
 
-        if users_states[tournament_id][winner_id] == 4:
+        if len(winner_id) == 1 and users_states[tournament_id][winner_id] == 3:
             print("THE TOURNAMENT IS ENDED")
             users.pop(tournament_id)
-            users_states.pop(tournament_id)
+            users_states[tournament_id][winner_id] += 1
+            Tournament.create.objects(winner=winner_id)
+            make_game.pop(tournament_id)
             await self.channel_layer.group_send('notification',
                 {
                     'type' : 'update_tournament',
@@ -187,12 +230,44 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     'id' : tournament_id,
                     'value' : -8
                 })
+        elif len(winner_id) == 2:
+            print("SEMI FINAL")
+            users_states[tournament_id][winner_id[1]] += 1
+            if tournament_id not in make_game:
+                make_game[tournament_id] = {}
+            make_game[tournament_id][winner_id[1]] = winner_id[0]
+            print(make_game)
+            # for player_pos in  make_game[tournament_id]:
+            #     print("pos : ", make_game[tournament_id][player_pos])
+            if len(make_game[tournament_id]) >= 2:
+                i = 0
+                for player_pos in  make_game[tournament_id]:
+                    if  make_game[tournament_id][player_pos] == winner_id[0]:
+                        i += 1
+
+                if i == 2:
+                    await self.channel_layer.group_send('notification',
+                        {
+                            'type' : 'generate_games',
+                            'nb_of_games' : 1,
+                            'tournament_group' : self.group_name,
+                            'user_id' : self.scope['user'].id,
+                            'last_user' : self.scope['user'].id
+                        })
+
+                    # generate_game
+
+        else:
+            users_states[tournament_id][winner_id] += 1
 
         await self.channel_layer.group_send(self.group_name,
             {
                 'type' : 'send_winner',
                 'winner' : [self.scope['user'].id, users_states[tournament_id][self.scope['user'].id]]
             })
+
+        if len(winner_id) == 1 and users_states[tournament_id][winner_id] == 4:
+            users_states.pop(tournament_id)
     
     async def 	send_winner(self, event):
         await self.send(text_data=json.dumps({
@@ -207,18 +282,20 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         tournament_id = self.scope["url_route"]["kwargs"]["tournament_id"] 
 
         if len(users[tournament_id]) < 8:
-            users[tournament_id].remove(self.scope['user'])
+            print("User POPPED")
+
+            users[tournament_id].remove(self)
             if len(users[tournament_id]) == 0:
-                print("POPPED")
+                print("Tournament POPPED")
                 users.pop(tournament_id)
 
-            print("channel layer : ", self.channel_layer)
             await self.channel_layer.group_send('notification',
                 {
                     'type' : 'update_tournament',
                     'user_id' : self.scope['user'].id,
                     'id' : tournament_id,
-                    'value' : -1
+                    'value' : -1,
+                    'state' : 'disconnect'
                 })
 
         print(f"user {self.scope['user'].last_name} is disconnected")

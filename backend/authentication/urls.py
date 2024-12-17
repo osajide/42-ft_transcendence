@@ -12,5 +12,6 @@ urlpatterns = [
     path('refresh/', RefreshView.as_view(), name = 'refresh'),
     path('intra/redirect/', GetAuthCode.as_view(), name='auth-code'),
     path('intra/oauth/', OAuthCallback.as_view(), name='oauth_callback'),
-    path('add_multiple_users/', AddMultipleUsersView.as_view(), name='add_users')
+    path('add_multiple_users/', AddMultipleUsersView.as_view(), name='add_users'),
+    path('profile/', UserProfile.as_view(), name='profile')
 ]
