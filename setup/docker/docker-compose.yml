@@ -8,6 +8,7 @@ services:
     container_name: frontend
     volumes:
       - ${HOME}/Desktop/42-ft_transcendence/frontend:/var/www/html
+      - assetsVolume:/var/www/html/assets/avatars/
     ports:
       - 4242:4242
     restart: unless-stopped
@@ -27,6 +28,7 @@ services:
       - PIP_ROOT_USER_ACTION=ignore # for preventing warning of running pip as root
     volumes:
       - ${HOME}/Desktop/42-ft_transcendence/backend:/app
+      - assetsVolume:/app/assets/avatars
       - backendVolume:/root/.cache/pip/
     networks:
       - myNet
@@ -71,3 +73,4 @@ volumes:
   postgresVolume:
   backendVolume:
   redisVolume:
+  assetsVolume:

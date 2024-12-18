@@ -31,9 +31,10 @@ class UserAccountManager(BaseUserManager):
 
         return self.create_user(email, password, **extra_fields)
     
-def get_upload_path(instance, filename):
-    extension = os.path.splitext(filename)[1]
-    return f'{instance.id}{extension}'
+# def get_upload_path(instance, filename):
+    # extension = os.path.splitext(filename)[1]
+    # return f'{instance.id}{extension}'
+    # return
 
 class UserAccount(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=50)
@@ -42,7 +43,8 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(validators=[EmailValidator()], unique=True) # add email to be unique
     password = models.CharField(max_length=128)
     verified_mail = models.BooleanField(default=True)
-    avatar = models.ImageField(upload_to=get_upload_path, default='user.svg')
+    # avatar = models.ImageField(upload_to=get_upload_path, default='user.svg')
+    avatar = models.ImageField(upload_to='', default='user.svg')
     user_state = models.CharField(max_length=50, default='offline')
     is_staff = models.BooleanField(default=False)  # Required for admin access
     secret_key = models.CharField(max_length=50, null=True, blank=True)
@@ -57,7 +59,12 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     
     def save(self, *args, **kwargs):
         try :
+            # print('*****self: ', self.id)
+            # print('*****selfaa: ', self.avatar.url)
+            # self.avatar.url = f'saaaalaam.png'
+            # self.avatar = f'saaaalaam.png'
             super().save(*args, **kwargs)
+            # print('aaaaa:::::: ', self.avatar)
         except Exception as e:
             print("exception raised")
 

@@ -65,7 +65,15 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
 
   if (response.ok) data = await response.json();
   console.log(data, endpoint);
-  // if (endpoint != "/api/register/" && response.status === 401) {
+  if (response.status === 401) {
+    const refreshResponse = await fetch(`${url}/api/refresh/`, {
+      method: "POST",
+      credentials: "include",
+    });
+    if (refreshResponse.ok) return fetchWithToken(url, endpoint, method, body);
+    data = {error : await response.json()}
+    console.log(data, refreshResponse.body)
+  }
   //   const refreshResponse = await fetch(`${url}/api/refresh/`, {
   //     method: "POST",
   //     credentials: "include",
@@ -82,9 +90,9 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
   //   //   // throw new Error("Unable to refresh token");
   // }
   if (data.error) {
-    raiseWarn(data.error);
-  } else if (data.detail) {
-    raiseWarn(data.detail);
+    return raiseWarn(data.error);
+  } else if (data.email) {
+    return raiseWarn(data.detail);
   }
 
   if (
@@ -92,7 +100,7 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
     endpoint != "/api/login/" &&
     data == "Error"
   ) {
-    raiseWarn("User logged out");
+    return raiseWarn("User logged out");
     // updateUrl("", "");
   }
   return data;
@@ -292,8 +300,8 @@ const components = {
           .join("\n")}
 			</nav>
 			<label class="img_label" for="menu" tabindex="1">
-				<img id="logo" src="assets/avatars/${
-          user_data?.avatar ? user_data.avatar : "user.svg"
+				<img id="logo" src="./assets/avatars/${
+          user_data?.avatar ? user_data.avatar.replace("/", "") : "user.svg"
         }" alt="logo" />
 			</label>
 		`;
@@ -307,7 +315,7 @@ const components = {
     <div class="chatBanner">
     ${icons.back("friendChat")}
       <label class="friendData">
-        <img src="${user.avatar}" alt="${user.name}"/>
+        <img src="assets/avatars/${user.avatar}" alt="${user.name}"/>
         <h6>${user.name}</h6>
       </label>
       <div class="controls">
@@ -332,7 +340,9 @@ const components = {
         ? " bubble"
         : ""
     }" tabindex="0">
-				<img src="${"./assets/avatars/" + user.avatar}" alt="${user.first_name}"/>
+				<img src="${"./assets/avatars/" + user.avatar.replace("/", "")}" alt="${
+      user.first_name
+    }"/>
 				<h4>${user.first_name} ${user.last_name}</h4>
 			</label>
 		`;
@@ -424,9 +434,9 @@ const components = {
         ? /* html */ `
         <div class="userBanner">
         ${icons.back("myFriends")}
-          <img src="${"./assets/avatars/" + user.avatar}" alt="${
-            user.first_name
-          }"/>
+          <img src="${
+            "./assets/avatars/" + user.avatar.replace("/", "")
+          }" alt="${user.first_name}"/>
           <div class="userInfo">
           <h3>${user.first_name} ${user.last_name}</h3>
           <p>${user.email}</p>
@@ -515,9 +525,9 @@ const components = {
     <label for="${noti.type}_${noti.sender.first_name}_${noti.sender.id}_${
       noti.id
     }" class="notiLabel" tabindex="0">
-      <img src="${"./assets/avatars/" + noti.sender.avatar}" alt="${
-      noti.sender.first_name
-    }"/>
+      <img src="${
+        "./assets/avatars/" + noti.sender.avatar.replace("/", "")
+      }" alt="${noti.sender.first_name}"/>
       ${icons[myIcon]}
       <p>${noti.description}</p>
     </label>
@@ -752,13 +762,13 @@ const pages = {
           // // Wait for all file reading promises to complete
           // await Promise.all(promises);
           if (count) {
-            resp = fetchWithToken(
+            resp = await fetchWithToken(
               glob_endp,
               "/api/update_profile/",
-              "POST",
+              "PATCH",
               formData
             );
-            // updateUrl("profile");
+            return updateUrl("profile");
           } else {
             raiseWarn("Nothing to update", "alert");
           }
@@ -814,7 +824,10 @@ const pages = {
 
 function fillProfile(data) {
   return /* html */ `
-  <img id="user_avatar" src="assets/avatars/${data.avatar}" alt="${data.first_name}" />
+  <img id="user_avatar" src="assets/avatars/${data.avatar.replace(
+    "/",
+    ""
+  )}" alt="${data.first_name}" />
   <h3 id="user_name">${data.first_name} ${data.last_name}</h3>
   <p id="user_email">${data.email}</p>
   <h5 id="user_nickname">l337</h5>`;

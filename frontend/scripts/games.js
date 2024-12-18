@@ -401,12 +401,12 @@ function startGame(id) {
   const statsBoard = /* html */ `
       <div id="game_dash" class="hide">
         <div class="player_stats" id="current_player">
-          <img src="../assets/avatars/${user_data.avatar}"/>
+          <img src="../assets/avatars/${user_data.avatar.replace('/', '')}"/>
           <p class="score">0</p>
         </div>
         <div class="player_stats" id="opp_player">
           <p class="score">0</p>
-          <img src="../assets/avatars/${user_data.avatar}"/>
+          <img src="../assets/avatars/${user_data.avatar.replace('/', '')}"/>
         </div>
       </div>
       <canvas id="game_canvas" width="${window.innerWidth - 40}" height="${
@@ -509,7 +509,7 @@ function tournamentInfo(e) {
         data[i].map((el, index) => {
           cont[i]
             .querySelector(".player_img" + (index + 1))
-            .setAttribute("src", "../assets/avatars/" + el.avatar);
+            .setAttribute("src", "../assets/avatars/" + el.avatar.replace('/', ''));
         });
       }
     // }, 200)

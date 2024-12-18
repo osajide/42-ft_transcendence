@@ -26,6 +26,7 @@ from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, Ou
 from django.http import JsonResponse
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
+from rest_framework.decorators import authentication_classes, permission_classes
 
 # Create your views here.
 
@@ -184,7 +185,7 @@ class RefreshView(APIView):
 
             payload = jwt.decode(ref_token, settings.SECRET_KEY, algorithms=['HS256'])
 
-            get_object_or_404(UserAccount, pk=payload['user_id'])
+            get_object_or_404(UserAccount, pk__in=payload['user_id'])
 
             refresh = RefreshToken(ref_token)
 
@@ -293,9 +294,38 @@ class UserProfile(APIView):
     
         return JsonResponse(response_data)
 
-from rest_framework.parsers import MultiPartParser, FormParser
+# from rest_framework.parsers import MultiPartParser, FormPars/er
+from rest_framework.decorators import api_view
+
+@api_view(['PATCH'])
+@authentication_classes([CookieJWTAuthentication])
+@permission_classes([IsAuthenticated])
+def update_profile(request):
+    print("UPDATE PROFILE")
+    user = request.user
+    data = request.data
+    print('req: ', data)
+    print("Request Files:", request.FILES)
+    print('user avatar: ', user.avatar)
+    # profile_instance = UserAccount.objects.get(user=request.user)
+    print('user: ', user)
+    ser = UserSerializer(instance=user, data=request.data, partial=True)
+    if ser.is_valid():
+        ins = ser.save()
+        print('ins: ', ins.avatar)
+        print('ser: ', ser.data)
+        print('user.avat: ', user.avatar)
+        print('user.url: ', user.avatar.url)
+        return Response(ser.data)
+    return Response({'error': 'zab'})
+
+
+
+
+
+
 class UpdateProfile(APIView):
-    parser_classes = [MultiPartParser, FormParser]
+    # parser_classes = [MultiPartParser, FormParser]
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -309,14 +339,10 @@ class UpdateProfile(APIView):
         print('user avatar: ', user.avatar)
 
 
-        ser = UserSerializer(data=request.data)
+        ser = UserSerializer(instance=user, data=request.data, partial=True)
         # print('ser ok: ', ser.data)
-        # if ser.is_valid():
-        print('ddddd')
-        ser.save()
-        print('ser----->: ', ser.data)
-        print('khrej')
-        return
+        if ser.is_valid():
+            ins = ser.save()
         first_name  = request.data.get('first_name')
         last_name  = request.data.get('last_name')
         email  = request.data.get('email')
