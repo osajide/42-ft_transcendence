@@ -14,7 +14,7 @@ redis_client = redis.Redis(host='redis', port=6379, db=1)
 games = []
 tournaments = []
 user_index = {}
-users_and_games = {}
+users_and_games = {} 
 
 @database_sync_to_async
 def get_notifications(id):
@@ -43,7 +43,7 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 				))
 			# await self.close()
 			return
-
+		
 		print('which user: ', self.scope['user'])
 		await self.channel_layer.group_add(self.notification_group, self.channel_name)
 		notifications = await get_notifications(self.scope['user'].id)

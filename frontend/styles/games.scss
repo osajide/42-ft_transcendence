@@ -16,7 +16,7 @@
 
 .lobby#page {
   @include container;
-  background-color: rgba($prim_dark, .4);
+  background-color: rgba($prim_dark, 0.4);
   width: 100% !important;
   height: 100% !important;
 
@@ -98,12 +98,15 @@
     }
 
     .player_img {
-      height: 20%;
-      border: 3px solid $prim_blue;
+      height: 14%;
+      width: auto;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border: 3px solid #00bcbc;
       border-radius: 7px;
       z-index: 1;
       position: relative;
-      background-color: $prim_dark;
+      background-color: #232323;
 
       &:nth-child(2n) {
         align-self: center;
@@ -229,7 +232,7 @@
       }
 
       .player_img {
-        width: 100%;
+        width: 14%;
         height: auto;
       }
     }

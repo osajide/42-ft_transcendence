@@ -23,8 +23,8 @@ from django.contrib.auth.hashers import check_password
 from .middlewares import CookieJWTAuthentication
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
+from rest_framework.decorators import authentication_classes, permission_classes
 from .decorators import two_fa_required
-from django.utils.decorators import method_decorator
 # Create your views here.
 
 class RegisterUserAPIView(APIView):
@@ -179,7 +179,7 @@ class RefreshView(APIView):
 
             payload = jwt.decode(ref_token, settings.SECRET_KEY, algorithms=['HS256'])
 
-            get_object_or_404(UserAccount, pk=payload['user_id'])
+            get_object_or_404(UserAccount, pk__in=payload['user_id'])
 
             refresh = RefreshToken(ref_token)
 
@@ -288,9 +288,38 @@ class UserProfile(APIView):
     
         return JsonResponse(response_data)
 
-from rest_framework.parsers import MultiPartParser, FormParser
+# from rest_framework.parsers import MultiPartParser, FormPars/er
+from rest_framework.decorators import api_view
+
+@api_view(['PATCH'])
+@authentication_classes([CookieJWTAuthentication])
+@permission_classes([IsAuthenticated])
+def update_profile(request):
+    print("UPDATE PROFILE")
+    user = request.user
+    data = request.data
+    print('req: ', data)
+    print("Request Files:", request.FILES)
+    print('user avatar: ', user.avatar)
+    # profile_instance = UserAccount.objects.get(user=request.user)
+    print('user: ', user)
+    ser = UserSerializer(instance=user, data=request.data, partial=True)
+    if ser.is_valid():
+        ins = ser.save()
+        print('ins: ', ins.avatar)
+        print('ser: ', ser.data)
+        print('user.avat: ', user.avatar)
+        print('user.url: ', user.avatar.url)
+        return Response(ser.data)
+    return Response({'error': 'zab'})
+
+
+
+
+
+
 class UpdateProfile(APIView):
-    parser_classes = [MultiPartParser, FormParser]
+    # parser_classes = [MultiPartParser, FormParser]
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -302,13 +331,12 @@ class UpdateProfile(APIView):
         print('req: ', data)
         print("Request Files:", request.FILES)
         print('user avatar: ', user.avatar)
-        profile_instance = UserAccount.objects.get(user=request.user)
-        ser = UserSerializer(profile_instance, data=request.FILES, partial=True)
-        print('ser ok: ', ser.data)
+
+
+        ser = UserSerializer(instance=user, data=request.data, partial=True)
+        # print('ser ok: ', ser.data)
         if ser.is_valid():
-            print('ser----->: ', ser.data)
-        print('khrej')
-        return
+            ins = ser.save()
         first_name  = request.data.get('first_name')
         last_name  = request.data.get('last_name')
         email  = request.data.get('email')
