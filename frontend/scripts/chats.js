@@ -57,10 +57,8 @@ function sendMessage(e, socket) {
 
 function messenger(endpoint) {
   myForm = document.getElementById("messenger");
-  if (makeSocket.latest) {
-    makeSocket.latest.close();
-    makeSocket.latest = undefined;
-  }
+    closeSockets()
+
   const socket = makeSocket(endpoint, receiveMessage);
 
   myForm.addEventListener("keydown", (event) => {

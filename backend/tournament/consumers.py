@@ -72,15 +72,15 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 }))
             return 
 
-        for key, object_list in users.items():
-            for obj in object_list:
-                if obj.scope['user'].id == self.scope['user'].id:
-                    print("user already exist")
-                    await self.send(text_data=json.dumps({
-                            'error' : 'User already joined an existing tournament'
-                        }))
-                    self.close()
-                    return 
+        # for key, object_list in users.items():
+        #     for obj in object_list:
+        #         if obj.scope['user'].id == self.scope['user'].id:
+        #             print("user already exist")
+        #             await self.send(text_data=json.dumps({
+        #                     'error' : 'User already joined an existing tournament'
+        #                 }))
+        #             self.close()
+        #             return 
         
 
         print("joined user : ", self.scope['user'].first_name)
@@ -219,17 +219,16 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         #check if the winner id is included in tha array first
 
         if winner_id is None:
-             await self.send(text_data=json.dumps({
+            await self.send(text_data=json.dumps({
                 'error' : 'winner id is not provided'
                 }))
-
+            return
         print("winner id : ", winner_id)
 
-        if type(winner_id) is int and users_states[tournament_id][winner_id] == 3:
+        if users_states[tournament_id][winner_id[1]] == 3:
             print("THE TOURNAMENT IS ENDED")
             users.pop(tournament_id)
-            users_states[tournament_id][winner_id] += 1
-            Tournament.create.objects(winner=winner_id)
+            Tournament.create.objects(winner=winner_id[0])
             make_game.pop(tournament_id)
             await self.channel_layer.group_send('notification',
                 {
@@ -238,9 +237,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     'id' : tournament_id,
                     'value' : -8
                 })
-        elif type(winner_id) != int:
+        else:
             print("SEMI FINAL")
-            users_states[tournament_id][winner_id[1]] += 1
             if tournament_id not in make_game:
                 make_game[tournament_id] = {}
             make_game[tournament_id][winner_id[1]] = winner_id[0]
@@ -269,14 +267,12 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                         })
 
                     # generate_game
-
-        else:
-            users_states[tournament_id][winner_id] += 1
-
+        users_states[tournament_id][winner_id[1]] += 1
+        print("count : ", users_states[tournament_id][winner_id[1]])
         await self.channel_layer.group_send(self.group_name,
             {
                 'type' : 'send_winner',
-                'winner' : [self.scope['user'].id, users_states[tournament_id][self.scope['user'].id]]
+                'game_winner' : [self.scope['user'].id, users_states[tournament_id][self.scope['user'].id]]
             })
 
         if (type(winner_id) is int) and users_states[tournament_id][winner_id] == 4: 
@@ -284,7 +280,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     
     async def 	send_winner(self, event):
         await self.send(text_data=json.dumps({
-                'winner' : event['winner']
+                'winner' : event['game_winner']
             }))
 
     async def	disconnect(self, code):
@@ -294,10 +290,10 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         
         tournament_id = self.scope["url_route"]["kwargs"]["tournament_id"] 
 
-        if len(users[tournament_id]) < 8:
-            print("User POPPED")
+        print("User POPPED")
 
-            users[tournament_id].remove(self)
+        users[tournament_id].remove(self)
+        if len(users[tournament_id]) < 8:
             if len(users[tournament_id]) == 0:
                 print("Tournament POPPED")
                 users.pop(tournament_id)

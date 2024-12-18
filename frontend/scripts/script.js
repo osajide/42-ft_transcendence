@@ -7,13 +7,6 @@ let glob_endp = window.location.origin.split(":");
 glob_endp = glob_endp[0] + ":" + glob_endp[1] + ":8000";
 
 let user_data;
-//  = {
-//   first_name: "Oussama",
-//   last_name: "Sajide",
-//   email: "oussamasajide4@gmail.com",
-//   id: 2,
-//   avatar: "user.svg",
-// };
 
 const removeElement = (e) => {
   if (e.classList.contains("game")) {
@@ -34,7 +27,7 @@ const raiseWarn = (msg, type = "error") => {
   self = self[self.length - 1];
   if (type == "error") {
     logout();
-    return 'Error'
+    return "Error";
   }
   let s = setTimeout(() => {
     self.remove();
@@ -51,14 +44,11 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
   settings = {
     method: method,
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
   };
-  if (body && body instanceof FormData) {
-    settings.body = body;
-    delete settings.headers;
-  } else if (body) settings.body = JSON.stringify(body);
+  // if (body && body instanceof FormData && body.has('avatar')) {
+  settings.body = body;
+  // } else if (body) settings.body = JSON.stringify(body);
+  // console.log(body)
   const response = await fetch(url + endpoint, settings);
 
   loader.classList.add("hide");
@@ -72,23 +62,8 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
       credentials: "include",
     });
     if (refreshResponse.ok) return fetchWithToken(url, endpoint, method, body);
-    data = await response.json()
+    data = await response.json();
   }
-  //   const refreshResponse = await fetch(`${url}/api/refresh/`, {
-  //     method: "POST",
-  //     credentials: "include",
-  //   });
-
-  //   if (refreshResponse.ok) {
-  //     const data = await refreshResponse.json();
-  //     const accessToken = data.access_token;
-  //     localStorage.setItem("accessToken", accessToken);
-  //     options.headers.Authorization = `Bearer ${accessToken}`;
-  //     return fetch(url + endpoint, options);
-  //   }
-
-  //   //   // throw new Error("Unable to refresh token");
-  // }
   if (data.error) {
     return raiseWarn(data.error);
   } else if (data.email && !response.ok) {
@@ -101,7 +76,6 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
     data == "Error"
   ) {
     return raiseWarn("User logged out");
-    // updateUrl("", "");
   }
   return data;
 };
@@ -204,7 +178,7 @@ async function authenticate(e) {
   let data = Object.fromEntries(form.entries());
   e.preventDefault();
   if (e.target.childElementCount < 5) endpoint = "/api/login/";
-  data = await fetchWithToken(glob_endp, endpoint, "POST", data);
+  data = await fetchWithToken(glob_endp, endpoint, "POST", form);
   if (data == "Error") return;
   e.target.reset();
 
@@ -250,7 +224,7 @@ function notified(e) {
 
 function makeSocket(endpoint, socketMethod) {
   const socket = new WebSocket(`ws://127.0.0.1:8000/${endpoint}`);
-  if (endpoint) makeSocket.latest = socket;
+  if (endpoint) makeSocket.latest.push(socket);
   socket.onerror = (e) => {
     return raiseWarn("User logged out");
   };
@@ -287,6 +261,7 @@ const components = {
   },
   header: function () {
     let header = document.createElement("header");
+    console.log(user_data);
     header.innerHTML = /*html*/ `
 			<label class="img_label" for="">
 				<img id="logo" src="./assets/42.svg" alt="logo" />
@@ -301,7 +276,7 @@ const components = {
 			</nav>
 			<label class="img_label" for="menu" tabindex="1">
 				<img id="logo" src="./assets/avatars/${
-          user_data?.avatar ? user_data.avatar.replace("/", "") : "user.svg"
+          user_data.avatar ? user_data.avatar.replace("/", "") : "user.svg"
         }" alt="logo" />
 			</label>
 		`;
@@ -576,10 +551,7 @@ function closeDiv(e, name) {
     target.checked = false;
     target.dispatchEvent(new Event("change", { bubbles: true }));
     document.querySelector(".expand").classList.remove("expand");
-    if (makeSocket.latest) {
-      makeSocket.latest.close();
-      makeSocket.latest = undefined;
-    }
+    closeSockets();
   }
 }
 
@@ -707,7 +679,7 @@ const pages = {
             </label>
             <label class="form_inp">
               Username:
-              <input name="username" type="text" placeholder="L337"/>
+              <input name="nickname" type="text" placeholder="L337"/>
             </label>
             <input class="button" type="submit" value="Update profile"/>
           </form>
@@ -717,7 +689,7 @@ const pages = {
     id: "profile",
     func: async () => {
       const data = await fetchWithToken(glob_endp, `/api/profile/`, "GET");
-      if (data == 'Error') return
+      if (data == "Error") return;
       document.getElementById("updatable").innerHTML = fillProfile(data);
       document
         .getElementById("updateProfile")
@@ -726,42 +698,20 @@ const pages = {
           const form = new FormData(e.target);
           const formData = new FormData();
           let count = 0;
-          // Convert FormData entries to an object
 
           for (let [key, value] of form.entries()) {
             if (value.length && typeof value === "string") {
               formData.append(key, value);
               count++;
             } else if (typeof value === "object" && value.size) {
-              // formData.append(key, value);
               const fileInput = document.getElementById("new_avatar");
-
               if (fileInput.files.length > 0) {
-                formData.append("avatar", fileInput.files[0]); // Appending the image file
+                formData.append("avatar", fileInput.files[0]);
               }
               count++;
             }
           }
-          // const promises = [];
-          // for (let [key, value] of form.entries()) {
-          //   if (value.length && typeof value === "string") {
-          //     formData[key] = value;
-          //   } else if (typeof value === "object" && value.size) {
-          //     // Create a promise for reading the file
-          //     const filePromise = new Promise((resolve) => {
-          //       const reader = new FileReader();
-          //       reader.onload = () => {
-          //         formData[key] = reader.result
-          //         resolve();
-          //       };
-          //       reader.readAsDataURL(value);
-          //     });
-          //     promises.push(filePromise);
-          //   }
-          // }
-
-          // // Wait for all file reading promises to complete
-          // await Promise.all(promises);
+          console.log(formData instanceof FormData, formData.has("first_name"));
           if (count) {
             resp = await fetchWithToken(
               glob_endp,
@@ -769,7 +719,11 @@ const pages = {
               "PATCH",
               formData
             );
-            if ('Error') return
+            if (resp == "Error") return;
+            for ([key, value] of Object.entries(resp)) {
+              user_data[key] = value;
+            }
+            localStorage.setItem("user_data", JSON.stringify(user_data));
             return updateUrl("profile");
           } else {
             raiseWarn("Nothing to update", "alert");
@@ -966,16 +920,19 @@ const loadResources = (path) => {
   };
 };
 
+function closeSockets() {
+  while (makeSocket.latest.length) {
+    makeSocket.latest[makeSocket.latest.length - 1].close();
+    makeSocket.latest.pop();
+  }
+}
+
 const updateUrl = (path = "/", mode = "", targetId = "") => {
   const app = document.getElementById("landing");
   const main = document.getElementsByTagName("main")[0];
   const myForm = document.getElementById("messenger");
-  if (makeSocket.latest) {
-    makeSocket.latest.close();
-    makeSocket.latest = undefined;
-  }
+  closeSockets();
 
-  // if (myForm) myForm.removeEventListener("submit", sendMessage);
   if (path != "/" && path[0] == "/") path = path.replace("/", "");
   let id = path;
   if (path == "login") id = "loginin";
@@ -1035,6 +992,7 @@ loader.classList.add("show");
 loader.classList.remove("hide");
 
 document.body.onload = () => {
+  makeSocket.latest = [];
   let path = window.location.pathname.replace("/", "");
   if (!path.length) path = "/";
   user_data = JSON.parse(localStorage.getItem("user_data"));
