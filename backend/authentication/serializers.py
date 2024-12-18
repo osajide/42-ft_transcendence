@@ -5,7 +5,7 @@ from django.contrib.auth.hashers import make_password
 
 class UserSerializer(serializers.ModelSerializer):
 	confirm_password = serializers.CharField(write_only=True)  # For validation only
-	avatar = serializers.SerializerMethodField(method_name='get_avatar_path')
+	avatar = serializers.ImageField(use_url=False)
 
 	class Meta:
 		model = UserAccount

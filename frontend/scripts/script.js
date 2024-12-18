@@ -56,9 +56,8 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
   };
   if (body && body instanceof FormData) {
     settings.body = body;
-    delete settings.headers
-  }
-  else if (body) settings.body = JSON.stringify(body);
+    delete settings.headers;
+  } else if (body) settings.body = JSON.stringify(body);
   const response = await fetch(url + endpoint, settings);
 
   loader.classList.add("hide");
@@ -222,11 +221,7 @@ function notified(e) {
   if (data.error) {
     return raiseWarn("User logged out");
   } else if (data.game_id !== undefined) {
-    // let timer = setInterval(() => {
-    //   if(startGame){
     startGame(data.game_id);
-    //   clearInterval(timer)}
-    // }, 10);
   } else if (data.tournament_id !== undefined) {
     playTournament(data.tournament_id);
   } else if (data.game_invite) {
@@ -719,21 +714,21 @@ const pages = {
           e.preventDefault();
           const form = new FormData(e.target);
           const formData = new FormData();
-          let count = 0
+          let count = 0;
           // Convert FormData entries to an object
 
           for (let [key, value] of form.entries()) {
             if (value.length && typeof value === "string") {
               formData.append(key, value);
-              count++
+              count++;
             } else if (typeof value === "object" && value.size) {
               // formData.append(key, value);
-              const fileInput = document.getElementById('new_avatar');
-  
+              const fileInput = document.getElementById("new_avatar");
+
               if (fileInput.files.length > 0) {
                 formData.append("avatar", fileInput.files[0]); // Appending the image file
-              } 
-              count++
+              }
+              count++;
             }
           }
           // const promises = [];
@@ -760,7 +755,7 @@ const pages = {
             resp = fetchWithToken(
               glob_endp,
               "/api/update_profile/",
-              "PATCH",
+              "POST",
               formData
             );
             // updateUrl("profile");

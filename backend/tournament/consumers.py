@@ -35,9 +35,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 				))
 			# await self.close()
             return
-        tournament_id = self.scope["url_route"]["kwargs"]["tournament_id"]
-
         
+        tournament_id = self.scope["url_route"]["kwargs"]["tournament_id"]
 
         print("tournament id : " , tournament_id)
 
@@ -75,11 +74,12 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         for key, object_list in users.items():
             for obj in object_list:
-                print("user already exist")
                 if obj.scope['user'].id == self.scope['user'].id:
+                    print("user already exist")
                     await self.send(text_data=json.dumps({
                             'error' : 'User already joined an existing tournament'
                         }))
+                    self.close()
                     return 
         
 

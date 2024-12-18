@@ -103,13 +103,14 @@ function gameOver(game) {
       : game.oppoPaddle;
   const loser =
     game.playerPaddle.id == winner.id ? game.oppoPaddle : game.playerPaddle;
-    console.log(
-      JSON.stringify({
-        stats: {
-          winner: { id: winner.id, score: winner.score },
-          loser: { id: loser.id, score: loser.score },
-        },
-      }))
+  console.log(
+    JSON.stringify({
+      stats: {
+        winner: { id: winner.id, score: winner.score },
+        loser: { id: loser.id, score: loser.score },
+      },
+    })
+  );
   game.socket.send(
     JSON.stringify({
       stats: {
@@ -190,10 +191,10 @@ function server(e, mypong) {
     mypong.oppoPaddle.id = data.opponent.id;
     mypong.oppoPaddle.data = data.opponent.data;
   } else if (data.game_over != undefined) {
-    console.log('yes')
-    mypong.oppoPaddle.score = -1
-    mypong.maxScore = mypong.playerPaddle.score
-    gameOver(mypong)
+    console.log("yes");
+    mypong.oppoPaddle.score = -1;
+    mypong.maxScore = mypong.playerPaddle.score;
+    gameOver(mypong);
   }
 }
 
@@ -295,7 +296,7 @@ function changePosOpp(obj, press) {
   } else if (
     press == "ArrowDown" &&
     obj.oppoPaddle[obj.settings.axis] + obj[obj.settings.depends] <=
-    obj.canvas[obj.settings.depends]
+      obj.canvas[obj.settings.depends]
   ) {
     obj.oppoPaddle[obj.settings.axis] += obj.oppoPaddle.speed;
   }
@@ -309,7 +310,7 @@ function changePos(obj) {
   } else if (
     obj.press == "ArrowDown" &&
     obj.playerPaddle[obj.settings.axis] + obj[obj.settings.depends] <=
-    obj.canvas[obj.settings.depends]
+      obj.canvas[obj.settings.depends]
   ) {
     obj.playerPaddle[obj.settings.axis] += obj.playerPaddle.speed;
     move = 1;
@@ -408,8 +409,9 @@ function startGame(id) {
           <img src="../assets/avatars/${user_data.avatar}"/>
         </div>
       </div>
-      <canvas id="game_canvas" width="${window.innerWidth - 40}" height="${window.innerHeight - 130
-    }"></canvas>
+      <canvas id="game_canvas" width="${window.innerWidth - 40}" height="${
+    window.innerHeight - 130
+  }"></canvas>
   `;
   const cont = document.querySelector("#game_page");
   cont.innerHTML = statsBoard;
@@ -425,22 +427,107 @@ function startGame(id) {
 function tournamentInfo(e) {
   this.matches = [];
   const data = JSON.parse(e.data);
-  const players = document.getElementsByClassName("player_img");
-  console.log(data, players);
+  // data = [
+  //   [
+  //     {
+  //       first_name: "Yassine",
+  //       last_name: "Khayri",
+  //       email: "ykhayri@gmail.com",
+  //       id: 3,
+  //       avatar: "3.png",
+  //       user_state: "in_game",
+  //     },
+  //     {
+  //       first_name: "Yassine",
+  //       last_name: "Khayri",
+  //       email: "yassinekhayri123@gmail.com",
+  //       id: 9,
+  //       avatar: "9.png",
+  //       user_state: "in_game",
+  //     },
+  //     {
+  //       first_name: "Aymane",
+  //       last_name: "Bouabra",
+  //       email: "abouabra@gmail.com",
+  //       id: 4,
+  //       avatar: "4.jpeg",
+  //       user_state: "in_game",
+  //     },
+  //     {
+  //       first_name: "Bader",
+  //       last_name: "Elkdioui",
+  //       email: "bel-kdio@gmail.com",
+  //       id: 5,
+  //       avatar: "5.png",
+  //       user_state: "in_game",
+  //     },
+  //   ],
+  //   [
+  //     {
+  //       first_name: "Mohamed",
+  //       last_name: "Taib",
+  //       email: "mtaib@gmail.com",
+  //       id: 2,
+  //       avatar: "2.png",
+  //       user_state: "in_game",
+  //     },
+  //     {
+  //       first_name: "Mohammed",
+  //       last_name: "Baanni",
+  //       email: "mbaanni@gmail.com",
+  //       id: 6,
+  //       avatar: "6.png",
+  //       user_state: "in_game",
+  //     },
+  //     {
+  //       first_name: "Youssef",
+  //       last_name: "Khalil",
+  //       email: "ykhali-@gmail.com",
+  //       id: 8,
+  //       avatar: "8.jpg",
+  //       user_state: "in_game",
+  //     },
+  //     {
+  //       first_name: "Oussama",
+  //       last_name: "Sajide",
+  //       email: "osajide@gmail.com",
+  //       id: 1,
+  //       avatar: "user.svg",
+  //       user_state: "in_game",
+  //     },
+  //   ],
+  // ];
   if (data.locked) {
-    const cont = document.getElementsByClassName("tournament");
+    loader.classList.add("hide");
+    loader.classList.remove("show");
+    let cont
+    // let timer = setTimeout(() => {
+      cont = document.getElementsByClassName("tournament");
+      // clearTimeout(timer)
+      for (let i = 0; i < cont.length; i++) {
+        console.log(i, cont)
+        data[i].map((el, index) => {
+          cont[i]
+            .querySelector(".player_img" + (index + 1))
+            .setAttribute("src", "../assets/avatars/" + el.avatar);
+        });
+      }
+    // }, 200)
     this.matches = data.locked;
-    for (i in cont) {
-      data.locked[i].map((el, index) => {
-        cont[0]
-          .querySelector(".player_img" + (index + 1))
-          .setAttribute("src", "../assets/avatars/" + el.avatar);
-      });
-    }
+    // for (i in cont) {
+    //   data.locked[i].map((el, index) => {
+    //     cont[0]
+    //       .querySelector(".player_img" + (index + 1))
+    //       .setAttribute("src", "../assets/avatars/" + el.avatar);
+    //   });
+    // }
   }
 }
 
 function playTournament(endpoint) {
+  loader.classList.add("show");
+  loader.classList.remove("hide");
+  // tournamentInfo()
   const socket = makeSocket(`tournament/${endpoint}`, tournamentInfo);
   const board = /* html */ `
     <div class="tournament">
@@ -475,7 +562,7 @@ function playTournament(endpoint) {
 function game_choice(type) {
   const choice = {};
   choice[type] = "";
-  if (!notiSocket.readyState) {
+  if (notiSocket && !notiSocket.readyState) {
     const interval = setInterval(() => {
       if (notiSocket.readyState) {
         notiSocket.send(JSON.stringify(choice));

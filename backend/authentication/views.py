@@ -307,11 +307,14 @@ class UpdateProfile(APIView):
         print('req: ', data)
         print("Request Files:", request.FILES)
         print('user avatar: ', user.avatar)
-        profile_instance = UserAccount.objects.get(user=request.user)
-        ser = UserSerializer(profile_instance, data=request.FILES, partial=True)
-        print('ser ok: ', ser.data)
-        if ser.is_valid():
-            print('ser----->: ', ser.data)
+
+
+        ser = UserSerializer(data=request.data)
+        # print('ser ok: ', ser.data)
+        # if ser.is_valid():
+        print('ddddd')
+        ser.save()
+        print('ser----->: ', ser.data)
         print('khrej')
         return
         first_name  = request.data.get('first_name')

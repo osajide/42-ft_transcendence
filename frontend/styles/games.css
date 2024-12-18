@@ -121,7 +121,11 @@
   top: 70%;
 }
 .tournament_board .tournament .player_img {
-  height: 20%;
+  height: 14%;
+  width: auto;
+  aspect-ratio: 1/1;
+  -o-object-fit: cover;
+     object-fit: cover;
   border: 3px solid #00bcbc;
   border-radius: 7px;
   z-index: 1;
@@ -254,7 +258,7 @@
     right: 20px;
   }
   .tournament_board .tournament .player_img {
-    width: 100%;
+    width: 14%;
     height: auto;
   }
 }
