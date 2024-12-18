@@ -15,17 +15,16 @@ from .models import UserAccount
 from game.models import Game
 from tournament.models import *
 from django.db.models import Q, F, Sum, Case, When, Value, IntegerField, CharField
-from rest_framework.exceptions import AuthenticationFailed
 import jwt
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password
 from .middlewares import CookieJWTAuthentication
-from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
-
+from .decorators import two_fa_required
+from django.utils.decorators import method_decorator
 # Create your views here.
 
 class RegisterUserAPIView(APIView):
@@ -135,6 +134,7 @@ class AddMultipleUsersView(APIView):
 
         return Response({"created_users": created_users}, status=status.HTTP_201_CREATED)
         
+@method_decorator(two_fa_required, name='dispatch')
 class LogoutView(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -193,7 +193,7 @@ class RefreshView(APIView):
         except Http404:
                 return Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
 
-
+@method_decorator(two_fa_required, name='dispatch')
 class UserProfile(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
