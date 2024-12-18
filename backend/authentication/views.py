@@ -25,6 +25,7 @@ from django.http import JsonResponse
 from django.core.exceptions import ValidationError
 from rest_framework.decorators import authentication_classes, permission_classes
 from .decorators import two_fa_required
+from django.utils.decorators import method_decorator
 # Create your views here.
 
 class RegisterUserAPIView(APIView):
@@ -171,7 +172,7 @@ class RefreshView(APIView):
     def post(self, request):
 
         ref_token = request.COOKIES.get('refresh_token')
-    
+        print('test')
         if ref_token is None:
             return Response({'error': 'Authentication credentials needed.'}, status=status.HTTP_403_FORBIDDEN)
 
@@ -189,11 +190,12 @@ class RefreshView(APIView):
             response.set_cookie(key='access_token', value=str(refresh.access_token), httponly=True, samesite='None', secure=True)
             return response
         except jwt.ExpiredSignatureError:
+            print('ok')
             return Response({'error': 'Refresh token expired'}, status=status.HTTP_403_FORBIDDEN)
         except Http404:
                 return Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
 
-@method_decorator(two_fa_required, name='dispatch')
+# @method_decorator(two_fa_required, name='dispatch')
 class UserProfile(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -271,7 +273,6 @@ class UserProfile(APIView):
 
         response_data = {
                 "avatar" : user.avatar.url[1:],
-                "email" : user.email, 
                 "user_id" : user.id,
                 "email": user.email,
                 "first_name": user.first_name,

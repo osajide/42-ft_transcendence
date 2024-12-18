@@ -301,7 +301,7 @@ class CookieJWTAuthentication(JWTAuthentication):
         try:
             token = jwt.decode(ref_token, settings.SECRET_KEY, algorithms=["HS256"])
         except jwt.InvalidTokenError:
-            raise CustomAuthenticationError('Invalid refresh token')
+            raise CustomAuthenticationError('Session expired!')
 
         for blacklisted_token in blacklisted_tokens:
             if blacklisted_token.token.jti == token['jti']:

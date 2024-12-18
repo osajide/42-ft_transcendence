@@ -34,6 +34,7 @@ const raiseWarn = (msg, type = "error") => {
   self = self[self.length - 1];
   if (type == "error") {
     logout();
+    return 'Error'
   }
   let s = setTimeout(() => {
     self.remove();
@@ -71,8 +72,7 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
       credentials: "include",
     });
     if (refreshResponse.ok) return fetchWithToken(url, endpoint, method, body);
-    data = {error : await response.json()}
-    console.log(data, refreshResponse.body)
+    data = await response.json()
   }
   //   const refreshResponse = await fetch(`${url}/api/refresh/`, {
   //     method: "POST",
@@ -91,8 +91,8 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
   // }
   if (data.error) {
     return raiseWarn(data.error);
-  } else if (data.email) {
-    return raiseWarn(data.detail);
+  } else if (data.email && !response.ok) {
+    return raiseWarn(data.email);
   }
 
   if (
@@ -717,6 +717,7 @@ const pages = {
     id: "profile",
     func: async () => {
       const data = await fetchWithToken(glob_endp, `/api/profile/`, "GET");
+      if (data == 'Error') return
       document.getElementById("updatable").innerHTML = fillProfile(data);
       document
         .getElementById("updateProfile")
@@ -768,6 +769,7 @@ const pages = {
               "PATCH",
               formData
             );
+            if ('Error') return
             return updateUrl("profile");
           } else {
             raiseWarn("Nothing to update", "alert");
