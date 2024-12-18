@@ -29,8 +29,8 @@ class SetupTwoFa(APIView):
 
     def get(self, request):
         
-        value = request.data.get('new one')
-        if not value:
+        value = request.data.get('new_qr')
+        if value:
             request.user.is_2fa_verified = False
 
          # Generate a TOTP secret key
@@ -58,7 +58,7 @@ class VerifyCode(APIView):
         
         code = request.data.get('code')
         if not code:
-            return Response({"message": "2FA code is required"}, status=400)
+            return Response({"error": "2FA code is required"}, status=400)
 
         # code = "620376"
         totp = pyotp.TOTP(request.user.secret_key)

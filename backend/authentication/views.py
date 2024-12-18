@@ -15,19 +15,16 @@ from .models import UserAccount
 from game.models import Game
 from tournament.models import *
 from django.db.models import Q, F, Sum, Case, When, Value, IntegerField, CharField
-from rest_framework.exceptions import AuthenticationFailed
 import jwt
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password
 from .middlewares import CookieJWTAuthentication
-from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from django.http import JsonResponse
-from rest_framework import serializers
 from django.core.exceptions import ValidationError
 from rest_framework.decorators import authentication_classes, permission_classes
-
+from .decorators import two_fa_required
 # Create your views here.
 
 class RegisterUserAPIView(APIView):
@@ -70,16 +67,21 @@ class ActivateUserAPIView(APIView):
 
 class LoginView(APIView):
     def post(self, request):
-        email = request.data['email']
-        password = request.data['password']
-
+    
+        try : 
+            email = request.data['email']
+            password = request.data['password']
+        except KeyError as e:
+            return Response({'error':'Not provided enough data'})
+       
+        
         user = UserAccount.objects.filter(email = email).first()
         
         if user is None:
-            raise AuthenticationFailed('User not found')
+            raise Response({'error':'User not found'})
         
         if not check_password(password, user.password):
-            return Response({'Incorrect password'})
+            return Response({'error':'Incorrect password'})
         
         if (user.verified_mail == False):
             return Response({'error': 'You have to activate your account'})
@@ -132,6 +134,7 @@ class AddMultipleUsersView(APIView):
 
         return Response({"created_users": created_users}, status=status.HTTP_201_CREATED)
         
+@method_decorator(two_fa_required, name='dispatch')
 class LogoutView(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -163,15 +166,6 @@ class LogoutView(APIView):
         
         return response
     
-
-# @permission_classes([IsAuthenticated])
-# class AccessedPoint(APIView):
-#     def get(self, request, token):
-        
-#         # Decode the token to get the user id
-
-#         user_id = token_decoder(token)
-
 class RefreshView(APIView):
     
     def post(self, request):
@@ -199,7 +193,7 @@ class RefreshView(APIView):
         except Http404:
                 return Response({'error': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
 
-
+@method_decorator(two_fa_required, name='dispatch')
 class UserProfile(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -370,7 +364,7 @@ class UpdateProfile(APIView):
         try :
             user.full_clean()
             user.save()
-            return Response({'success': 'User updated successfully.'}, status=status.HTTP_200_OK)
+            return Response({'message': 'User updated successfully.'}, status=status.HTTP_200_OK)
 
         except ValidationError as e:
             print(e)

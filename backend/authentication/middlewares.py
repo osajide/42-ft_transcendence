@@ -61,6 +61,9 @@ from rest_framework import HTTP_HEADER_ENCODING, authentication
 from rest_framework.request import Request
 
 from rest_framework_simplejwt.exceptions import AuthenticationFailed, InvalidToken, TokenError
+from rest_framework.exceptions import APIException
+
+# from .tet import AuthenticationFailed, InvalidToken, TokenError
 from rest_framework_simplejwt.models import TokenUser
 from rest_framework_simplejwt.settings import api_settings
 from .tokens import Token
@@ -239,6 +242,16 @@ def default_user_authentication_rule(user: AuthUser) -> bool:
 
 class TokenBlacklistedException(Exception):
     pass
+
+class CustomAuthenticationError(APIException):
+    status_code = 401
+    default_detail = {'error': 'Invalid authentication credentials.'}
+    default_code = 'authentication_failed'
+
+    def __init__(self, error=None):
+        if error is not None:
+            self.detail = {'error': error}
+            
 class CookieJWTAuthentication(JWTAuthentication):
     """
     Custom JWT authentication class that retrieves the token from cookies.
@@ -261,13 +274,16 @@ class CookieJWTAuthentication(JWTAuthentication):
             #     print(f"JTI: {blacklisted_token.token.jti}")
                 # raise TokenBlacklistedException()
             return UserAccount.objects.get(id__in=user_id)  # Look up the user by id in your custom model
-        except TokenBlacklistedException:
-            print("banned token")
-            raise AuthenticationFailed('Banned Token')
+        # except TokenBlacklistedException:
+        #     print("banned token")
+        #     raise AuthenticationFailed({'error' :'Banned Token'})
         except UserAccount.DoesNotExist:
-            raise AuthenticationFailed('User not found')
+            raise CustomAuthenticationError('User not found')
+            # raise AuthenticationFailed({'error' :'User not found'})
+        
         except KeyError:
-            raise AuthenticationFailed('Token does not contain user identifier')
+            raise CustomAuthenticationError('User not found')
+            # raise AuthenticationFailed({'error' :'Token does not contain user identifier'})
     
     def authenticate(self, request):
         # Retrieve the token from the cookie
@@ -285,13 +301,11 @@ class CookieJWTAuthentication(JWTAuthentication):
         try:
             token = jwt.decode(ref_token, settings.SECRET_KEY, algorithms=["HS256"])
         except jwt.InvalidTokenError:
-            raise AuthenticationFailed('Invalid refresh token')
+            raise CustomAuthenticationError('Invalid refresh token')
 
         for blacklisted_token in blacklisted_tokens:
             if blacklisted_token.token.jti == token['jti']:
-                # print("token is banned")
-                raise AuthenticationFailed('Banned Token')
-            # print(f"JTI: {blacklisted_token.token.jti}")
+                raise CustomAuthenticationError('Banned Token')
 
         validated_token = self.get_validated_token(raw_token)
 
@@ -311,7 +325,7 @@ class CookieJWTAuthentication(JWTAuthentication):
             # validated_token = AccessToken(raw_token)
             token = jwt.decode(raw_token, settings.SECRET_KEY, algorithms=["HS256"])
         except jwt.InvalidTokenError:
-            raise AuthenticationFailed('Invalid access token')
+            raise CustomAuthenticationError('Invalid access token')
         # except jwt.ExpiredSignatureError:
         #     raise AuthenticationFailed('Token has expired')
         

@@ -6,6 +6,7 @@ from .serializers import NotificationSerializer
 from authentication.serializers import UserSerializer
 from channels.db import database_sync_to_async
 from asgiref.sync import sync_to_async
+
 import redis
 
 redis_client = redis.Redis(host='redis', port=6379, db=1)
