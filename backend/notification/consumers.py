@@ -5,6 +5,7 @@ from .models import Notification
 from .serializers import NotificationSerializer
 from authentication.serializers import UserSerializer
 from channels.db import database_sync_to_async
+from asgiref.sync import sync_to_async
 
 import redis
 
