@@ -24,7 +24,6 @@ from django.contrib.auth.hashers import check_password
 from .middlewares import CookieJWTAuthentication
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from django.http import JsonResponse
-from rest_framework import serializers
 from django.core.exceptions import ValidationError
 
 # Create your views here.
@@ -69,16 +68,21 @@ class ActivateUserAPIView(APIView):
 
 class LoginView(APIView):
     def post(self, request):
-        email = request.data['email']
-        password = request.data['password']
-
+    
+        try : 
+            email = request.data['email']
+            password = request.data['password']
+        except KeyError as e:
+            return Response({'error':'Not provided enough data'})
+       
+        
         user = UserAccount.objects.filter(email = email).first()
         
         if user is None:
-            raise AuthenticationFailed('User not found')
+            raise Response({'error':'User not found'})
         
         if not check_password(password, user.password):
-            return Response({'Incorrect password'})
+            return Response({'error':'Incorrect password'})
         
         if (user.verified_mail == False):
             return Response({'error': 'You have to activate your account'})
@@ -162,15 +166,6 @@ class LogoutView(APIView):
         
         return response
     
-
-# @permission_classes([IsAuthenticated])
-# class AccessedPoint(APIView):
-#     def get(self, request, token):
-        
-#         # Decode the token to get the user id
-
-#         user_id = token_decoder(token)
-
 class RefreshView(APIView):
     
     def post(self, request):
@@ -204,8 +199,7 @@ class UserProfile(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
 
-        print("request : ", request)
-        user = UserAccount.objects.filter(email=request.data['email']).first()
+        user = UserAccount.objects.filter(email=request.user.email).first()
 
         total_solo_games = Game.objects.filter(game_type='solo').filter(
                                             Q(player1=user) | Q(player2=user)).count()
@@ -332,7 +326,7 @@ class UpdateProfile(APIView):
         try :
             user.full_clean()
             user.save()
-            return Response({'success': 'User updated successfully.'}, status=status.HTTP_200_OK)
+            return Response({'message': 'User updated successfully.'}, status=status.HTTP_200_OK)
 
         except ValidationError as e:
             print(e)
