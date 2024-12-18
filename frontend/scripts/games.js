@@ -103,14 +103,7 @@ function gameOver(game) {
       : game.oppoPaddle;
   const loser =
     game.playerPaddle.id == winner.id ? game.oppoPaddle : game.playerPaddle;
-  console.log(
-    JSON.stringify({
-      stats: {
-        winner: { id: winner.id, score: winner.score },
-        loser: { id: loser.id, score: loser.score },
-      },
-    })
-  );
+
   game.socket.send(
     JSON.stringify({
       stats: {
@@ -119,11 +112,35 @@ function gameOver(game) {
       },
     })
   );
-  game.socket.close();
-  game.socket = undefined;
+  makeSocket.latest[makeSocket.latest.length - 1].close();
+  makeSocket.latest.pop();
   winner.container.classList.add("winner");
   loser.container.classList.add("loser");
   document.getElementById("game_dash").classList.add("game_over");
+  if (startGame.tournamentSocket) {
+    pos = 0;
+    console.log(tournamentInfo.matches);
+    tournamentInfo.matches.map((match, index) => {
+      if (
+        match.filter((m) => {
+          m.id == winner.id;
+        }).length
+      )
+        pos = index;
+    });
+    console.log({
+      winner: [pos, winner.id],
+    });
+    startGame.tournamentSocket.send(
+      JSON.stringify({
+        winner: [pos, winner.id],
+      })
+    );
+    let timer = setTimeout(() => {
+      playTournament(-1);
+      clearTimeout(timer);
+    }, 5000);
+  } else updateUrl("games", "");
 }
 
 function server(e, mypong) {
@@ -145,6 +162,10 @@ function server(e, mypong) {
     // }, 3500)
     loader.classList.add("hide");
     loader.classList.remove("show");
+    let timer = setTimeout(() => {
+      mypong.stop = 0;
+      clearInterval(timer);
+    }, 3000);
     mypong.launch();
   } else if (data.aspect) {
     let { w, h } = { ...data.aspect };
@@ -190,6 +211,12 @@ function server(e, mypong) {
     if (data.view) mypong.ball.mirror = -1;
     mypong.oppoPaddle.id = data.opponent.id;
     mypong.oppoPaddle.data = data.opponent.data;
+    document
+      .getElementById("opp_player")
+      .firstElementChild.nextElementSibling.setAttribute(
+        "src",
+        "/assets/avatars/" + data.opponent.avatar.replace("/", "")
+      );
   } else if (data.game_over != undefined) {
     console.log("yes");
     mypong.oppoPaddle.score = -1;
@@ -205,7 +232,7 @@ function Game(x, y, color, endpoint = "", maxScore) {
   });
   this.aspect = 1;
   this.scale = 1;
-  this.stop = 0;
+  this.stop = 1;
   this.rev = 1;
   this.width = window_width * 0.02;
   this.maxScore = maxScore;
@@ -401,12 +428,12 @@ function startGame(id) {
   const statsBoard = /* html */ `
       <div id="game_dash" class="hide">
         <div class="player_stats" id="current_player">
-          <img src="../assets/avatars/${user_data.avatar.replace('/', '')}"/>
+          <img src="../assets/avatars/${user_data.avatar.replace("/", "")}"/>
           <p class="score">0</p>
         </div>
         <div class="player_stats" id="opp_player">
           <p class="score">0</p>
-          <img src="../assets/avatars/${user_data.avatar.replace('/', '')}"/>
+          <img src="../assets/avatars/${user_data.avatar.replace("/", "")}"/>
         </div>
       </div>
       <canvas id="game_canvas" width="${window.innerWidth - 40}" height="${
@@ -417,7 +444,7 @@ function startGame(id) {
   cont.innerHTML = statsBoard;
   cont.classList.add("in_game");
   cont.classList.remove("tournament_board");
-  mypong = new Game(0, 0, "#31dede", `game/${id}`, 11);
+  mypong = new Game(0, 0, "#31dede", `game/${id}`, 1);
   loader.classList.add("show");
   loader.classList.remove("hide");
   if (window.innerWidth < window.innerHeight)
@@ -425,110 +452,43 @@ function startGame(id) {
 }
 
 function tournamentInfo(e) {
-  this.matches = [];
   const data = JSON.parse(e.data);
-  // data = [
-  //   [
-  //     {
-  //       first_name: "Yassine",
-  //       last_name: "Khayri",
-  //       email: "ykhayri@gmail.com",
-  //       id: 3,
-  //       avatar: "3.png",
-  //       user_state: "in_game",
-  //     },
-  //     {
-  //       first_name: "Yassine",
-  //       last_name: "Khayri",
-  //       email: "yassinekhayri123@gmail.com",
-  //       id: 9,
-  //       avatar: "9.png",
-  //       user_state: "in_game",
-  //     },
-  //     {
-  //       first_name: "Aymane",
-  //       last_name: "Bouabra",
-  //       email: "abouabra@gmail.com",
-  //       id: 4,
-  //       avatar: "4.jpeg",
-  //       user_state: "in_game",
-  //     },
-  //     {
-  //       first_name: "Bader",
-  //       last_name: "Elkdioui",
-  //       email: "bel-kdio@gmail.com",
-  //       id: 5,
-  //       avatar: "5.png",
-  //       user_state: "in_game",
-  //     },
-  //   ],
-  //   [
-  //     {
-  //       first_name: "Mohamed",
-  //       last_name: "Taib",
-  //       email: "mtaib@gmail.com",
-  //       id: 2,
-  //       avatar: "2.png",
-  //       user_state: "in_game",
-  //     },
-  //     {
-  //       first_name: "Mohammed",
-  //       last_name: "Baanni",
-  //       email: "mbaanni@gmail.com",
-  //       id: 6,
-  //       avatar: "6.png",
-  //       user_state: "in_game",
-  //     },
-  //     {
-  //       first_name: "Youssef",
-  //       last_name: "Khalil",
-  //       email: "ykhali-@gmail.com",
-  //       id: 8,
-  //       avatar: "8.jpg",
-  //       user_state: "in_game",
-  //     },
-  //     {
-  //       first_name: "Oussama",
-  //       last_name: "Sajide",
-  //       email: "osajide@gmail.com",
-  //       id: 1,
-  //       avatar: "user.svg",
-  //       user_state: "in_game",
-  //     },
-  //   ],
-  // ];
+  console.log(data);
   if (data.locked) {
     loader.classList.add("hide");
     loader.classList.remove("show");
-    let cont
-    // let timer = setTimeout(() => {
-      cont = document.getElementsByClassName("tournament");
-      // clearTimeout(timer)
-      for (let i = 0; i < cont.length; i++) {
-        console.log(i, cont)
-        data[i].map((el, index) => {
-          cont[i]
-            .querySelector(".player_img" + (index + 1))
-            .setAttribute("src", "../assets/avatars/" + el.avatar.replace('/', ''));
-        });
-      }
-    // }, 200)
-    this.matches = data.locked;
-    // for (i in cont) {
-    //   data.locked[i].map((el, index) => {
-    //     cont[0]
-    //       .querySelector(".player_img" + (index + 1))
-    //       .setAttribute("src", "../assets/avatars/" + el.avatar);
-    //   });
-    // }
+    let cont = document.getElementsByClassName("tournament");
+    for (let i = 0; i < cont.length; i++) {
+      console.log(i, cont, data.locked[i]);
+      data.locked[i].map((el, index) => {
+        cont[i]
+          .querySelector(".player_img" + (index + 1))
+          .setAttribute(
+            "src",
+            "../assets/avatars/" + el.avatar.replace("/", "")
+          );
+      });
+    }
+    if (!tournamentInfo.matches.length) tournamentInfo.matches = data.locked;
+  } else if (data.game_index !== undefined) {
+    loader.classList.add("show");
+    loader.classList.remove("hide");
+    raiseWarn("Your game is about to start", "alert");
+    startGame(data.game_index);
   }
 }
 
 function playTournament(endpoint) {
+  let socket;
+  if (!tournamentInfo.matches) tournamentInfo.matches = [];
+  else socket = startGame.tournamentSocket;
   loader.classList.add("show");
   loader.classList.remove("hide");
   // tournamentInfo()
-  const socket = makeSocket(`tournament/${endpoint}`, tournamentInfo);
+  if (!startGame.tournamentSocket) {
+    socket = makeSocket(`tournament/${endpoint}`, tournamentInfo);
+    startGame.tournamentSocket = socket;
+  }
   const board = /* html */ `
     <div class="tournament">
       <img src="../assets/avatars/user.svg" class="player_img player_img1">
