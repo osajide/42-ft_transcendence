@@ -63,6 +63,7 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
             # print('*****selfaa: ', self.avatar.url)
             # self.avatar.url = f'saaaalaam.png'
             # self.avatar = f'saaaalaam.png'
+            self.nickname = self.first_name + '_' + self.last_name
             super().save(*args, **kwargs)
             # print('aaaaa:::::: ', self.avatar)
         except Exception as e:
