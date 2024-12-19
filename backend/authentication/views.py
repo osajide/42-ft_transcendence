@@ -28,16 +28,32 @@ from .decorators import two_fa_required
 from django.utils.decorators import method_decorator
 # Create your views here.
 
+# class RegisterUserAPIView(APIView):
+#     def post(self, request):
+
+#         serializer = UserSerializer(data=request.data)
+#         if serializer.is_valid():
+#             user = serializer.save()
+#             # send_email(user, request)
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import UserSerializer
+
 class RegisterUserAPIView(APIView):
     def post(self, request):
-
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            send_email(user, request)
+            # send_email(user, request)  # Uncomment this when ready
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        # Log the errors before returning the response
+        print("Validation Errors:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
 class ActivateUserAPIView(APIView):
     def get(self, request, token):

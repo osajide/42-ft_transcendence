@@ -5,17 +5,19 @@ from django.contrib.auth.hashers import make_password
 
 class UserSerializer(serializers.ModelSerializer):
 	confirm_password = serializers.CharField(write_only=True)  # For validation only
-	avatar = serializers.ImageField(use_url=True)
+	# avatar = serializers.ImageField(use_url=True)
+	avatar = serializers.ImageField(use_url=True, required=False)
 
 	class Meta:
 		model = UserAccount
-		fields = ['first_name', 'last_name', 'email', 'password', 'confirm_password', 'id', 'avatar', 'user_state']
+		fields = ['id', 'first_name', 'last_name', 'email', 'password', 'confirm_password', 'avatar', 'user_state']
 		extra_kwargs = {
 			'password' : {'write_only' : True},
 			# 'user_state' : {'read_only' : True}
 		}
 
 	def validate(self, data):
+		print("hereee")
 		if 'password' in data and (data['password'] != data['confirm_password']):
 			raise serializers.ValidationError("Passwords do not match.")
 		return data

@@ -225,7 +225,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         print("winner id : ", winner_id)
 
-        if type(winner_id) is int and users_states[tournament_id][winner_id] == 3:
+        if users_states[tournament_id][winner_id[1]] == 3:
             print("THE TOURNAMENT IS ENDED")
             users.pop(tournament_id)
             users_states[tournament_id][winner_id] += 1
@@ -238,7 +238,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     'id' : tournament_id,
                     'value' : -8
                 })
-        elif type(winner_id) != int:
+        else:
             print("SEMI FINAL")
             users_states[tournament_id][winner_id[1]] += 1
             if tournament_id not in make_game:
@@ -270,8 +270,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
                     # generate_game
 
-        else:
-            users_states[tournament_id][winner_id] += 1
 
         await self.channel_layer.group_send(self.group_name,
             {
