@@ -109,7 +109,7 @@ class	GameConsumer(AsyncWebsocketConsumer):
 
 	async def	receive(self, text_data=None, bytes_data=None):
 		json_text_data = json.loads(text_data)
-		if 'w' and 'h' in json_text_data:
+		if 'w' and 'h' and 'mobile' in json_text_data:
 			await self.channel_layer.group_send(self.group_name,
 									   {
 										   'type': 'send_aspect',

@@ -79,12 +79,21 @@ function resetBall(game) {
   game.ball.ballMoveY = game.ball.moves[0].y;
   mypong.ball.ballX = window_width / 2;
   mypong.ball.ballY = window_height / 2;
-  if (window.innerHeight > window.innerWidth) {
+  if (window.innerHeight > window.innerWidth && mypong.canvas.height > mypong.canvas.width) {
     mypong.ball.ballX = window_height / 2;
     mypong.ball.ballY = window_width / 2;
-    if (mypong.ball.mirror == -1) mypong.ball.ballMoveY *= -1;
+    if (mypong.ball.mirror == -1) {
+      mypong.ball.ballMoveY *= -1;
+      if (window.innerHeight > window.innerWidth && !mypong.opIsMobile) {
+        mypong.ball.ballMoveX *= -1;
+      }
+    };
   } else {
-    if (mypong.ball.mirror == -1) mypong.ball.ballMoveX *= -1;
+    if (mypong.ball.mirror == -1) {
+      mypong.ball.ballMoveX *= -1;
+      if (window.innerHeight <= window.innerWidth && mypong.opIsMobile)
+        mypong.ball.ballMoveY *= -1
+    };
   }
   // if (game.rev < 0) {
   //   [game.ball.ballMoveX, game.ball.ballMoveY] = [
@@ -149,30 +158,30 @@ function gameOver(game) {
 
 function server(e, mypong) {
   data = JSON.parse(e.data);
-  console.log(data, data.game_over);
+  console.log(data);
   if (data.start) {
     mypong.ball.moves = data.start;
     resetBall(mypong);
-    if (window.innerHeight > window.innerWidth) {
+    if (window.innerHeight > window.innerWidth && mypong.canvas.height > mypong.canvas.width) {
       mypong.playerPaddle.x = (window_height - mypong.width) / 2;
       mypong.oppoPaddle.x = (window_height - mypong.width) / 2;
     } else {
       mypong.playerPaddle.y = (window_height - mypong.height) / 2;
       mypong.oppoPaddle.y = (window_height - mypong.height) / 2;
     }
-    // let counter = 0
-    // let timer = setInterval(() => {
-
-    // }, 3500)
-    loader.classList.add("hide");
-    loader.classList.remove("show");
     let timer = setTimeout(() => {
       mypong.stop = 0;
-      clearInterval(timer);
-    }, 3000);
-    mypong.launch();
+      clearTimeout(timer);
+    }, 5000);
+    raiseWarn("Your match is about to start", "alert")
+    timer = setTimeout(() => {
+      loader.classList.add("hide");
+      loader.classList.remove("show");
+      mypong.launch();
+      clearTimeout(timer);
+    }, 3000)
   } else if (data.aspect) {
-    let { w, h } = { ...data.aspect };
+    let { w, h, mobile } = { ...data.aspect };
     let diff = +(window_height / h);
     if (diff == 1) diff = window_width / w;
     let aspect = +(w / h);
@@ -188,6 +197,7 @@ function server(e, mypong) {
         mypong.oppoPaddle.data
       );
       if (w >= h) mypong.rev = -1;
+      mypong.opIsMobile = mobile
     }
     mypong.ball.ballX = window_width / 2;
     mypong.ball.ballY = window_height / 2;
@@ -210,8 +220,9 @@ function server(e, mypong) {
   } else if (data.key) changePosOpp(mypong, data.key);
   else if (data.locked) {
     setDimentions(mypong);
-    mypong.socket.send(JSON.stringify({ w: window_width, h: window_height }));
+    mypong.socket.send(JSON.stringify({ w: window_width, h: window_height, mobile: window.innerHeight > window_width }));
   } else if (data.opponent) {
+    clearTimeout(mypong.timeout)
     if (data.view) mypong.ball.mirror = -1;
     mypong.oppoPaddle.id = data.opponent.id;
     mypong.oppoPaddle.data = data.opponent.data;
@@ -222,7 +233,6 @@ function server(e, mypong) {
         "/assets/avatars/" + data.opponent.avatar.replace("/", "")
       );
   } else if (data.game_over != undefined) {
-    console.log("yes");
     mypong.oppoPaddle.score = -1;
     mypong.maxScore = mypong.playerPaddle.score;
     gameOver(mypong);
@@ -241,6 +251,7 @@ function Game(x, y, color, endpoint = "", maxScore) {
   this.width = window_width * 0.02;
   this.maxScore = maxScore;
   this.height = window_height * 0.2;
+  this.timout;
   this.playerPaddle = new Paddle(
     x,
     y,
@@ -327,7 +338,7 @@ function changePosOpp(obj, press) {
   } else if (
     press == "ArrowDown" &&
     obj.oppoPaddle[obj.settings.axis] + obj[obj.settings.depends] <=
-      obj.canvas[obj.settings.depends]
+    obj.canvas[obj.settings.depends]
   ) {
     obj.oppoPaddle[obj.settings.axis] += obj.oppoPaddle.speed;
   }
@@ -341,7 +352,7 @@ function changePos(obj) {
   } else if (
     obj.press == "ArrowDown" &&
     obj.playerPaddle[obj.settings.axis] + obj[obj.settings.depends] <=
-      obj.canvas[obj.settings.depends]
+    obj.canvas[obj.settings.depends]
   ) {
     obj.playerPaddle[obj.settings.axis] += obj.playerPaddle.speed;
     move = 1;
@@ -440,15 +451,18 @@ function startGame(id) {
           <img src="../assets/avatars/${user_data.avatar.replace("/", "")}"/>
         </div>
       </div>
-      <canvas id="game_canvas" width="${window.innerWidth - 40}" height="${
-    window.innerHeight - 130
-  }"></canvas>
+      <canvas id="game_canvas" width="${window.innerWidth - 40}" height="${window.innerHeight - 130
+    }"></canvas>
   `;
   const cont = document.querySelector("#game_page");
   cont.innerHTML = statsBoard;
   cont.classList.add("in_game");
   cont.classList.remove("tournament_board");
   mypong = new Game(0, 0, "#31dede", `game/${id}`, 1);
+  mypong.timeout = setTimeout(() => {
+    clearTimeout(mypong.timeout)
+    updateUrl('games', '')
+  }, 15000)
   loader.classList.add("show");
   loader.classList.remove("hide");
   if (window.innerWidth < window.innerHeight)
@@ -463,7 +477,6 @@ function tournamentInfo(e) {
     loader.classList.remove("show");
     let cont = document.getElementsByClassName("tournament");
     for (let i = 0; i < cont.length; i++) {
-      console.log(i, cont, data.locked[i]);
       data.locked[i].map((el, index) => {
         cont[i]
           .querySelector(".player_img" + (index + 1))
@@ -475,10 +488,10 @@ function tournamentInfo(e) {
     }
     if (!tournamentInfo.matches.length) tournamentInfo.matches = data.locked;
   } else if (data.game_index !== undefined) {
+    clearTimeout(startGame.timer)
     loader.classList.add("hide");
     loader.classList.remove("show");
-    console.log();
-    raiseWarn("Your game is about to start", "alert");
+    // raiseWarn("Your game is about to start", "alert");
     startGame(data.game_index);
   }
 }
@@ -492,6 +505,12 @@ function playTournament(endpoint) {
   if (!startGame.tournamentSocket) {
     socket = makeSocket(`tournament/${endpoint}`, tournamentInfo);
     startGame.tournamentSocket = socket;
+  }
+  if (endpoint != -1) {
+    startGame.timer = setTimeout(() => {
+      updateUrl('games', '')
+      clearTimeout(startGame.timer)
+    }, 20000);
   }
   const board = /* html */ `
     <div class="tournament">

@@ -25,7 +25,7 @@ const raiseWarn = (msg, type = "error") => {
   errors.innerHTML += components.warning(msg, type);
   let self = document.getElementsByClassName("warn");
   self = self[self.length - 1];
-  if (type == "error") {
+  if (msg == "Session expired") {
     logout();
     return "Error";
   }
@@ -33,6 +33,8 @@ const raiseWarn = (msg, type = "error") => {
     self.remove();
     clearTimeout(s);
   }, 3000);
+  if (type == 'error')
+    return "Error";
 };
 
 const fetchWithToken = async (url, endpoint, method, body = null) => {
@@ -75,7 +77,7 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
     endpoint != "/api/login/" &&
     data == "Error"
   ) {
-    return raiseWarn("User logged out");
+    return raiseWarn("Session expired");
   }
   return data;
 };
@@ -219,7 +221,7 @@ function notified(e) {
   const data = JSON.parse(e.data);
   console.log(data);
   if (data.error) {
-    return raiseWarn("User logged out");
+    return raiseWarn(data.error);
   } else if (data.game_id !== undefined) {
     startGame(data.game_id);
   } else if (data.tournament_id !== undefined) {
@@ -244,7 +246,7 @@ function makeSocket(endpoint, socketMethod) {
   const socket = new WebSocket(`ws://${glob_endp.split("/")[2]}/${endpoint}`);
   if (endpoint) makeSocket.latest.push(socket);
   socket.onerror = (e) => {
-    return raiseWarn("User logged out");
+    return raiseWarn(e);
   };
 
   socket.onopen = function (event) {
@@ -1151,7 +1153,7 @@ document.body.onload = () => {
   if (!path.length) path = "/";
   user_data = JSON.parse(localStorage.getItem("user_data"));
   if (!user_data && ["login", "signin", "/"].indexOf(path) < 0) {
-    raiseWarn("User logged out");
+    raiseWarn("Session expired");
     return updateUrl("login", "push");
   } else if (["login", "signin", "/"].indexOf(path) < 0)
     notiSocket = makeSocket("", notified);
