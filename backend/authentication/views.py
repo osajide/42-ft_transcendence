@@ -117,9 +117,7 @@ class LoginView(APIView):
 
         print("refresh token", token['refresh'])
         print("access token", token['access'])
-        
-        if request.user.is_2fa_verified == False:
-            response = SetupTwoFa.as_view()(request)
+
 
         response.set_cookie(key = 'refresh_token', value=token['refresh'], httponly=True)
         response.set_cookie(key = 'access_token', value=token['access'], httponly=True)
@@ -275,7 +273,7 @@ class UserProfile(APIView):
                                             output_field=IntegerField(),
                                         )
                                             )
-                                            )
+                                            )['total_score']
                                 
                                 
         
