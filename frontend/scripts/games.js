@@ -119,7 +119,6 @@ function gameOver(game) {
   document.getElementById("game_dash").classList.add("game_over");
   if (startGame.tournamentSocket) {
     pos = 0;
-    console.log(tournamentInfo.matches);
     tournamentInfo.matches.map((match, index) => {
       if (
         match.filter((m) => {
@@ -140,7 +139,12 @@ function gameOver(game) {
       playTournament(-1);
       clearTimeout(timer);
     }, 5000);
-  } else updateUrl("games", "");
+  } else {
+    let timer = setTimeout(() => {
+      // updateUrl("games", "");
+      clearTimeout(timer);
+    }, 5000);
+  }
 }
 
 function server(e, mypong) {
@@ -471,8 +475,9 @@ function tournamentInfo(e) {
     }
     if (!tournamentInfo.matches.length) tournamentInfo.matches = data.locked;
   } else if (data.game_index !== undefined) {
-    loader.classList.add("show");
-    loader.classList.remove("hide");
+    loader.classList.add("hide");
+    loader.classList.remove("show");
+    console.log();
     raiseWarn("Your game is about to start", "alert");
     startGame(data.game_index);
   }
@@ -484,7 +489,6 @@ function playTournament(endpoint) {
   else socket = startGame.tournamentSocket;
   loader.classList.add("show");
   loader.classList.remove("hide");
-  // tournamentInfo()
   if (!startGame.tournamentSocket) {
     socket = makeSocket(`tournament/${endpoint}`, tournamentInfo);
     startGame.tournamentSocket = socket;

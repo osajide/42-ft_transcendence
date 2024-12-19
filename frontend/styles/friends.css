@@ -51,6 +51,10 @@
 }
 #friends #page #userProfile .userBanner img {
   height: 100px;
+  border-radius: 50%;
+  aspect-ratio: 1/1;
+  -o-object-fit: cover;
+     object-fit: cover;
 }
 #friends #page #userProfile .userBanner .userInfo {
   display: flex;

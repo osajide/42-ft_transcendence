@@ -253,7 +253,7 @@ class UserProfile(APIView):
                                             output_field=IntegerField(),
                                         )
                                             )
-                                            )
+                                            )["total_score"]
                                 
                                 
         

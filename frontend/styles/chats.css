@@ -63,6 +63,7 @@
   display: flex;
   gap: 10px;
   align-items: center;
+  cursor: pointer;
 }
 #chats .chatBanner .friendData h6,
 #chats .chatBanner .controls h6 {
@@ -73,9 +74,14 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+#chats .chatBanner .friendData img {
+  border-radius: 50%;
+  aspect-ratio: 1/1;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
 #chats .chatBanner .controls svg {
   transition: all 0.15s linear;
-  cursor: pointer;
 }
 #chats .chatBanner .controls svg:hover {
   scale: 1.3;

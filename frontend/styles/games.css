@@ -322,6 +322,9 @@
   max-width: 60px;
   max-height: 60px;
   transition: all 0.5s linear;
+  aspect-ratio: 1/1;
+  -o-object-fit: cover;
+     object-fit: cover;
 }
 .player_stats p {
   font-size: 2rem;
@@ -352,6 +355,9 @@
 .rotate_stats#game_dash .player_stats img {
   height: 48px;
   width: 48px;
+  aspect-ratio: 1/1;
+  -o-object-fit: cover;
+     object-fit: cover;
 }
 
 .game_over#game_dash {
@@ -381,6 +387,9 @@
 .rotate_stats.game_over#game_dash .player_stats img {
   height: 100%;
   width: 100%;
+  aspect-ratio: 1/1;
+  -o-object-fit: cover;
+     object-fit: cover;
 }
 
 .loser img {

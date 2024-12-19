@@ -107,8 +107,15 @@ const icons = {
 
 window.addEventListener("resize", () => {
   if (window.innerWidth < 768) {
+    const profile_img = document.querySelector(
+      '[for="profile"]:not([tabindex="0"])'
+    );
+    if (profile_img) profile_img.setAttribute("for", "menu");
     const menuToggler = document.getElementById("menu");
     if (menuToggler?.checked) menuToggler.checked = 0;
+  } else {
+    const profile_img = document.querySelector('[for="menu"]');
+    if (profile_img) profile_img.setAttribute("for", "profile");
   }
 });
 
@@ -178,6 +185,7 @@ async function authenticate(e) {
   let data = Object.fromEntries(form.entries());
   e.preventDefault();
   if (e.target.childElementCount < 5) endpoint = "/api/login/";
+  if (e.target.id == "otp") endpoint = "";
   data = await fetchWithToken(glob_endp, endpoint, "POST", form);
   if (data == "Error") return;
   e.target.reset();
@@ -185,6 +193,13 @@ async function authenticate(e) {
   if (endpoint == "/api/register/") {
     raiseWarn("Please verify your email", "alert");
     return updateUrl("login", "push");
+  } else {
+    e.target.classList.add("hide");
+    e.target.nextElementSibling.classList.add("hide");
+    e.target.previousElementSibling.classList.add("hide");
+    if (data.qr)
+      e.target.insertAdjacentElement("afterend", components.qr(undefined));
+    else e.target.insertAdjacentElement("afterend", components.otp(undefined));
   }
 
   if (data.message == "successfully Logged") {
@@ -223,7 +238,7 @@ function notified(e) {
 }
 
 function makeSocket(endpoint, socketMethod) {
-  const socket = new WebSocket(`ws://127.0.0.1:8000/${endpoint}`);
+  const socket = new WebSocket(`ws://${glob_endp.split("/")[2]}/${endpoint}`);
   if (endpoint) makeSocket.latest.push(socket);
   socket.onerror = (e) => {
     return raiseWarn("User logged out");
@@ -243,6 +258,7 @@ function makeSocket(endpoint, socketMethod) {
 
 const handleForm = () => {
   let myForm = document.getElementById("my_form");
+
   if (user_data) return updateUrl("friends", "push");
   myForm.querySelector("input").focus();
   myForm.addEventListener("submit", authenticate);
@@ -275,22 +291,30 @@ const components = {
           .join("\n")}
 			</nav>
 			<label class="img_label" for="menu" tabindex="1">
-				<img id="logo" src="./assets/avatars/${
+				<img id="user" src="./assets/avatars/${
           user_data.avatar ? user_data.avatar.replace("/", "") : "user.svg"
         }" alt="logo" />
 			</label>
 		`;
     return header;
   },
-  card: (s) => {
-    return /*html*/ `<h1>${s}</h1>`;
+  card: (data) => {
+    return /*html*/ `<div class="card ${data.result.toLowerCase()}">
+    <img src="${"./assets/avatars/" + user_data.avatar.replace("/", "")}" alt="${
+      user_data.first_name
+    }"/>
+    <p>${data.result}</p>
+    <p>Score: ${data.user_score}</p>
+    </div>`;
   },
   chat_banner: function (user) {
     return /* html */ `
     <div class="chatBanner">
     ${icons.back("friendChat")}
       <label class="friendData">
-        <img src="assets/avatars/${user.avatar}" alt="${user.name}"/>
+        <img src="${
+          !user.avatar ? "assets/avatars/user.svg" : user.avatar
+        }" alt="${user.name}"/>
         <h6>${user.name}</h6>
       </label>
       <div class="controls">
@@ -508,6 +532,175 @@ const components = {
     </label>
   `;
   },
+  qr: function (data) {
+    console.log();
+    const container = document.createElement("div");
+    container.id = "qrcode";
+    container.innerHTML = /* html */ `
+      <p>Please scan the QR code</p>
+      <img src="./assets/avatars/user.svg" alt="qrcode"/>
+      <label class="button">Next</label>
+    `;
+    return container;
+  },
+  otp: function (data) {
+    console.log();
+    const container = document.createElement("form");
+    container.id = "otp";
+    container.innerHTML = /* html */ `
+      <input type="text" maxlength="1" class="otpInput" name="digit1" required />
+      <input type="text" maxlength="1" class="otpInput" name="digit2" required />
+      <input type="text" maxlength="1" class="otpInput" name="digit3" required />
+      <input type="text" maxlength="1" class="otpInput" name="digit4" required />
+    `;
+
+    const otpInputs = document.querySelectorAll(".otpInput");
+
+    otpInputs.forEach((input, index) => {
+      input.addEventListener("input", (e) => {
+        const value = e.target.value;
+
+        // Only allow digits
+        if (!/^\d$/.test(value)) {
+          e.target.value = ""; // Clear invalid input
+          return;
+        }
+
+        // Move to the next input if not the last
+        if (index < otpInputs.length - 1 && value) {
+          otpInputs[index + 1].focus();
+        }
+
+        // Automatically submit if all inputs are filled
+        if (
+          index === otpInputs.length - 1 &&
+          otpInputs.every((input) => input.value)
+        ) {
+          container.submit();
+        }
+      });
+
+      // Allow Backspace to focus previous input
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace" && !input.value && index > 0) {
+          otpInputs[index - 1].focus();
+        }
+      });
+    });
+    container.addEventListener("submit", authenticate);
+    return container;
+  },
+  edit: function (data) {
+    const container = document.createElement("form");
+    container.setAttribute("id", "updateProfile");
+    container.classList.add("auth_form");
+    container.innerHTML = /* html */ `
+      <label class="form_inp">
+        Avatar:
+        <input type="file" id="new_avatar" placeholder="test" name="avatar" accept="image/png, image/jpeg, image/svg, image/jpg" />
+      </label>
+      <label class="form_inp">
+        First name:
+        <input name="first_name" type="text" placeholder="Laarbi"/>
+      </label>
+      <label class="form_inp">
+        Last name:
+        <input name="last_name" type="text" placeholder="Treize"/>
+      </label>
+      <label class="form_inp">
+        Username:
+        <input name="nickname" type="text" placeholder="L337"/>
+      </label>
+      <input class="button" type="submit" value="Update profile"/>
+            `;
+    container.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = new FormData(e.target);
+      const formData = new FormData();
+      let count = 0;
+
+      for (let [key, value] of form.entries()) {
+        if (value.length && typeof value === "string") {
+          formData.append(key, value);
+          count++;
+        } else if (typeof value === "object" && value.size) {
+          const fileInput = document.getElementById("new_avatar");
+          if (fileInput.files.length > 0) {
+            formData.append("avatar", fileInput.files[0]);
+          }
+          count++;
+        }
+      }
+      if (count) {
+        resp = await fetchWithToken(
+          glob_endp,
+          "/api/update_profile/",
+          "PATCH",
+          formData
+        );
+        if (resp == "Error") return;
+        for ([key, value] of Object.entries(resp)) {
+          user_data[key] = value;
+        }
+        localStorage.setItem("user_data", JSON.stringify(user_data));
+        return updateUrl("profile");
+      } else {
+        raiseWarn("Nothing to update", "alert");
+      }
+    });
+    console.log(container);
+    return container;
+  },
+  cancel: function (data) {
+    // return /* html */ `
+    //   ${Object.entries(data).map(([key, value]) => {
+    //     return `<h2>${key}</h2><p>${value}</p>`;
+    //   }).join('\n')}
+    // `;
+    return /* html */ `
+    <div id="game_insight">
+      <div class="game_count">
+        <h4>Total Score</h4>
+        <h2>${data.total_score}</h2>
+      </div>
+      <div class="game_count">
+        <h4>Total played games</h4>
+        <h2>${data.total_solo_games + data.total_played_tournament}</h2>
+      </div>
+      <div class="game_count">
+        <h4>Total wins</h4>
+        <h2>${data.total_win_games + data.total_win_tournaments}</h2>
+      </div>
+      <div class="game_count">
+        <h4>Total losses</h4>
+        <h2>${data.total_loss_games + data.total_loss_tournaments}</h2>
+      </div>
+    </div>
+    <div id="game_stats">
+      <h3>Solo games</h3>
+      <span class="bar" style="width: calc(1px + ${
+        data.total_win_games / (data.total_solo_games || 1)
+      } * 100%)"></span>
+      <span class="bar" style="width: calc(1px + ${
+        data.total_loss_games / (data.total_solo_games || 1)
+      } * 100%)"></span>
+      <h3>Tournaments</h3>
+      <span class="bar" style="width: calc(1px + ${
+        data.total_win_tournaments / (data.total_solo_games || 1)
+      } * 100%)"></span>
+      <span class="bar" style="width: calc(1px + ${
+        data.total_loss_tournaments / (data.total_solo_games || 1)
+      } * 100%)"></span>
+    </div>
+    <div id="recent_games">
+      ${data.recent_games
+        .map((d) => {
+          return components.card(d);
+        })
+        .join("\n")}
+    </div>
+  `;
+  },
 };
 
 async function checkUser(endpoint) {
@@ -664,71 +857,28 @@ const pages = {
           <h5 id="user_nickname">l337</h5>
         </div>
         <div id="stats">
-          <form id="updateProfile" class="auth_form">
-            <label class="form_inp">
-              Avatar:
-              <input type="file" id="new_avatar" placeholder="test" name="avatar" accept="image/png, image/jpeg, image/svg, image/jpg" />
-            </label>
-            <label class="form_inp">
-              First name:
-              <input name="first_name" type="text" placeholder="Laarbi"/>
-            </label>
-            <label class="form_inp">
-              Last name:
-              <input name="last_name" type="text" placeholder="Treize"/>
-            </label>
-            <label class="form_inp">
-              Username:
-              <input name="nickname" type="text" placeholder="L337"/>
-            </label>
-            <input class="button" type="submit" value="Update profile"/>
-          </form>
         </div>
 			</section>
 		`,
     id: "profile",
     func: async () => {
+      const update = document.getElementById("stats");
       const data = await fetchWithToken(glob_endp, `/api/profile/`, "GET");
       if (data == "Error") return;
       document.getElementById("updatable").innerHTML = fillProfile(data);
-      document
-        .getElementById("updateProfile")
-        .addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const form = new FormData(e.target);
-          const formData = new FormData();
-          let count = 0;
-
-          for (let [key, value] of form.entries()) {
-            if (value.length && typeof value === "string") {
-              formData.append(key, value);
-              count++;
-            } else if (typeof value === "object" && value.size) {
-              const fileInput = document.getElementById("new_avatar");
-              if (fileInput.files.length > 0) {
-                formData.append("avatar", fileInput.files[0]);
-              }
-              count++;
-            }
-          }
-          console.log(formData instanceof FormData, formData.has("first_name"));
-          if (count) {
-            resp = await fetchWithToken(
-              glob_endp,
-              "/api/update_profile/",
-              "PATCH",
-              formData
-            );
-            if (resp == "Error") return;
-            for ([key, value] of Object.entries(resp)) {
-              user_data[key] = value;
-            }
-            localStorage.setItem("user_data", JSON.stringify(user_data));
-            return updateUrl("profile");
-          } else {
-            raiseWarn("Nothing to update", "alert");
-          }
-        });
+      document.getElementById("modeSwitch").addEventListener("click", (e) => {
+        const choices = {
+          Edit: "Cancel",
+          Cancel: "Edit",
+        };
+        const choice = e.target.innerHTML;
+        e.target.innerHTML = choices[choice];
+        if (choice == "Cancel")
+          return (update.innerHTML = components[choice.toLowerCase()](data));
+        update.innerHTML = "";
+        update.appendChild(components[choice.toLowerCase()](data));
+      });
+      update.innerHTML = components["cancel"](data);
     },
     glob: true,
   },
@@ -786,7 +936,8 @@ function fillProfile(data) {
   )}" alt="${data.first_name}" />
   <h3 id="user_name">${data.first_name} ${data.last_name}</h3>
   <p id="user_email">${data.email}</p>
-  <h5 id="user_nickname">l337</h5>`;
+  <h5 id="user_nickname">l337</h5>
+  <button id="modeSwitch" class="button">Edit</button>`;
 }
 
 async function friendsRoom() {
@@ -960,6 +1111,9 @@ const updateUrl = (path = "/", mode = "", targetId = "") => {
     app.appendChild(header);
     app.appendChild(components["notification"]());
     background.classList.add("myblur");
+    const profile_img = header.querySelector('[for="menu"]');
+    if (window_height < window_width)
+      profile_img.setAttribute("for", "profile");
   } else if (!pages[path].glob && app.childElementCount > 2) {
     document.getElementsByTagName("header")[0]?.remove();
     document.getElementById("notification")?.remove();
