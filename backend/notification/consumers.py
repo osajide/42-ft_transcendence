@@ -160,8 +160,8 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 
 			indexes.append(index)
 			i += 1
-
-		await self.channel_layer.group_send(event['tournament_group'],
+		redis_client.set('max_games', len(games))
+		await self.channel_layer.group_send(event['tournament_group'], 
             {
                 'type' : 'match_making',   
                 'games' : indexes,
@@ -236,11 +236,11 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 			users_and_games[index].append(self.scope['user'].id)
 
 	async def	release_game_id(self, event):
+		print(f"user: {self.scope['user']}")
 		print('games before--> ', games)
 		print('event::::::: ', event)
 		if self.scope['user'].id == event['user_id']:
-			print('type event[index]: ', type(event['index']))
 			print('event[index] = ', event['index'])
 			games[event['index']] = '0'
-		print('games after--> ', games)
+			print('games after--> ', games)
 		

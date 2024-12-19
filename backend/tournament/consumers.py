@@ -33,7 +33,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 						'error': 'Invalid Token'
 					}
 				))
-			# await self.close()
+            await self.close()
             return
         
         tournament_id = self.scope["url_route"]["kwargs"]["tournament_id"]
@@ -56,7 +56,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     'error' : 'Tournament not found'
                 }))
             await self.close()
-            print("connection closed")
             return
 
 
@@ -70,6 +69,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({
                     'error' : 'Tournament is Full'
                 }))
+            await self.close()
             return 
 
         # for key, object_list in users.items():
@@ -82,6 +82,14 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         #             self.close()
         #             return 
         
+        user = await sync_to_async(UserAccount.objects.get)(id=self.scope['user'].id)
+        if user.user_state == "in_game":
+            await self.send(text_data=json.dumps({
+                    'error' : 'User already joined an existing tournament'
+                }))
+            await self.close()
+            return 
+
 
         print("joined user : ", self.scope['user'].first_name)
         await self.channel_layer.group_send('notification',
@@ -181,7 +189,6 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     if users_states[tournament_id][user] == 3:
                         print("winner_id final => ", user)
                         arr.append(user)
-                          
             
             listed_users = []
             if (len(arr) == 2):
@@ -247,15 +254,10 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             #     print("pos : ", make_game[tournament_id][player_pos])
             if len(make_game[tournament_id]) >= 2:
                 i = 0
-                if users_states[tournament_id][winner_id[1]] != 3:
-                    for player_pos in  make_game[tournament_id]:
-                        if  make_game[tournament_id][player_pos] == winner_id[0]:
-                            i += 1
-                else:
-                    # users_states[tournament_id][winner_id]
-                    for user in  users_states[tournament_id]:
-                        if  users_states[tournament_id][user] == 3:
-                            i += 1
+                for player_pos in  make_game[tournament_id]:
+                    if  make_game[tournament_id][player_pos] == winner_id[0]:
+                        i += 1
+                
                 if i == 2:
                     await self.channel_layer.group_send('notification',
                         {

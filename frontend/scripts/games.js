@@ -96,6 +96,7 @@ function resetBall(game) {
 }
 
 function gameOver(game) {
+  console.log("GAME OVER FUNCTION CALLED")
   cancelAnimationFrame(game.frameId);
   const winner =
     game.playerPaddle.score == game.maxScore

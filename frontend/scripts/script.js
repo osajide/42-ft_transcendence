@@ -223,7 +223,7 @@ function notified(e) {
 }
 
 function makeSocket(endpoint, socketMethod) {
-  const socket = new WebSocket(`ws://127.0.0.1:8000/${endpoint}`);
+  const socket = new WebSocket(`ws://${glob_endp.split('/')[2]}/${endpoint}`);
   if (endpoint) makeSocket.latest.push(socket);
   socket.onerror = (e) => {
     return raiseWarn("User logged out");

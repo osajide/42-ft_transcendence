@@ -89,14 +89,19 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 		print('paritcipants in receive: ', participants)
 		try:
 			json_text_data = json.loads(text_data)
+
 			if self.friendship.status == 'accepted':
-				if 'message' in json_text_data:
+				if 'block' in json_text_data:
+					self.friendship.status = 'blocked'
+					self.friendship.last_action_by = self.user.id
+				elif 'message' in json_text_data:
 					await self.channel_layer.group_send(self.conversation_name,
 														{
 															'type': 'broadcast_message',
 															'message': json_text_data['message'],
 															'sender': self.user.id
 														})
+
 			elif self.friendship.status == 'blocked':
 				if self.friendship.last_action_by == self.user.id:
 					await self.send(text_data=json.dumps({"alert": f"you have blocked {self.user}"}))
