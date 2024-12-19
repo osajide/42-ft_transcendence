@@ -85,6 +85,45 @@ class ActivateUserAPIView(APIView):
             return Response({'error': 'Activation link is invalid!'}, status=status.HTTP_400_BAD_REQUEST)
     
 
+# class LoginView(APIView):
+    # def post(self, request):
+    
+    #     try : 
+    #         email = request.data['email']
+    #         password = request.data['password']
+    #     except KeyError as e:
+    #         return Response({'error':'Not provided enough data'})
+       
+        
+    #     user = UserAccount.objects.filter(email = email).first()
+        
+    #     if user is None:
+    #         raise Response({'error':'User not found'})
+        
+    #     if not check_password(password, user.password):
+    #         return Response({'error':'Incorrect password'})
+        
+    #     if (user.verified_mail == False):
+    #         return Response({'error': 'You have to activate your account'})
+    #     token = get_tokens_for_user(user)
+        
+    #     # response = Response({
+    #     #     "acess_token" : token['access']
+    #     # })
+    #     serializer = UserSerializer(user)
+    #     response =  Response({
+    #         'message': 'successfully Logged',
+    #         'user': serializer.data
+    #         } , status=status.HTTP_200_OK)
+
+    #     print("refresh token", token['refresh'])
+    #     print("access token", token['access'])
+
+
+    #     response.set_cookie(key = 'refresh_token', value=token['refresh'], httponly=True)
+    #     response.set_cookie(key = 'access_token', value=token['access'], httponly=True)
+    #     return response
+
 class LoginView(APIView):
     def post(self, request):
     
@@ -98,7 +137,7 @@ class LoginView(APIView):
         user = UserAccount.objects.filter(email = email).first()
         
         if user is None:
-            raise Response({'error':'User not found'})
+            return Response({'error':'User not found'})
         
         if not check_password(password, user.password):
             return Response({'error':'Incorrect password'})
@@ -110,20 +149,24 @@ class LoginView(APIView):
         # response = Response({
         #     "acess_token" : token['access']
         # })
-        serializer = UserSerializer(user)
-        response =  Response({
-            'message': 'successfully Logged',
-            'user': serializer.data
-            } , status=status.HTTP_200_OK)
+        # serializer = UserSerializer(user)
+        # response =  Response({
+        #     'message': 'successfully Logged',
+        #     'user': serializer.data
+        #     } , status=status.HTTP_200_OK)
 
         print("refresh token", token['refresh'])
         print("access token", token['access'])
 
-
+        if user.is_2fa_verified == True:
+            response =  Response({'verify_otp'})
+        else:
+            response =  Response({'scan_qr'})
+            
         response.set_cookie(key = 'refresh_token', value=token['refresh'], httponly=True)
         response.set_cookie(key = 'access_token', value=token['access'], httponly=True)
+        
         return response
-
 
 class AddMultipleUsersView(APIView):
     def get(self, request, *args, **kwargs):

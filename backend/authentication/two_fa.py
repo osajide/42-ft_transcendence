@@ -8,6 +8,7 @@ import pyotp, qrcode, base64
 from PIL import Image
 from rest_framework.views import APIView
 from .models import *
+from .serializers import *
 
 # i will give the user an access token when he logged in with a short time lived
 # this is will help me to check if its authenticated or not
@@ -49,6 +50,33 @@ class SetupTwoFa(APIView):
         return Response({'qrcode': "data:image/png;base64," + qr_b64}, status=200)
 
 
+# class VerifyCode(APIView):
+
+#     authentication_classes = [CookieJWTAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+        
+#         code = request.data.get('code')
+#         if not code:
+#             return Response({"error": "2FA code is required"}, status=400)
+
+#         # code = "620376"
+#         totp = pyotp.TOTP(request.user.secret_key)
+
+#         if totp.verify(code):
+
+#             request.user.is_2fa_verified = True
+#             request.user.save()
+#             response = Response({
+#                 'message': '2FA code verification successful',
+#             }, status=status.HTTP_200_OK)
+
+#             return response
+        
+#         else:
+#             return Response({"message": "Invalid 2FA code"}, status=400)
+
 class VerifyCode(APIView):
 
     authentication_classes = [CookieJWTAuthentication]
@@ -63,15 +91,24 @@ class VerifyCode(APIView):
         # code = "620376"
         totp = pyotp.TOTP(request.user.secret_key)
 
+
         if totp.verify(code):
 
             request.user.is_2fa_verified = True
             request.user.save()
-            response = Response({
-                'message': '2FA code verification successful',
-            }, status=status.HTTP_200_OK)
+
+            # user = UserAccount.objects.filter(email = request.user.email).first()
+
+            serializer = UserSerializer(request.user)
+            response =  Response({
+                'message': 'successfully Logged',
+                'user': serializer.data
+                } , status=status.HTTP_200_OK)
+            # response = Response({
+            #     'message': '2FA code verification successful',
+            # }, status=status.HTTP_200_OK)
 
             return response
         
         else:
-            return Response({"message": "Invalid 2FA code"}, status=400)
+            return Response({"error": "Invalid 2FA code"}, status=400)

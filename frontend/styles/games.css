@@ -88,7 +88,7 @@
   background-size: auto 100%;
 }
 #game_page:not(.in_game) .game_mode:last-child {
-  background: url("../assets/vs.png"), rgba(49, 222, 222, 0.4392156863);
+  background: url("../assets/tour.png"), rgba(49, 222, 222, 0.4392156863);
   background-position: center;
   background-repeat: no-repeat;
   background-size: auto 100%;
@@ -282,7 +282,7 @@
     transform-origin: center !important;
   }
   #game_page:not(.in_game) .game_mode:last-child {
-    background: url("../assets/vs1.png"), rgba(49, 222, 222, 0.4392156863) !important;
+    background: url("../assets/tour1.png"), rgba(49, 222, 222, 0.4392156863) !important;
     background-size: 100% auto !important;
     transform-origin: center !important;
   }

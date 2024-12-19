@@ -52,7 +52,7 @@
     }
 
     &:last-child {
-      background: url("../assets/vs.png"), $blue_border;
+      background: url("../assets/tour.png"), $blue_border;
       background-position: center;
       background-repeat: no-repeat;
       background-size: auto 100%;
@@ -253,7 +253,7 @@
       }
 
       &:last-child {
-        background: url("../assets/vs1.png"), $blue_border !important;
+        background: url("../assets/tour1.png"), $blue_border !important;
         background-size: 100% auto !important;
         transform-origin: center !important;
       }

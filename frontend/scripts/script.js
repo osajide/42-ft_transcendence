@@ -199,11 +199,18 @@ async function authenticate(e) {
     raiseWarn("Please verify your email", "alert");
     return updateUrl("login", "push");
   } else {
+    console.log(data)
     e.target.classList.add("hide");
     e.target.nextElementSibling.classList.add("hide");
     e.target.previousElementSibling.classList.add("hide");
-    if (data.qr)
-      e.target.insertAdjacentElement("afterend", components.qr(undefined));
+    if (data[0] == "scan_qr") {
+      const qr = await fetchWithToken(
+        glob_endp,
+        "/api/setup_twofa/"
+      );
+      console.log(qr)
+      e.target.insertAdjacentElement("afterend", components.qr(qr.qrcode));
+    }
     else e.target.insertAdjacentElement("afterend", components.otp(undefined));
   }
 
@@ -532,19 +539,18 @@ const components = {
     </label>
   `;
   },
-  qr: function (data) {
+  qr: function (qr) {
     console.log();
     const container = document.createElement("div");
     container.id = "qrcode";
     container.innerHTML = /* html */ `
       <p>Please scan the QR code</p>
-      <img src="./assets/avatars/user.svg" alt="qrcode"/>
-      <label class="button">Next</label>
+      <img src="${qr}" alt="qrcode"/>
+      <label onclick="next()" class="button">Next</label>
     `;
     return container;
   },
-  otp: function (data) {
-    console.log();
+  otp: function () {
     const container = document.createElement("form");
     container.id = "otp";
     container.innerHTML = /* html */ `
@@ -552,16 +558,17 @@ const components = {
       <input type="text" maxlength="1" class="otpInput" name="digit2" required />
       <input type="text" maxlength="1" class="otpInput" name="digit3" required />
       <input type="text" maxlength="1" class="otpInput" name="digit4" required />
+      <input type="text" maxlength="1" class="otpInput" name="digit5" required />
+      <input type="text" maxlength="1" class="otpInput" name="digit6" required />
     `;
 
-    const otpInputs = document.querySelectorAll(".otpInput");
+    const otpInputs = container.querySelectorAll(".otpInput");
 
     otpInputs.forEach((input, index) => {
       input.addEventListener("input", (e) => {
         const value = e.target.value;
-
         // Only allow digits
-        if (!/^\d$/.test(value)) {
+        if (!Number.isInteger(+value)) {
           e.target.value = ""; // Clear invalid input
           return;
         }
@@ -571,10 +578,20 @@ const components = {
           otpInputs[index + 1].focus();
         }
 
+        // Move to the previous input if it's empty
+        let i = index
+        console.log(otpInputs[i].value)
+        while (i >= 0) {
+          if (i - 1 > -1  && !otpInputs[i - 1].value.length)
+            otpInputs[i--].value = "";
+          if (i - 1 > -1 && otpInputs[i - 1].value.length)
+            break;
+        }
+        if (i > -1)
+        otpInputs[i].value = value;
         // Automatically submit if all inputs are filled
         if (
-          index === otpInputs.length - 1 &&
-          otpInputs.every((input) => input.value)
+          index === otpInputs.length - 1
         ) {
           container.submit();
         }
@@ -712,6 +729,13 @@ const components = {
   `;
   },
 };
+
+function next() {
+  const qr = document.getElementById('qrcode')
+
+  qr.insertAdjacentElement('afterend', components.otp())
+  qr.remove()
+}
 
 async function checkUser(endpoint) {
   const updateCont = document.getElementById("userProfile");
