@@ -232,6 +232,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             return
         print("winner id : ", winner_id)
 
+        print("elements type : ", winner_id[0])
+
         if users_states[tournament_id][winner_id[1]] == 3:
             print("THE TOURNAMENT IS ENDED")
             users.pop(tournament_id)
@@ -252,7 +254,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             # print(make_game)
             # for player_pos in  make_game[tournament_id]:
             #     print("pos : ", make_game[tournament_id][player_pos])
-            if len(make_game[tournament_id]) >= 2:
+            if len(make_game[tournament_id]) > 1:
                 i = 0
                 for player_pos in  make_game[tournament_id]:
                     if  make_game[tournament_id][player_pos] == winner_id[0]:
@@ -276,7 +278,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send(self.group_name,
             {
                 'type' : 'send_winner',
-                'game_winner' : [self.scope['user'].id, users_states[tournament_id][self.scope['user'].id]]
+                'game_winner' : [self.scope['user'].id,  users_states[tournament_id][winner_id[1]]]
             })
 
         if (type(winner_id) is int) and users_states[tournament_id][winner_id] == 4: 

@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from .views import *
 from .oauth import GetAuthCode, OAuthCallback
+from .two_fa import *
 
 urlpatterns = [
     path('register/', RegisterUserAPIView.as_view(), name= 'register'),
@@ -15,5 +16,7 @@ urlpatterns = [
     path('add_multiple_users/', AddMultipleUsersView.as_view(), name='add_users'),
     path('profile/', UserProfile.as_view(), name='profile'),
     # path('update_profile/', UpdateProfile.as_view(), name='update_profile'),
-    path('update_profile/', update_profile)
+    path('update_profile/', update_profile),
+    path('setup_twofa/', SetupTwoFa.as_view(), name='setup_twofa'),
+    path('verify_code/', VerifyCode.as_view(), name='verify_code')
 ]
