@@ -17,6 +17,6 @@ urlpatterns = [
     path('profile/', UserProfile.as_view(), name='profile'),
     # path('update_profile/', UpdateProfile.as_view(), name='update_profile'),
     path('update_profile/', update_profile),
-    path('setup_twofa/', SetupTwoFa.as_view(), name='setup_twofa'),
-    path('verify_code/', VerifyCode.as_view(), name='verify_code')
+    # path('setup_twofa/', SetupTwoFa.as_view(), name='setup_twofa'),
+    # path('verify_code/', VerifyCode.as_view(), name='verify_code')
 ]

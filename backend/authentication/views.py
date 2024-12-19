@@ -26,6 +26,8 @@ from django.core.exceptions import ValidationError
 from rest_framework.decorators import authentication_classes, permission_classes
 from .decorators import two_fa_required
 from django.utils.decorators import method_decorator
+from .two_fa import *
+
 # Create your views here.
 
 # class RegisterUserAPIView(APIView):
@@ -115,9 +117,12 @@ class LoginView(APIView):
 
         print("refresh token", token['refresh'])
         print("access token", token['access'])
+        
+        if request.user.is_2fa_verified == False:
+            response = SetupTwoFa.as_view()(request)
+
         response.set_cookie(key = 'refresh_token', value=token['refresh'], httponly=True)
         response.set_cookie(key = 'access_token', value=token['access'], httponly=True)
-        
         return response
 
 
