@@ -55,7 +55,7 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #019898;
+  background-color: #00b1b1;
   border-radius: 0px 7px 7px 0px;
 }
 
@@ -115,7 +115,7 @@ body {
   fill: #db0000;
 }
 #errorCont .alert svg {
-  fill: #019898;
+  fill: #00b1b1;
 }
 
 #loader {
@@ -137,7 +137,7 @@ body {
   width: 100%;
   height: 100%;
   z-index: 0;
-  background-color: rgba(1, 152, 152, 0.2);
+  background-color: rgba(0, 177, 177, 0.2);
   filter: blur(50px);
 }
 #loader.show svg {
@@ -168,12 +168,12 @@ body {
 }
 
 .inline_label {
-  color: #019898;
+  color: #00b1b1;
   cursor: pointer;
 }
 
 .button {
-  background-color: #019898;
+  background-color: #00b1b1;
   padding: 0.7rem 1.5rem;
   border-radius: 7px;
   transition: background-color 0.15s linear;
@@ -291,7 +291,7 @@ header,
   border-radius: 0px !important;
 }
 #notification #notiList::-webkit-scrollbar-thumb {
-  background-color: #019898;
+  background-color: #00b1b1;
   border-radius: 0px !important;
 }
 #notification #notiList .notiLabel {
@@ -307,6 +307,8 @@ header,
 #notification #notiList .notiLabel img {
   width: 40px;
   height: 40px;
+  aspect-ratio: 1/1;
+  border-radius: 50%;
 }
 #notification #notiList .notiLabel svg {
   width: 20px;
@@ -314,7 +316,7 @@ header,
   position: absolute;
   bottom: 6px;
   left: 28px;
-  background-color: #019898;
+  background-color: #00b1b1;
   padding: 2px;
   border-radius: 50%;
 }
@@ -327,7 +329,7 @@ header,
 }
 #notification #notiList .noti_member:checked + label,
 #notification #notiList .noti_member:checked + label:hover {
-  background-color: #019898;
+  background-color: #00b1b1;
 }
 #notification #notiList .noti_member:checked + label svg,
 #notification #notiList .noti_member:checked + label:hover svg {
@@ -355,7 +357,7 @@ header,
   height: 35px;
 }
 #notification #notToggler:checked + label {
-  background-color: #019898;
+  background-color: #00b1b1;
 }
 #notification #notToggler:checked + label + div {
   width: 200px;
@@ -465,8 +467,8 @@ header button {
 header nav label:hover,
 header nav label:focus,
 header button:hover {
-  color: #019898;
-  fill: #019898;
+  color: #00b1b1;
+  fill: #00b1b1;
   scale: 1.1;
 }
 header button:hover {
@@ -534,7 +536,7 @@ header #user {
 }
 
 .chat_member:checked + .user_label {
-  background-color: #019898;
+  background-color: #00b1b1;
   border-radius: 7px;
 }
 
