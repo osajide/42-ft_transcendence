@@ -17,8 +17,7 @@ function receiveMessage(event) {
           .replace("animate", "");
         messenger.innerHTML =
           tmp +
-          `<p class="message ${
-            oldMsg.owner == user_data.id ? "myMsg" : "friend"
+          `<p class="message ${oldMsg.owner == user_data.id ? "myMsg" : "friend"
           } animateF">${oldMsg.content}</p>`;
         messenger.scrollTop = messenger.scrollHeight;
       });
@@ -36,13 +35,15 @@ function receiveMessage(event) {
       tmp + `<p class="message friend animateF">${data.message}</p>`;
     messenger.scrollTop = messenger.scrollHeight;
   }
-  else if(data.reject){
+  else if (data.reject) {
     if (messenger.querySelector(".newMsgs"))
       messenger.querySelector(".newMsgs").remove();
     tmp = messenger.innerHTML.replace("animateF", "").replace("animate", "");
     messenger.innerHTML =
       tmp + `<p class="message friend reject animateF">${data.reject}</p>`;
     messenger.scrollTop = messenger.scrollHeight;
+  } else if (data.game_id !== undefined) {
+    startGame(data.game_id);
   }
 }
 
@@ -65,7 +66,7 @@ function sendMessage(e, socket) {
 
 function messenger(endpoint) {
   myForm = document.getElementById("messenger");
-    closeSockets()
+  closeSockets()
 
   const socket = makeSocket(endpoint, receiveMessage);
 

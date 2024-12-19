@@ -30,6 +30,14 @@
     transform: translate(20px, -150px);
   }
 }
+@keyframes fillIn {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
 #chats #page {
   flex-direction: row;
   flex-wrap: nowrap;
@@ -255,7 +263,7 @@
   position: relative;
 }
 
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 767px) {
   #chatCont {
     height: 100dvh;
     position: absolute;
@@ -285,6 +293,7 @@
   #chats #page #chatCont.expand {
     width: 100% !important;
     border: 1.5px solid rgba(49, 222, 222, 0.4392156863) !important;
+    background-color: rgba(35, 35, 35, 0.8);
   }
   .hide:checked + label + .popup {
     width: 90% !important;

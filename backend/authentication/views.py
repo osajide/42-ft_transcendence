@@ -27,6 +27,7 @@ from rest_framework.decorators import authentication_classes, permission_classes
 from .decorators import two_fa_required
 from django.utils.decorators import method_decorator
 from .two_fa import *
+from friend.models import Friendship
 
 # Create your views here.
 
@@ -220,8 +221,10 @@ class UserProfile(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
     def get(self, request):
-
-        user = UserAccount.objects.filter(email=request.user.email).first()
+        if hasattr(request, 'profile'):
+            user = request.profile
+        else:
+            user = UserAccount.objects.filter(email=request.user.email).first()
 
         total_solo_games = Game.objects.filter(game_type='solo').filter(
                                             Q(player1=user) | Q(player2=user)).count()
@@ -307,6 +310,16 @@ class UserProfile(APIView):
                 'recent_games': list(recent_games.values('id', 'user_score', 'result')),
                 "total_score" : total_score
             }
+
+        try:
+            if hasattr(request, 'profile'):
+                friendship = Friendship.objects.get(
+                    (Q(user1=user) & Q(user2=request.user)) | (Q(user2=user) & Q(user1=request.user))
+                )
+                response_data['relationship'] = friendship.status
+                response_data['last_action'] = friendship.last_action_by
+        except Friendship.DoesNotExist:
+            return Response()
     
         return JsonResponse(response_data)
 

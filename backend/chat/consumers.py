@@ -8,6 +8,7 @@ from django.db.models import Q
 from friend.models import Friendship
 
 participants = {}
+frienships = {}
 
 def	load_messages(self):
 	seen = self.conversation.messages.filter(Q(seen_by_receiver=True) | (Q(seen_by_receiver=False) & (Q(owner=self.user))))
@@ -39,7 +40,7 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 		if self.friend is not None:
 			self.friendship = await sync_to_async(Friendship.objects.filter(
 					Q(user1=self.user, user2=self.friend) | Q(user1=self.friend, user2=self.user.id)
-					& (Q(status='accepted') | (Q(status='blocked') & Q(last_action_by=self.user.id)))).first)()
+					& (Q(status='accepted') | (Q(status='blocked')))).first)()
 
 			if self.friendship is not None:
 				self.conversation =  await sync_to_async(Conversation.objects.filter(Q(user1=self.user, user2=self.friend)
@@ -63,6 +64,7 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 
 				if not self.conversation_name in participants:
 					participants[self.conversation_name] = 0
+					frienships[self.conversation_name] = self.friendship
 
 				participants[self.conversation_name] += 1
 				print('participants after: ', participants)
@@ -81,6 +83,7 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 		participants[self.conversation_name] -= 1
 		if participants[self.conversation_name] == 0:
 			participants.pop(self.conversation_name)
+			frienships.pop(self.conversation_name)
 
 		print('participants after disconnect(): ', participants)
 
@@ -89,22 +92,39 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 		print('paritcipants in receive: ', participants)
 		try:
 			json_text_data = json.loads(text_data)
-
-			if self.friendship.status == 'accepted':
+			if frienships[self.conversation_name].status == 'accepted':
 				if 'block' in json_text_data:
-					self.friendship.status = 'blocked'
-					self.friendship.last_action_by = self.user.id
+					frienships[self.conversation_name].status = 'blocked'
+					frienships[self.conversation_name].last_action_by = self.user.id
+					await sync_to_async(frienships[self.conversation_name].save)()
 				elif 'message' in json_text_data:
 					await self.channel_layer.group_send(self.conversation_name,
 														{
 															'type': 'broadcast_message',
 															'message': json_text_data['message'],
-															'sender': self.user.id
+															'sender_id': self.user.id
 														})
+				elif 'challenge' in json_text_data:
+					print('challenge req ********')
+					if self.user.user_state == 'in_game':
+						await self.send(text_data=json.dumps({'error': 'already in game'}))
+						return
+					print('challenge notification sent !!!!!!!!')
+					await self.channel_layer.group_send('notification',
+											{
+												'type': 'make_match',
+												'id': self.user.id,
+												'opponent': self.friend.id,
+												'challenge' : True
+											})
 
-			elif self.friendship.status == 'blocked':
-				if self.friendship.last_action_by == self.user.id:
-					await self.send(text_data=json.dumps({"reject": f"you have blocked {self.user}"}))
+			elif frienships[self.conversation_name].status == 'blocked':
+				if 'unblock' in json_text_data and frienships[self.conversation_name].last_action_by == self.user.id:
+					frienships[self.conversation_name].status = 'accepted'
+					frienships[self.conversation_name].last_action_by = self.user.id
+					await sync_to_async(frienships[self.conversation_name].save)()
+				elif frienships[self.conversation_name].last_action_by == self.user.id:
+					await self.send(text_data=json.dumps({"reject": f"you have blocked {self.friend}"}))
 				else:
 					await self.send(text_data=json.dumps({"reject": f"you've been blocked by {self.friend}"}))
 
@@ -113,6 +133,25 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 
 
 	async def	broadcast_message(self, event):
+		# if 'game_id' in event:
+		# 	print('game id sent to both players##############')
+		# 	if self.user.id != event['opponent']:
+		# 		await self.send(text_data=json.dumps(
+		# 			{
+		# 				'game_id': event['game_id']
+		# 			}
+		# 	))
+		# 	else:
+		# 		await self.send(text_data=json.dumps(
+		# 			{
+		# 				'game_invite': {
+		# 					'description': f"{event['sender']['first_name'].capitalize()} {event['sender']['last_name'].upper()} invited you to a game",
+		# 					'sender': event['sender'],
+		# 					'game_id': event['game_id']
+		# 				}
+		# 			}
+		# 		))
+		# else:
 		seen = True
 
 		if self.user.id == event['sender']:
@@ -142,9 +181,12 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 													owner=self.user,
 														seen_by_receiver=seen)
 
-		if self.user.id != event['sender']:
-			await self.send(text_data=json.dumps(
-				{
-					'message': event['message']
-				}
-			))
+		if self.user.id != event['sender_id']:
+			if 'message' in event:
+				await self.send(text_data=json.dumps(
+					{
+						'message': event['message']
+					}
+				))
+	
+

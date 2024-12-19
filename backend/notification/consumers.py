@@ -74,18 +74,7 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 		json_text_data = json.loads(text_data)
 		if 'seen' in json_text_data:
 			await delete_notification(json_text_data['seen'])
-		elif 'private' in json_text_data:
-			if self.scope['user'].user_state == 'in_game':
-				await self.send(text_data=json.dumps({'error': 'already in game'}))
-				return
-			await self.channel_layer.group_send(self.notification_group,
-									   {
-										   'type': 'make_match',
-										   'id': self.scope['user'].id,
-										   'opponent': json_text_data['private'],
-										   'private' : True
-									   })
-	
+
 		elif 'solo' in json_text_data:
 			# postman
 			if self.scope['user'].user_state == 'in_game':
@@ -181,21 +170,21 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 				}]))
 		elif 'opponent' in event:
 			if self.scope['user'].id == event['opponent']:
-				print('ana opponent')
-				await self.send(text_data=json.dumps({
+				await self.send(text_data=json.dumps(
+        		{
 					'game_invite': {
-						# 'type': 'game',
-						'description': f"{event['sender']['first_name'].capitalize()} {event['sender']['last_name'].upper()} invited you to a game",
-						'sender': event['sender'],
-						# 'timestamp': event['timestamp'],
-						'game_id': event['game_id']
-				}}))
+							'description': f"{event['sender']['first_name'].capitalize()} {event['sender']['last_name'].upper()} invited you to a game",
+							'sender': event['sender'],
+							'game_id': event['game_id']
+						}
+				}))
+
 
 
 	async def	make_match(self, event):
 		# print('games list before: ', games)
 		if self.scope['user'].id == event['id']:
-			if 'private' in event:
+			if 'challenge' in event:
 				try:
 					index = games.index('0')
 					games[index] = '2'
@@ -203,7 +192,7 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 					games.append('2')
 					index = len(games) - 1
 
-				print('notification sent')
+				print('game id sent to chat group-----------')
 				await self.channel_layer.group_send('notification',
 						  {
 							  'type': 'send_notification',

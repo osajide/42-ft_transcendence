@@ -99,16 +99,14 @@
 #profile #page #stats #game_insight .game_count h2 {
   margin-top: auto;
 }
-
-#game_stats {
+#profile #page #stats #game_stats {
   text-align: left;
 }
-#game_stats h3 {
+#profile #page #stats #game_stats h3 {
   margin-bottom: 7px !important;
   color: #31dede;
 }
-
-.graph {
+#profile #page #stats .graph {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -117,18 +115,17 @@
   width: 0;
   animation: fillIn 0.3s linear forwards;
 }
-
-.bar {
+#profile #page #stats .bar {
   height: calc(1rem + 20px);
   background-color: #00b278;
   width: 0px;
   display: flex;
   position: relative;
 }
-.bar:nth-child(2n) {
+#profile #page #stats .bar:nth-child(2n) {
   background-color: #db0000;
 }
-.bar::before {
+#profile #page #stats .bar::before {
   content: attr(data-insight);
   position: relative;
   top: 10px;
@@ -136,7 +133,7 @@
   opacity: 0;
   animation: popIn 0.15s linear 0.4s forwards;
 }
-.bar::after {
+#profile #page #stats .bar::after {
   content: attr(data-count);
   position: absolute;
   top: 10px;
@@ -144,15 +141,14 @@
   left: calc(100% + 10px);
   animation: popIn 0.15s linear 0.4s forwards;
 }
-
-#recent_games {
+#profile #page #stats #recent_games {
   display: flex;
   width: 100%;
   gap: 10px;
   flex-wrap: wrap;
   justify-content: space-evenly;
 }
-#recent_games .card {
+#profile #page #stats #recent_games .card {
   display: flex;
   flex-direction: column;
   padding: 20px;
@@ -166,9 +162,8 @@
   gap: 10px;
   max-width: 350px;
   animation: popIn 0.15s linear forwards;
-  flex: 1;
 }
-#recent_games .card img {
+#profile #page #stats #recent_games .card img {
   width: 100%;
   aspect-ratio: 1/1;
   -o-object-fit: cover;
@@ -176,14 +171,14 @@
   border-radius: 50%;
   margin-bottom: 20px;
 }
-#recent_games .card h4 {
+#profile #page #stats #recent_games .card h4 {
   color: inherit;
 }
-#recent_games .card.win {
+#profile #page #stats #recent_games .card.win {
   border-color: #00b278;
   color: #00b278;
 }
-#recent_games .card.loss {
+#profile #page #stats #recent_games .card.loss {
   border-color: #db0000;
   color: #db0000;
 }

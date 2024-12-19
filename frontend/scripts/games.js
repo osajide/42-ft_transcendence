@@ -122,7 +122,7 @@ function gameOver(game) {
     tournamentInfo.matches.map((match, index) => {
       if (
         match.filter((m) => {
-          m.id == winner.id;
+          return m.id == winner.id;
         }).length
       )
         pos = index;
@@ -141,7 +141,7 @@ function gameOver(game) {
     }, 5000);
   } else {
     let timer = setTimeout(() => {
-      // updateUrl("games", "");
+      updateUrl("games", "");
       clearTimeout(timer);
     }, 5000);
   }

@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from authentication.serializers import UserSerializer
 from django.db.models import Q, Case, When, Value, IntegerField
+from authentication.views import UserProfile
 # from .serializers import FriendshipSerializer
 import re
 from channels.layers import get_channel_layer
@@ -192,28 +193,10 @@ def	list_friends(request):
 @authentication_classes([CookieJWTAuthentication])
 @permission_classes([IsAuthenticated])
 def	get_other_user_profile(request, id):
-
-	user = get_object_or_404(UserAccount, id=id)
-	friendship = Friendship.objects.filter(Q(user1=request.user, user2=user)
-									  			| Q(user1=user, user2=request.user)).first()
-	
-	if friendship is None:
-		rel = ''
-		last_action_by = ''
-
-	else:
-		rel = friendship.status
-		last_action_by = friendship.last_action_by
-
-	serializer = UserSerializer(user)
-
-	return Response(
-		{
-			'user': serializer.data,
-			'rel': rel,
-			'last_action_by': last_action_by
-		}, status=status.HTTP_200_OK
-	)
+    request.profile =  UserAccount.objects.get(id=id)
+    view = UserProfile()
+    response = view.get(request=request)
+    return response
 
 @api_view()
 @authentication_classes([CookieJWTAuthentication])

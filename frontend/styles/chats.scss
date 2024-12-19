@@ -244,7 +244,7 @@ $msg_tick_bottom: 14px;
   position: relative;
 }
 
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 767px) {
   #chatCont {
     height: 100dvh;
     position: absolute;
@@ -282,6 +282,7 @@ $msg_tick_bottom: 14px;
     #chatCont.expand {
       width: 100% !important;
       border: $global_border !important;
+      background-color: rgba($prim_dark, .8);
     }
   }
 
