@@ -246,10 +246,36 @@ class UserProfile(APIView):
         total_loss_tournaments = Tournament.objects.exclude(winner=user.id).count()
 
 
+        # recent_games = (
+        #                 Game.objects.filter(
+        #                     Q(player1=user) | Q(player2=user)
+        #                 )
+        #                 .annotate(
+        #                     user_score=Case(
+        #                         When(player1=user, then=F("player1_score")),
+        #                         When(player2=user, then=F("player2_score")),
+        #                         default=Value(0),
+        #                         output_field=IntegerField(),
+        #                     ),
+        #                     result=Case(
+        #                         When(winner=user.id, then=Value("Win")),
+        #                         default=Value("Loss"),
+        #                         output_field=CharField(),
+        #                     ),
+        #                     opponent_avatar=Case(
+        #                         When(player1=user, then=F("player1_avatar")),
+        #                         When(player2=user, then=F("player2_avatar")),
+        #                         default='user.svg',
+        #                         output_field=models.ImageField(),
+        #                     )
+        #                 )
+        #                 .order_by("-created_at")[:10]  
+        #                 )
         recent_games = (
                         Game.objects.filter(
                             Q(player1=user) | Q(player2=user)
                         )
+                        .select_related('player1', 'player2') 
                         .annotate(
                             user_score=Case(
                                 When(player1=user, then=F("player1_score")),
@@ -262,9 +288,16 @@ class UserProfile(APIView):
                                 default=Value("Loss"),
                                 output_field=CharField(),
                             ),
+                            opponent_avatar=Case(
+                                When(player1=user, then=F("player2__avatar")),
+                                When(player2=user, then=F("player1__avatar")),
+                                default=Value('user.svg'),
+                                output_field=CharField(), 
+                                # output_field=models.ImageField(), 
+                            ),
                         )
-                        .order_by("-created_at")[:10]  
-                        )
+                        .order_by("-created_at")[:10]
+                    )
         
 
         total_score = Game.objects.aggregate(
@@ -290,6 +323,7 @@ class UserProfile(APIView):
             print("============")
             print(f"User Score: {game.user_score}")
             print(f"Result: {game.result}")
+            print(f"Avatar: {game.opponent_avatar}")
             print(f"Created At: {game.created_at}")
         print("============")
         print("total score : ", total_score)
@@ -307,7 +341,7 @@ class UserProfile(APIView):
                 "total_win_tournaments" : total_win_tournaments, 
                 "total_loss_games" : total_loss_games,
                 "total_loss_tournaments" : total_loss_tournaments,
-                'recent_games': list(recent_games.values('id', 'user_score', 'result')),
+                'recent_games': list(recent_games.values('id', 'user_score', 'result', 'opponent_avatar')),
                 "total_score" : total_score
             }
 

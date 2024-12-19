@@ -305,8 +305,13 @@ const components = {
   card: (data, avatar) => {
     console.log(avatar)
     return /*html*/ `<div class="card ${data.result.toLowerCase()}">
+    <div class="players">
     <img src="${"./assets/avatars/" + avatar.replace("/", "")}" alt="${user_data.first_name
       }"/>
+      <span>VS</span>
+      <img src="${"./assets/avatars/" + data.opponent_avatar.replace("/", "")}" alt="${user_data.first_name
+      }"/>
+      </div>
     <h4>${data.result}</h4>
     <p>Score: ${data.user_score}</p>
     </div>`;

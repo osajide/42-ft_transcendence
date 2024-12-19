@@ -97,12 +97,12 @@
       display: flex;
       position: relative;
       // border-radius: 0px 7px 0px 0px;
-    
+
       &:nth-child(2n) {
         // border-radius: 0px 0px 7px 0px;
         background-color: $red;
       }
-    
+
       &::before {
         content: attr(data-insight);
         position: relative;
@@ -111,7 +111,7 @@
         opacity: 0;
         animation: popIn 0.15s linear 0.4s forwards;
       }
-    
+
       &::after {
         content: attr(data-count);
         position: absolute;
@@ -121,15 +121,15 @@
         animation: popIn 0.15s linear 0.4s forwards;
       }
     }
-    
+
     #recent_games {
       display: flex;
       // overflow: auto;
       width: 100%;
-      gap: 10px;
+      gap: 20px;
       flex-wrap: wrap;
       justify-content: space-evenly;
-    
+
       .card {
         display: flex;
         flex-direction: column;
@@ -143,27 +143,45 @@
         max-width: 350px;
         animation: popIn 0.15s linear forwards;
         // flex: 1;
-    
-        img {
-          width: 100%;
-          aspect-ratio: 1 / 1;
-          object-fit: cover;
-          border-radius: 50%;
-          margin-bottom: 20px;
+
+        .players {
+          display: flex;
+          gap: 20px;
+          align-items: center;
+          justify-content: center;
+
+          img {
+            width: 30%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border-radius: 50%;
+          }
         }
-    
+
         h4 {
           color: inherit;
         }
-    
+
         &.win {
           border-color: $green;
           color: $green;
+          img {
+            border: 2px solid $red;
+            &:first-child {
+              border: 2px solid $green;
+            }
+          }
         }
-    
+
         &.loss {
           border-color: $red;
           color: $red;
+          img {
+            border: 2px solid $green;
+            &:first-child {
+              border: 2px solid $red;
+            }
+          }
         }
       }
     }
@@ -218,5 +236,11 @@ form {
       height: fit-content;
       max-width: unset;
     }
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .card{
+    flex: 1;
   }
 }

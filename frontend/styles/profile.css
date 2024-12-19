@@ -144,7 +144,7 @@
 #profile #page #stats #recent_games {
   display: flex;
   width: 100%;
-  gap: 10px;
+  gap: 20px;
   flex-wrap: wrap;
   justify-content: space-evenly;
 }
@@ -163,13 +163,18 @@
   max-width: 350px;
   animation: popIn 0.15s linear forwards;
 }
-#profile #page #stats #recent_games .card img {
-  width: 100%;
+#profile #page #stats #recent_games .card .players {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+}
+#profile #page #stats #recent_games .card .players img {
+  width: 30%;
   aspect-ratio: 1/1;
   -o-object-fit: cover;
      object-fit: cover;
   border-radius: 50%;
-  margin-bottom: 20px;
 }
 #profile #page #stats #recent_games .card h4 {
   color: inherit;
@@ -178,9 +183,21 @@
   border-color: #00b278;
   color: #00b278;
 }
+#profile #page #stats #recent_games .card.win img {
+  border: 2px solid #db0000;
+}
+#profile #page #stats #recent_games .card.win img:first-child {
+  border: 2px solid #00b278;
+}
 #profile #page #stats #recent_games .card.loss {
   border-color: #db0000;
   color: #db0000;
+}
+#profile #page #stats #recent_games .card.loss img {
+  border: 2px solid #00b278;
+}
+#profile #page #stats #recent_games .card.loss img:first-child {
+  border: 2px solid #db0000;
 }
 
 #user_avatar {
@@ -231,5 +248,10 @@ form .form_inp input {
     height: -moz-fit-content;
     height: fit-content;
     max-width: unset;
+  }
+}
+@media screen and (max-width: 480px) {
+  .card {
+    flex: 1;
   }
 }/*# sourceMappingURL=profile.css.map */

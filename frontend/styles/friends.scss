@@ -175,10 +175,10 @@
     display: flex;
     // overflow: auto;
     width: 100%;
-    gap: 10px;
+    gap: 20px;
     flex-wrap: wrap;
     justify-content: space-evenly;
-  
+
     .card {
       display: flex;
       flex-direction: column;
@@ -191,28 +191,46 @@
       gap: 10px;
       max-width: 350px;
       animation: popIn 0.15s linear forwards;
-      flex: 1;
-  
-      img {
-        width: 100%;
-        aspect-ratio: 1 / 1;
-        object-fit: cover;
-        border-radius: 50%;
-        margin-bottom: 20px;
+      // flex: 1;
+
+      .players {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        justify-content: center;
+
+        img {
+          width: 30%;
+          aspect-ratio: 1 / 1;
+          object-fit: cover;
+          border-radius: 50%;
+        }
       }
-  
+
       h4 {
         color: inherit;
       }
-  
+
       &.win {
         border-color: $green;
         color: $green;
+        img {
+          border: 2px solid $red;
+          &:first-child {
+            border: 2px solid $green;
+          }
+        }
       }
-  
+
       &.loss {
         border-color: $red;
         color: $red;
+        img {
+          border: 2px solid $green;
+          &:first-child {
+            border: 2px solid $red;
+          }
+        }
       }
     }
   }
@@ -225,6 +243,7 @@
     z-index: 1;
     left: 0;
     border: none !important;
+    overflow: auto !important;
 
     & > * {
       width: 100% !important;
@@ -286,5 +305,12 @@
     left: 0;
     width: 30px;
     height: 30px;
+  }
+}
+
+
+@media screen and (max-width: 480px) {
+  .card{
+    flex: 1;
   }
 }
