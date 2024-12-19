@@ -76,6 +76,7 @@ class	GameConsumer(AsyncWebsocketConsumer):
 			return
 
 		if not self.game_id in games:
+			print("IN CONNECT === game id ====>", self.game_id)
 			games[self.game_id] = {}
 
 		self.group_name = f'{self.game_id}'
@@ -162,35 +163,38 @@ class	GameConsumer(AsyncWebsocketConsumer):
 		# await sync_to_async(self.user.update)(user_state='offline')
 		await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
+		print('*********** user in disconnect(): ', self.user)
 		print('gamessss in disconnect of one of them:::::>>>>>> ', games)
 		# in case one started game and left before opponent join
-		if not 'opponent' in games[self.game_id]:
-			await self.channel_layer.group_send('notification',
-									{
-										'type': 'release_game_id',
-										'index': self.game_id,
-										'user_id': self.user.id,
-										'salam': 'cv' # for debugging
-									})
-		elif 'stats' not in games[self.game_id]: # one left before game ends
-			# means that the host is the one who left
-			print('host.user: ', games[self.game_id]['host'].user)
-			print('opponent.user: ', games[self.game_id]['opponent'].user)
-			if self == games[self.game_id]['host']:
-				op = games[self.game_id]['opponent']
-				print(f'{op.user} li khrej')
+		if self.game_id in games:
+			if 'opponent' not in games[self.game_id]:
+				await self.channel_layer.group_send('notification',
+										{
+											'type': 'release_game_id',
+											'index': self.game_id,
+											'user_id': self.user.id,
+											'salam': 'cv' # for debugging
+										})
+			elif 'stats' not in games[self.game_id]: # one left before game ends
+				# means that the host is the one who left
+				print('host.user: ', games[self.game_id]['host'].user)
+				print('opponent.user: ', games[self.game_id]['opponent'].user)
+				if self == games[self.game_id]['host']:
+					op = games[self.game_id]['opponent']
+					print(f'{op.user} li khrej')
+				else:
+					op = games[self.game_id]['host']
+					print(f'{op.user} li khrej')
+				
+				print('op ===?  ', op.user)
+				await op.send(text_data=json.dumps(
+					{
+						'game_over': ''      
+					}
+				))
 			else:
-				op = games[self.game_id]['host']
-				print(f'{op.user} li khrej')
-			
-			print('op ===?  ', op.user)
-			await op.send(text_data=json.dumps(
-				{
-					'game_over': ''      
-				}
-			))
-		else:
-			if self.game_id in games:
+				print(f'{self.user}:{self.user.id} dkhel l else y cleani')
+				# if self.game_id in games:
 				games.pop(self.game_id)
 				await self.channel_layer.group_send("notification",
 										{
