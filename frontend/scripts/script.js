@@ -573,25 +573,26 @@ const components = {
           return;
         }
 
+        let i = index
+        console.log(otpInputs[i].value)
+        while (i >= 0 && i - 1 > -1 && !otpInputs[i - 1].value.length) {
+          otpInputs[i].value = ""
+          i--
+        }
+        if (i > -1) {
+          otpInputs[i].focus();
+          otpInputs[i].value = value;
+        }
+
         // Move to the next input if not the last
-        if (index < otpInputs.length - 1 && value) {
-          otpInputs[index + 1].focus();
+        if (i < otpInputs.length - 1 && value) {
+          otpInputs[i + 1].focus();
         }
 
         // Move to the previous input if it's empty
-        let i = index
-        console.log(otpInputs[i].value)
-        while (i >= 0) {
-          if (i - 1 > -1  && !otpInputs[i - 1].value.length)
-            otpInputs[i--].value = "";
-          if (i - 1 > -1 && otpInputs[i - 1].value.length)
-            break;
-        }
-        if (i > -1)
-        otpInputs[i].value = value;
         // Automatically submit if all inputs are filled
         if (
-          index === otpInputs.length - 1
+          i === otpInputs.length - 1
         ) {
           container.submit();
         }
