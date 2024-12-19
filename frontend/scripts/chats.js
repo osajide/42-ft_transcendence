@@ -36,6 +36,14 @@ function receiveMessage(event) {
       tmp + `<p class="message friend animateF">${data.message}</p>`;
     messenger.scrollTop = messenger.scrollHeight;
   }
+  else if(data.reject){
+    if (messenger.querySelector(".newMsgs"))
+      messenger.querySelector(".newMsgs").remove();
+    tmp = messenger.innerHTML.replace("animateF", "").replace("animate", "");
+    messenger.innerHTML =
+      tmp + `<p class="message friend reject animateF">${data.reject}</p>`;
+    messenger.scrollTop = messenger.scrollHeight;
+  }
 }
 
 function sendMessage(e, socket) {

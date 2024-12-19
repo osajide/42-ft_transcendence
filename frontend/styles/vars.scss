@@ -3,7 +3,7 @@
 $sec_dark: #1c1c1c;
 $sec_blue: #31dede;
 $white: #f1f1f1;
-$prim_blue: #00bcbc;
+$prim_blue: #00b1b1;
 $prim_dark: #232323;
 $neo_lue: #05b8d2;
 $green: #00b278;
@@ -48,7 +48,7 @@ $red: #db0000;
 
 @mixin msg_ticks($rule, $color) {
   &:before {
-    border-top: $msg_box solid $color;
+    border-top: $msg_box solid $color !important;
     border-#{$rule}: $msg_box;
     #{$rule}: $msg_tick;
   }
@@ -113,5 +113,14 @@ $red: #db0000;
   }
   100% {
     transform: translate(20px, -150px);
+  }
+}
+
+@keyframes fillIn {
+  0%{
+    width: 0
+  }
+  100%{
+    width: 100%;
   }
 }

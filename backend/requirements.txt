@@ -27,6 +27,8 @@ pyasn1_modules==0.4.1
 pycparser==2.22
 PyJWT==2.10.1
 pyOpenSSL==24.3.0
+pyotp==2.9.0
+qrcode==8.0
 redis==5.2.1
 requests==2.32.3
 service-identity==24.2.0

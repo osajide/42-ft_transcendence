@@ -29,4 +29,12 @@
   100% {
     transform: translate(20px, -150px);
   }
+}
+@keyframes fillIn {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
 }/*# sourceMappingURL=vars.css.map */

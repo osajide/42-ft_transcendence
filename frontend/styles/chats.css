@@ -63,6 +63,7 @@
   display: flex;
   gap: 10px;
   align-items: center;
+  cursor: pointer;
 }
 #chats .chatBanner .friendData h6,
 #chats .chatBanner .controls h6 {
@@ -73,9 +74,14 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+#chats .chatBanner .friendData img {
+  border-radius: 50%;
+  aspect-ratio: 1/1;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
 #chats .chatBanner .controls svg {
   transition: all 0.15s linear;
-  cursor: pointer;
 }
 #chats .chatBanner .controls svg:hover {
   scale: 1.3;
@@ -132,7 +138,7 @@
   border-radius: 0px 17px 0px 0px !important;
 }
 #chat::-webkit-scrollbar-thumb {
-  background-color: #00bcbc;
+  background-color: #00b1b1;
   border-radius: 0px 17px 0px 0px !important;
 }
 #chat > *:first-child {
@@ -159,7 +165,7 @@
 }
 #chatCont input[type=submit] {
   border-left: 1.5px solid rgba(49, 222, 222, 0.4392156863);
-  background-color: #00bcbc;
+  background-color: #00b1b1;
   cursor: pointer;
   padding: 10px 20px;
   width: -moz-fit-content;
@@ -177,7 +183,7 @@
   border-radius: 0px !important;
 }
 #chatCont .msg::-webkit-scrollbar-thumb {
-  background-color: #00bcbc;
+  background-color: #00b1b1;
   border-radius: 0px !important;
 }
 #chatCont .message {
@@ -206,7 +212,7 @@
   word-break: break-all;
 }
 #chatCont .myMsg:last-child:before, #chatCont .myMsg:has(+ .friend):before, #chatCont .myMsg:has(+ .newMsgs):before {
-  border-top: 15px solid rgb(246, 246, 246);
+  border-top: 15px solid rgb(246, 246, 246) !important;
   border-right: 15px;
   right: 7.5px;
 }
@@ -218,7 +224,15 @@
   word-break: break-all;
 }
 #chatCont .friend:last-child:before, #chatCont .friend:has(+ .myMsg):before, #chatCont .friend:has(+ .newMsgs):before {
-  border-top: 15px solid rgba(49, 222, 222, 0.4392156863);
+  border-top: 15px solid rgba(49, 222, 222, 0.4392156863) !important;
+  border-left: 15px;
+  left: 7.5px;
+}
+#chatCont .friend.reject {
+  background-color: #db0000;
+}
+#chatCont .friend.reject:before {
+  border-top: 15px solid #db0000 !important;
   border-left: 15px;
   left: 7.5px;
 }

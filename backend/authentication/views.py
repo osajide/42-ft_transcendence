@@ -296,6 +296,7 @@ class UserProfile(APIView):
         response_data = {
                 "avatar" : user.avatar.url[1:],
                 "user_id" : user.id,
+                "nickname" : user.nickname,
                 "email": user.email,
                 "first_name": user.first_name,
                 "last_name": user.last_name,

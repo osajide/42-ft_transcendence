@@ -283,6 +283,8 @@ header,
       img {
         width: 40px;
         height: 40px;
+        aspect-ratio: 1 / 1;
+        border-radius: 50%;
       }
 
       svg {
@@ -442,6 +444,10 @@ header {
       transition: all 0.15s linear;
       cursor: pointer;
     }
+
+    & > label:first-child {
+      display: none;
+    }
   }
 
   img,
@@ -477,6 +483,12 @@ header {
     height: 100%;
     padding: 5px;
   }
+
+  #user {
+    border-radius: 50%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
 }
 
 @media screen and (max-width: 767px) {
@@ -496,6 +508,10 @@ header {
     border-radius: 12px;
     transition: height 0.15s linear, padding 0.15s linear;
     flex-direction: column;
+
+    & > label:first-child{
+     display: flex !important;
+   }
   }
 
   input:checked + nav {
@@ -561,6 +577,9 @@ header {
   img {
     height: 100%;
     width: 30px;
+    border-radius: 50%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
   }
 
   h4 {

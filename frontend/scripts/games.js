@@ -4,7 +4,7 @@ function setDimentions(game) {
   window_width = window.innerWidth - 40;
   window_height = window.innerHeight - 130;
 
-  if (game.aspect > 1 && window_height < window_width) {
+  if (game.aspect > 1 && window_height <= window_width) {
     if (window_width / game.aspect > window.innerHeight - 130)
       window_width = window_height * game.aspect;
     else window_height = window_width / game.aspect;
@@ -96,7 +96,6 @@ function resetBall(game) {
 }
 
 function gameOver(game) {
-  console.log("GAME OVER FUNCTION CALLED")
   cancelAnimationFrame(game.frameId);
   const winner =
     game.playerPaddle.score == game.maxScore
@@ -120,7 +119,6 @@ function gameOver(game) {
   document.getElementById("game_dash").classList.add("game_over");
   if (startGame.tournamentSocket) {
     pos = 0;
-    console.log(tournamentInfo.matches);
     tournamentInfo.matches.map((match, index) => {
       if (
         match.filter((m) => {
@@ -141,7 +139,12 @@ function gameOver(game) {
       playTournament(-1);
       clearTimeout(timer);
     }, 5000);
-  } else updateUrl("games", "");
+  } else {
+    let timer = setTimeout(() => {
+      // updateUrl("games", "");
+      clearTimeout(timer);
+    }, 5000);
+  }
 }
 
 function server(e, mypong) {
@@ -184,12 +187,12 @@ function server(e, mypong) {
         "opp_player",
         mypong.oppoPaddle.data
       );
-      if (w > h) mypong.rev = -1;
+      if (w >= h) mypong.rev = -1;
     }
     mypong.ball.ballX = window_width / 2;
     mypong.ball.ballY = window_height / 2;
     setDimentions(mypong);
-    if (window.innerHeight < window.innerWidth)
+    if (window.innerHeight <= window.innerWidth)
       mypong.oppoPaddle = new Paddle(
         window_width - mypong.width,
         mypong.playerPaddle.y,
@@ -472,8 +475,9 @@ function tournamentInfo(e) {
     }
     if (!tournamentInfo.matches.length) tournamentInfo.matches = data.locked;
   } else if (data.game_index !== undefined) {
-    loader.classList.add("show");
-    loader.classList.remove("hide");
+    loader.classList.add("hide");
+    loader.classList.remove("show");
+    console.log();
     raiseWarn("Your game is about to start", "alert");
     startGame(data.game_index);
   }
@@ -485,7 +489,6 @@ function playTournament(endpoint) {
   else socket = startGame.tournamentSocket;
   loader.classList.add("show");
   loader.classList.remove("hide");
-  // tournamentInfo()
   if (!startGame.tournamentSocket) {
     socket = makeSocket(`tournament/${endpoint}`, tournamentInfo);
     startGame.tournamentSocket = socket;

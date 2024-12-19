@@ -89,6 +89,29 @@
 // 	}
 // }
 
+#qrcode {
+  min-width: 240px;
+  width: 50%;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
+  img{
+    width: 200px;
+  }
+}
+
+#otp {
+  .otpInput {
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    font-size: 18px;
+  }
+}
+
 @media screen and (max-width: 480px) {
   .button {
     width: 100% !important;
