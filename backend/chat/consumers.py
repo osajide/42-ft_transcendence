@@ -104,19 +104,19 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 															'message': json_text_data['message'],
 															'sender_id': self.user.id
 														})
-				elif 'challenge' in json_text_data:
-					print('challenge req ********')
-					if self.user.user_state == 'in_game':
-						await self.send(text_data=json.dumps({'error': 'already in game'}))
-						return
-					print('challenge notification sent !!!!!!!!')
-					await self.channel_layer.group_send('notification',
-											{
-												'type': 'make_match',
-												'id': self.user.id,
-												'opponent': self.friend.id,
-												'challenge' : True
-											})
+				# elif 'challenge' in json_text_data:
+				# 	print('challenge req ********')
+				# 	if self.user.user_state == 'in_game':
+				# 		await self.send(text_data=json.dumps({'error': 'already in game'}))
+				# 		return
+				# 	print('challenge notification sent !!!!!!!!')
+				# 	await self.channel_layer.group_send('notification',
+				# 							{
+				# 								'type': 'make_match',
+				# 								'id': self.user.id,
+				# 								'opponent': self.friend.id,
+				# 								'challenge' : True
+				# 							})
 
 			elif frienships[self.conversation_name].status == 'blocked':
 				if 'unblock' in json_text_data and frienships[self.conversation_name].last_action_by == self.user.id:

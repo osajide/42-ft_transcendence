@@ -22,11 +22,12 @@ const removeElement = (e) => {
 };
 
 const raiseWarn = (msg, type = "error") => {
+  console.log(msg)
   raiseWarn.timers = []
   errors.innerHTML += components.warning(msg, type);
   let self = document.getElementsByClassName("warn");
   self = self[self.length - 1];
-  if (msg == "Session expired") {
+  if (msg == "Session expired" || msg == "Invalid Token") {
     logout();
     return "Error";
   }
@@ -263,8 +264,9 @@ function notified(e) {
 function makeSocket(endpoint, socketMethod) {
   const socket = new WebSocket(`ws://${glob_endp.split("/")[2]}/${endpoint}`);
   if (endpoint) makeSocket.latest.push(socket);
-  socket.onerror = (e) => {
-    return raiseWarn(e);
+  socket.onerror = (event) => {
+    console.log(event)
+    return raiseWarn(event);
   };
 
   socket.onopen = function (event) {
@@ -274,10 +276,10 @@ function makeSocket(endpoint, socketMethod) {
   socket.onmessage = socketMethod;
 
   socket.onclose = function (event) {
-    if (makeSocket.latest.length) {
-      makeSocket.latest[makeSocket.latest.length - 1].close();
-      makeSocket.latest.pop();
-    }
+      // if (makeSocket.latest.length) {
+      //   makeSocket.latest[makeSocket.latest.length - 1].close();
+      //   makeSocket.latest.pop();
+      // }
     console.log("WebSocket is closed now.");
   };
   return socket;
@@ -817,6 +819,7 @@ function logout(e) {
   localStorage.removeItem("user_data");
   user_data = undefined;
   if (notiSocket) notiSocket.close();
+  closeSockets()
   notiSocket = undefined;
   updateUrl("login", "push");
 }
@@ -1117,9 +1120,9 @@ function listen(id, change, endpoint, compo) {
           ) {
             let element =
               e.target.id == "challenge" ? e.target : e.target.parentElement;
-            makeSocket.latest[0].send(
+            notiSocket.send(
               JSON.stringify({
-                challenge: element.nextElementSibling.id.split("_")[1],
+                challenge: +element.nextElementSibling.id.split("_")[1],
               })
             );
             updateUrl("games", "push", "");

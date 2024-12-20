@@ -49,15 +49,6 @@ class	GameConsumer(AsyncWebsocketConsumer):
 	async def	connect(self):
 		await self.accept()
 
-		if self.scope['user'].is_authenticated is False:
-			await self.send(json.dumps(
-					{
-						'error': 'Invalid Token'
-					}
-				))
-			# await self.close()
-			return 
-
 		self.user = self.scope['user']
 		self.game_id = self.scope['url_route']['kwargs']['id']
 
@@ -75,15 +66,16 @@ class	GameConsumer(AsyncWebsocketConsumer):
 			await self.close(code=4000)
 			return
 
+		print("IN CONNECT === game id ====>", self.game_id)
 		if not self.game_id in games:
-			# print("IN CONNECT === game id ====>", self.game_id)
 			games[self.game_id] = {}
 
 		self.group_name = f'{self.game_id}'
 
 		await self.channel_layer.group_add(self.group_name, self.channel_name)
-
+		print(f"game before host and opponent: {games}, game id : {self.game_id}")
 		if 'host' in games[self.game_id] and games[self.game_id]['host'] is not self: # not the same user trying to connect twice
+			print(f"this is the opponent of the game {self.scope['user']}") 
 			games[self.game_id]['opponent'] = self
 			games[self.game_id]['ready'] = 0
 			await self.channel_layer.group_send(self.group_name,
@@ -104,6 +96,7 @@ class	GameConsumer(AsyncWebsocketConsumer):
 				}
 			))
 		else:
+			print(f'this is the host of the game {self.scope["user"]}') 
 			games[self.game_id]['host'] = self
 		
 
@@ -166,6 +159,7 @@ class	GameConsumer(AsyncWebsocketConsumer):
 			))
 
 	async def	disconnect(self, code):
+		print('code in game: ', code)
 		if code == 4000:
 			return
 		
@@ -178,6 +172,7 @@ class	GameConsumer(AsyncWebsocketConsumer):
 		if self.game_id in games:
 			# in case one started game and left before opponent join
 			if 'opponent' not in games[self.game_id]:
+				games.pop(self.game_id)
 				await self.channel_layer.group_send('notification',
 										{
 											'type': 'release_game_id',
@@ -186,7 +181,6 @@ class	GameConsumer(AsyncWebsocketConsumer):
 											'salam': 'cv' # for debugging
 										})
 			elif 'stats' not in games[self.game_id]: # one left before game ends
-				# means that the host is the one who left
 				print('host.user: ', games[self.game_id]['host'].user)
 				print('opponent.user: ', games[self.game_id]['opponent'].user)
 				if self == games[self.game_id]['host']:

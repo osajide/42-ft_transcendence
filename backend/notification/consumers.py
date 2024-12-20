@@ -74,7 +74,20 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 		json_text_data = json.loads(text_data)
 		if 'seen' in json_text_data:
 			await delete_notification(json_text_data['seen'])
-
+		elif 'challenge' in json_text_data:
+			print('challenge req ********')
+			if self.scope['user'].user_state == 'in_game':
+				await self.send(text_data=json.dumps({'error': 'already in game'}))
+				return
+			print('json: ', json_text_data)
+			print('challenge notification sent !!!!!!!!')
+			await self.channel_layer.group_send('notification',
+									{
+										'type': 'make_match',
+										'sender': UserSerializer(self.scope['user']).data,
+										'opponent': json_text_data['challenge'],
+										'challenge' : True
+									})
 		elif 'solo' in json_text_data:
 			# postman
 			if self.scope['user'].user_state == 'in_game':
@@ -173,7 +186,7 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 				await self.send(text_data=json.dumps(
         		{
 					'game_invite': {
-							'description': f"{event['sender']['first_name'].capitalize()} {event['sender']['last_name'].upper()} invited you to a game",
+							'description': f"{event['sender']['first_name'].capitalize()} {event['sender']['last_name'].capitalize()} invited you to a game",
 							'sender': event['sender'],
 							'game_id': event['game_id']
 						}
@@ -182,8 +195,8 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 
 
 	async def	make_match(self, event):
-		# print('games list before: ', games)
-		if self.scope['user'].id == event['id']:
+		print('games before make match: ', games)
+		if self.scope['user'].id == event['sender']['id']:
 			if 'challenge' in event:
 				try:
 					index = games.index('0')
@@ -191,15 +204,14 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 				except ValueError:
 					games.append('2')
 					index = len(games) - 1
-
-				print('game id sent to chat group-----------')
 				await self.channel_layer.group_send('notification',
-						  {
-							  'type': 'send_notification',
-							  'game_id': index,
-							  'sender' : UserSerializer(self.scope['user']).data,
-							  'opponent': int(event['opponent'])
-						  })
+                        {
+                            'type': 'send_notification',
+							'sender': event['sender'],
+							'opponent': event['opponent'],
+							'game_id': index
+						}
+				)
 			else:
 				try:
 					index = games.index('1')
@@ -220,11 +232,14 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 
 			redis_client.set('max_games', len(games))
 
+			print('games after make match: ', games)
 			if not index in users_and_games:
 				users_and_games[index] = []
 			users_and_games[index].append(self.scope['user'].id)
 
+
 	async def	release_game_id(self, event):
+		print('event******::: ', event)
 		print(f"user: {self.scope['user']}")
 		print('games before--> ', games)
 		print('event::::::: ', event)

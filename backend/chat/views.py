@@ -87,10 +87,12 @@ def get_friend_with_no_conversation(request):
 
     friends_with_conversation = []
     for conversation in conversations:
-        if conversation.user1 == user:
-            friends_with_conversation.append(conversation.user2)
-        else:
-            friends_with_conversation.append(conversation.user1)
+        msgs = conversation.messages.all()
+        if msgs:
+            if conversation.user1 == user:
+                friends_with_conversation.append(conversation.user2)
+            else:
+                friends_with_conversation.append(conversation.user1)
     
     friends = get_friends(user, 'accepted')
 
