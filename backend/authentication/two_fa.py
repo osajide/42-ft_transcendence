@@ -30,9 +30,9 @@ class SetupTwoFa(APIView):
 
     def get(self, request):
 
-        value = request.data.get('new_qr')
-        if value:
-            request.user.is_2fa_verified = False
+       
+        request.user.is_2fa_verified = False
+        request.user.save()
 
          # Generate a TOTP secret key
         secret_key = pyotp.random_base32()

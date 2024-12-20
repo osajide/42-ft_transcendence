@@ -121,8 +121,8 @@ function gameOver(game) {
       },
     })
   );
-  makeSocket.latest[makeSocket.latest.length - 1].close();
-  makeSocket.latest.pop();
+  // makeSocket.latest[makeSocket.latest.length - 1].close();
+  // makeSocket.latest.pop();
   winner.container.classList.add("winner");
   loser.container.classList.add("loser");
   document.getElementById("game_dash").classList.add("game_over");
@@ -500,8 +500,10 @@ function playTournament(endpoint) {
   let socket;
   if (!tournamentInfo.matches) tournamentInfo.matches = [];
   else socket = startGame.tournamentSocket;
-  loader.classList.add("show");
-  loader.classList.remove("hide");
+  if (endpoint != -1) {
+    loader.classList.add("show");
+    loader.classList.remove("hide");
+  }
   if (!startGame.tournamentSocket) {
     socket = makeSocket(`tournament/${endpoint}`, tournamentInfo);
     startGame.tournamentSocket = socket;

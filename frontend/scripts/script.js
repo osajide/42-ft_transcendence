@@ -189,6 +189,7 @@ async function authenticate(e) {
   errors.innerHTML = "";
   let endpoint = "/api/register/";
   let form = new FormData(e.target);
+  e.target.reset()
   if (e.target.childElementCount < 5) endpoint = "/api/login/";
   if (e.target.id == "otp") {
     endpoint = "/api/verify_code/";
@@ -206,7 +207,6 @@ async function authenticate(e) {
     raiseWarn("Please verify your email", "alert");
     return updateUrl("login", "push");
   } else {
-    console.log(data);
     e.target.classList.add("hide");
     e.target.nextElementSibling.classList.add("hide");
     e.target.previousElementSibling.classList.add("hide");
@@ -272,6 +272,8 @@ function makeSocket(endpoint, socketMethod) {
   socket.onmessage = socketMethod;
 
   socket.onclose = function (event) {
+    makeSocket.latest[makeSocket.latest.length - 1].close();
+    makeSocket.latest.pop();
     console.log("WebSocket is closed now.");
   };
   return socket;
@@ -298,7 +300,6 @@ const components = {
   },
   header: function () {
     let header = document.createElement("header");
-    console.log(user_data);
     header.innerHTML = /*html*/ `
 			<label class="img_label" for="">
 				<img id="logo" src="./assets/42.svg" alt="logo" />
@@ -320,7 +321,6 @@ const components = {
     return header;
   },
   card: (data, avatar) => {
-    console.log(avatar);
     return /*html*/ `<div class="card ${data.result.toLowerCase()}">
     <div class="players">
     <img src="${"./assets/avatars/" + avatar.replace("/", "")}" alt="${
@@ -619,7 +619,7 @@ const components = {
         // Move to the previous input if it's empty
         // Automatically submit if all inputs are filled
         if (i === otpInputs.length - 1) {
-          container.dispatchEvent(new Event("submit"));
+          container.dispatchEvent(new Event("submit",{ bubbles: true, cancelable: true }));
         }
       });
 
@@ -691,7 +691,6 @@ const components = {
         raiseWarn("Nothing to update", "alert");
       }
     });
-    console.log(container);
     return container;
   },
   cancel: function (data) {
@@ -777,7 +776,6 @@ async function next(e) {
     otp.previousElementSibling.outerHTML =
       "<h3>Please enter the code from your OTP app</h3>";
     qr.remove();
-    console.log(otp.firstElementChild)
     otp.firstElementChild.firstElementChild.focus();
   }
   else {
@@ -1073,7 +1071,6 @@ async function chatroom() {
 function listen(id, change, endpoint, compo) {
   document.querySelector("#" + id).addEventListener("change", async (e) => {
     if (e.target.checked) {
-      console.log(e.target);
       if (e.target.nextElementSibling.classList.contains("bubble"))
         e.target.nextElementSibling.classList.remove("bubble");
       let data;
@@ -1082,7 +1079,6 @@ function listen(id, change, endpoint, compo) {
           glob_endp,
           `${endpoint}${e.target.value}/`
         );
-        console.log(response);
         if (response == "Error") return;
         data = response;
         // response.user = response;
