@@ -135,10 +135,16 @@ class	GameConsumer(AsyncWebsocketConsumer):
 											'start': ball_initial_directions
 										})
 		elif 'stats' in json_text_data and self.game_id in games:
+			if 'stats' in games[self.game_id]:
+				print(f'{self.user} close without any logic')
+				await self.close()
+				return
 			print(f'{self.user.first_name} {json_text_data["stats"]}')
 			if not 'stats' in games[self.game_id]:
 				games[self.game_id]['stats'] = ''
 				await create_game_record(self, json_text_data['stats'])
+				print(f'{self.user} close with logic')
+				await self.close()
 	
 	async def	broadcast(self, event):
 		if 'key' in event:

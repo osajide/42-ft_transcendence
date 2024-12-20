@@ -272,8 +272,10 @@ function makeSocket(endpoint, socketMethod) {
   socket.onmessage = socketMethod;
 
   socket.onclose = function (event) {
-    makeSocket.latest[makeSocket.latest.length - 1].close();
-    makeSocket.latest.pop();
+    if (makeSocket.latest.length) {
+      makeSocket.latest[makeSocket.latest.length - 1].close();
+      makeSocket.latest.pop();
+    }
     console.log("WebSocket is closed now.");
   };
   return socket;
