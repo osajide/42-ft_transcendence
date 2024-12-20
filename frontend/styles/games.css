@@ -82,13 +82,13 @@
   transition: all 0.15s linear;
 }
 #game_page:not(.in_game) .game_mode:first-child {
-  background: url("../assets/vs.png"), rgba(49, 222, 222, 0.4392156863);
+  background: url("../assets/vs.png");
   background-position: center;
   background-repeat: no-repeat;
   background-size: auto 100%;
 }
 #game_page:not(.in_game) .game_mode:last-child {
-  background: url("../assets/tour.png"), rgba(49, 222, 222, 0.4392156863);
+  background: url("../assets/tour.png");
   background-position: center;
   background-repeat: no-repeat;
   background-size: auto 100%;
@@ -275,14 +275,14 @@
     flex-direction: column;
   }
   #game_page:not(.in_game) .game_mode:first-child {
-    background: url("../assets/vs1.png"), rgba(49, 222, 222, 0.4392156863) !important;
+    background: url("../assets/vs1.png") !important;
     background-size: 100% auto !important;
     background-position: center;
     background-repeat: no-repeat;
     transform-origin: center !important;
   }
   #game_page:not(.in_game) .game_mode:last-child {
-    background: url("../assets/tour1.png"), rgba(49, 222, 222, 0.4392156863) !important;
+    background: url("../assets/tour1.png") !important;
     background-size: 100% auto !important;
     transform-origin: center !important;
   }

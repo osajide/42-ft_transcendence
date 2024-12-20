@@ -133,28 +133,9 @@ class	ChatConsumer(AsyncWebsocketConsumer):
 
 
 	async def	broadcast_message(self, event):
-		# if 'game_id' in event:
-		# 	print('game id sent to both players##############')
-		# 	if self.user.id != event['opponent']:
-		# 		await self.send(text_data=json.dumps(
-		# 			{
-		# 				'game_id': event['game_id']
-		# 			}
-		# 	))
-		# 	else:
-		# 		await self.send(text_data=json.dumps(
-		# 			{
-		# 				'game_invite': {
-		# 					'description': f"{event['sender']['first_name'].capitalize()} {event['sender']['last_name'].upper()} invited you to a game",
-		# 					'sender': event['sender'],
-		# 					'game_id': event['game_id']
-		# 				}
-		# 			}
-		# 		))
-		# else:
 		seen = True
 
-		if self.user.id == event['sender']:
+		if self.user.id == event['sender_id']:
 			if participants[self.conversation_name] < 2:
 				seen = False
 				description = f"{self.user} sends you a message!"

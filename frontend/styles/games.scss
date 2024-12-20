@@ -45,14 +45,14 @@
     transition: all 0.15s linear;
 
     &:first-child {
-      background: url("../assets/vs.png"), $blue_border;
+      background: url("../assets/vs.png");
       background-position: center;
       background-repeat: no-repeat;
       background-size: auto 100%;
     }
 
     &:last-child {
-      background: url("../assets/tour.png"), $blue_border;
+      background: url("../assets/tour.png");
       background-position: center;
       background-repeat: no-repeat;
       background-size: auto 100%;
@@ -245,7 +245,7 @@
 
     .game_mode {
       &:first-child {
-        background: url("../assets/vs1.png"), $blue_border !important;
+        background: url("../assets/vs1.png") !important;
         background-size: 100% auto !important;
         background-position: center;
         background-repeat: no-repeat;
@@ -253,7 +253,7 @@
       }
 
       &:last-child {
-        background: url("../assets/tour1.png"), $blue_border !important;
+        background: url("../assets/tour1.png") !important;
         background-size: 100% auto !important;
         transform-origin: center !important;
       }

@@ -45,9 +45,13 @@ def get_conversations(request):
     print('conversations: ', conversations)
 
     if conversations is not None:
+        print('len dyal conversations: ', len(conversations))
         users = []
         for conversation in conversations:
             last_message = conversation.messages.all().last()
+            print('last message: ', last_message)
+            if last_message is None:
+                continue
             print('last content: ', last_message.content)
             # print('seen: ', last_message.seen_by_receiver)
             # print('ownert: ', last_message.owner.id)

@@ -22,6 +22,7 @@ const removeElement = (e) => {
 };
 
 const raiseWarn = (msg, type = "error") => {
+  raiseWarn.timers = []
   errors.innerHTML += components.warning(msg, type);
   let self = document.getElementsByClassName("warn");
   self = self[self.length - 1];
@@ -29,9 +30,11 @@ const raiseWarn = (msg, type = "error") => {
     logout();
     return "Error";
   }
-  let s = setTimeout(() => {
-    self.remove();
-    clearTimeout(s);
+  let s = setInterval(() => {
+    // self.remove();
+    if (!errors.lastElementChild)
+      return clearTimeout(s);
+    errors.lastElementChild.remove()
   }, 3000);
   if (type == "error") return "Error";
 };
@@ -51,18 +54,18 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
   // } else if (body) settings.body = JSON.stringify(body);
   // console.log(body)
   const response = await fetch(url + endpoint, settings);
-
   loader.classList.add("hide");
   loader.classList.remove("show");
-
+  
   if (response.ok) data = await response.json();
-  console.log(data, endpoint, data.error);
+  console.log(data)
+  // console.log(data, endpoint, data.error);
   if (response.status === 401) {
     const refreshResponse = await fetch(`${url}/api/refresh/`, {
       method: "POST",
       credentials: "include",
     });
-    if (refreshResponse.ok) return fetchWithToken(url, endpoint, method, body);
+    if (refreshResponse.ok) return await fetchWithToken(url, endpoint, method, body);
     data = await response.json();
   }
   if (data.error) {
@@ -189,7 +192,6 @@ async function authenticate(e) {
   errors.innerHTML = "";
   let endpoint = "/api/register/";
   let form = new FormData(e.target);
-  e.target.reset()
   if (e.target.childElementCount < 5) endpoint = "/api/login/";
   if (e.target.id == "otp") {
     endpoint = "/api/verify_code/";
@@ -199,9 +201,9 @@ async function authenticate(e) {
     tmp.set("code", s);
     form = tmp;
   }
+  e.target.reset();
   let data = await fetchWithToken(glob_endp, endpoint, "POST", form);
   if (data == "Error") return;
-  e.target.reset();
 
   if (endpoint == "/api/register/") {
     raiseWarn("Please verify your email", "alert");
@@ -459,6 +461,7 @@ const components = {
         "remove",
       ],
     };
+    console.log(user)
     return /* html */ `
 		<section id="userProfile">
     ${
@@ -622,6 +625,8 @@ const components = {
         // Automatically submit if all inputs are filled
         if (i === otpInputs.length - 1) {
           container.dispatchEvent(new Event("submit",{ bubbles: true, cancelable: true }));
+          otpInputs[0].focus()
+
         }
       });
 
@@ -800,12 +805,7 @@ async function checkUser(endpoint) {
     `${"/friend/profile/"}${endpoint}/`
   );
   if (response == "Error") return;
-  response.user = {
-    relationship: response.rel,
-    last_action: response.last_action_by,
-    ...response.user,
-  };
-  updateCont.innerHTML = components["profile"](response.user)
+  updateCont.innerHTML = components["profile"](response)
     .trim()
     .split("\n")
     .slice(1, -1)
@@ -1082,6 +1082,7 @@ function listen(id, change, endpoint, compo) {
           `${endpoint}${e.target.value}/`
         );
         if (response == "Error") return;
+        console.log(response)
         data = response;
         // response.user = response;
         // data = response;

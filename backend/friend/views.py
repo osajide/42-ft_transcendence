@@ -88,7 +88,7 @@ def	manage_friendship(request, action_target):
 													last_action_by=last_action_by, status='pending')
 			notify_user(user1, user2, 'invite')
 			return Response({'relationship': 'pending'}, status=status.HTTP_201_CREATED)
-		return Response({'error': 'hbas'}, status=status.HTTP_403_FORBIDDEN)
+		return Response({'error': 'Friendship already exists'}, status=status.HTTP_200_OK)
 
 	relationship = ''
 
@@ -103,12 +103,12 @@ def	manage_friendship(request, action_target):
 			friendship.save()
 			notify_user(user1, user2, 'accept')
 		else:
-			return Response({'error': 'hbas'}, status=status.HTTP_403_FORBIDDEN)
+			return Response({'error': 'The invitation was canceled'}, status=status.HTTP_200_OK)
 
 	elif action in ['decline', 'remove', 'cancel']:
 		ret = handle_friendship_deletion(friendship, action, user1)
 		if ret == 403:
-			return Response({'error': 'hbas'}, status=status.HTTP_403_FORBIDDEN)
+			return Response({'error': 'Something went wrong'}, status=status.HTTP_200_OK)
 		st = ret
 
 	elif action == 'block':
@@ -118,42 +118,40 @@ def	manage_friendship(request, action_target):
 			friendship.save()
 			
 		else:
-			return Response({'error': 'hbas'}, status=status.HTTP_403_FORBIDDEN)
+			return Response({"error": "Something went wrong"}, status=status.HTTP_200_OK)
 
 	elif action == 'unblock':
 		if friendship.last_action_by == user1.id and friendship.status == 'blocked':
 			friendship.status = relationship = 'accepted' 
 			friendship.last_action_by = last_action_by
 			friendship.save()
-			
 		else:
-			return Response({'error': 'hbas'}, status=status.HTTP_403_FORBIDDEN)
+			return Response({'error': 'Something went wrong'}, status=status.HTTP_200_OK)
 	else:
-		return Response({'error': 'hbas'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-	print('heere: ', {'relationship': relationship})
+		return Response({'error': 'Something went wrong'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+	# print('heere: ', {'relationship': relationship})
 	return Response({'relationship': relationship}, status=st)
 
 
-@api_view(['PATCH'])
-@authentication_classes([CookieJWTAuthentication])
-@permission_classes([IsAuthenticated])
-def	accept_friendship(request, friendship_name):
-	list_id = friendship_name.split('_')
-	id1 = int(list_id[0])
-	id2 = int(list_id[1])
+# @api_view(['PATCH'])
+# @authentication_classes([CookieJWTAuthentication])
+# @permission_classes([IsAuthenticated])
+# def	accept_friendship(request, friendship_name):
+# 	list_id = friendship_name.split('_')
+# 	id1 = int(list_id[0])
+# 	id2 = int(list_id[1])
 
-	if not request.user.id in [id1, id2]:
-		return Response({'message': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
+# 	if not request.user.id in [id1, id2]:
+# 		return Response({'error': 'Access denied'}, status=status.HTTP_200_OK)
 
-	friendship = get_object_or_404(Friendship, name=friendship_name)
-	friendship.status = 'accepted'
-	friendship.last_action_by = request.user.id
+# 	friendship = get_object_or_404(Friendship, name=friendship_name)
+# 	friendship.status = 'accepted'
+# 	friendship.last_action_by = request.user.id
 	
-	return Response(status=status.HTTP_201_CREATED)
+# 	return Response(status=status.HTTP_201_CREATED)
 
 
 def	get_friends(user, status):
-
 	if status == 'pending':
 		friendships = Friendship.objects.filter(
 			(Q(user1=user) | Q(user2=user)) & Q(status=status) & ~Q(last_action_by=user.id))

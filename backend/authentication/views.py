@@ -28,6 +28,7 @@ from .decorators import two_fa_required
 from django.utils.decorators import method_decorator
 from .two_fa import *
 from friend.models import Friendship
+import json
 
 # Create your views here.
 
@@ -373,7 +374,7 @@ class UserProfile(APIView):
 
         response_data = {
                 "avatar" : user.avatar.url[1:],
-                "user_id" : user.id,
+                "id" : user.id,
                 "nickname" : user.nickname,
                 "email": user.email,
                 "first_name": user.first_name,
@@ -385,7 +386,7 @@ class UserProfile(APIView):
                 "total_loss_games" : total_loss_games,
                 "total_loss_tournaments" : total_loss_tournaments,
                 'recent_games': list(recent_games.values('id', 'user_score', 'result', 'opponent_avatar')),
-                "total_score" : total_score
+                "total_score" : total_score if total_score else 0
             }
 
         try:
@@ -396,8 +397,10 @@ class UserProfile(APIView):
                 response_data['relationship'] = friendship.status
                 response_data['last_action'] = friendship.last_action_by
         except Friendship.DoesNotExist:
-            return Response()
-    
+            response_data['relationship'] = ''
+            response_data['last_action'] = ''
+        
+        print('response::::::: ', response_data)
         return JsonResponse(response_data)
 
 # from rest_framework.parsers import MultiPartParser, FormPars/er

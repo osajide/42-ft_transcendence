@@ -87,6 +87,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  max-height: 90vh;
+  overflow: auto;
 }
 #errorCont .warn {
   display: flex;
