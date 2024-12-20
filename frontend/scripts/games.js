@@ -121,7 +121,7 @@ function gameOver(game) {
       },
     })
   );
-  console.log(winner, loser)
+  console.log(winner.id, loser.id)
   winner.container.classList.add("winner");
   loser.container.classList.add("loser");
   document.getElementById("game_dash").classList.add("game_over");
