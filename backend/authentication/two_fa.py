@@ -82,16 +82,16 @@ class VerifyCode(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
+    def post(self, request):
         
         code = request.data.get('code')
         if not code:
-            return Response({"error": "2FA code is required"}, status=400)
+            return Response({"error": "2FA code is required"}, status=200)
 
         # code = "620376"
         totp = pyotp.TOTP(request.user.secret_key)
 
-
+        print('code', code)
         if totp.verify(code):
 
             request.user.is_2fa_verified = True
@@ -111,4 +111,4 @@ class VerifyCode(APIView):
             return response
         
         else:
-            return Response({"error": "Invalid 2FA code"}, status=400)
+            return Response({"error": "Invalid 2FA code"}, status=200)

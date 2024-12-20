@@ -33,8 +33,7 @@ const raiseWarn = (msg, type = "error") => {
     self.remove();
     clearTimeout(s);
   }, 3000);
-  if (type == 'error')
-    return "Error";
+  if (type == "error") return "Error";
 };
 
 const fetchWithToken = async (url, endpoint, method, body = null) => {
@@ -57,7 +56,7 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
   loader.classList.remove("show");
 
   if (response.ok) data = await response.json();
-  console.log(data, endpoint);
+  console.log(data, endpoint, data.error);
   if (response.status === 401) {
     const refreshResponse = await fetch(`${url}/api/refresh/`, {
       method: "POST",
@@ -75,6 +74,8 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
   if (
     endpoint != "/api/register/" &&
     endpoint != "/api/login/" &&
+    endpoint != "/api/verify_code/" &&
+    endpoint != "/api/setup_twofa/" &&
     data == "Error"
   ) {
     return raiseWarn("Session expired");
@@ -165,9 +166,9 @@ const network = async (e) => {
     let lock = document.querySelector(".controls");
     let id = lock.querySelector(".block");
     id.remove();
-    const change = {}
-    change[old[0]] = ""
-    makeSocket.latest[0].send(JSON.stringify(change))
+    const change = {};
+    change[old[0]] = "";
+    makeSocket.latest[0].send(JSON.stringify(change));
     lock.innerHTML += icons[choices[elId[0]]](elId[1]);
   } else {
     e.innerHTML = newVal;
@@ -184,14 +185,20 @@ const network = async (e) => {
 /******************** Forms ********************/
 
 async function authenticate(e) {
+  e.preventDefault();
   errors.innerHTML = "";
   let endpoint = "/api/register/";
-  const form = new FormData(e.target);
-  let data = Object.fromEntries(form.entries());
-  e.preventDefault();
+  let form = new FormData(e.target);
   if (e.target.childElementCount < 5) endpoint = "/api/login/";
-  if (e.target.id == "otp") endpoint = "";
-  data = await fetchWithToken(glob_endp, endpoint, "POST", form);
+  if (e.target.id == "otp") {
+    endpoint = "/api/verify_code/";
+    tmp = new FormData();
+    let s = "";
+    for ([key, value] of form.entries()) s += value;
+    tmp.set("code", s);
+    form = tmp;
+  }
+  let data = await fetchWithToken(glob_endp, endpoint, "POST", form);
   if (data == "Error") return;
   e.target.reset();
 
@@ -199,19 +206,21 @@ async function authenticate(e) {
     raiseWarn("Please verify your email", "alert");
     return updateUrl("login", "push");
   } else {
-    console.log(data)
+    console.log(data);
     e.target.classList.add("hide");
     e.target.nextElementSibling.classList.add("hide");
     e.target.previousElementSibling.classList.add("hide");
     if (data[0] == "scan_qr") {
-      const qr = await fetchWithToken(
-        glob_endp,
-        "/api/setup_twofa/"
-      );
-      console.log(qr)
-      e.target.insertAdjacentElement("afterend", components.qr(qr.qrcode));
+      const qr = await fetchWithToken(glob_endp, "/api/setup_twofa/");
+      e.target.insertAdjacentElement("beforebegin", components.qr(qr.qrcode));
+    } else {
+      const otp = components.otp();
+      e.target.previousElementSibling.classList.remove("hide");
+      e.target.previousElementSibling.outerHTML =
+        "<h3>Please enter the code from your OTP app</h3>";
+      e.target.insertAdjacentElement("beforebegin", otp);
+      otp.firstElementChild.firstElementChild.focus();
     }
-    else e.target.insertAdjacentElement("afterend", components.otp(undefined));
   }
 
   if (data.message == "successfully Logged") {
@@ -297,27 +306,30 @@ const components = {
 			<input class="hide togglers" type="checkbox" id="menu"/>
 			<nav>
 				${["profile", "Friends", "Chats", "Games", "logout"]
-        .map((a) => {
-          return this["menu_item"](a);
-        })
-        .join("\n")}
+          .map((a) => {
+            return this["menu_item"](a);
+          })
+          .join("\n")}
 			</nav>
 			<label class="img_label" for="menu" tabindex="1">
-				<img id="user" src="./assets/avatars/${user_data.avatar ? user_data.avatar.replace("/", "") : "user.svg"
-      }" alt="logo" />
+				<img id="user" src="./assets/avatars/${
+          user_data.avatar ? user_data.avatar.replace("/", "") : "user.svg"
+        }" alt="logo" />
 			</label>
 		`;
     return header;
   },
   card: (data, avatar) => {
-    console.log(avatar)
+    console.log(avatar);
     return /*html*/ `<div class="card ${data.result.toLowerCase()}">
     <div class="players">
-    <img src="${"./assets/avatars/" + avatar.replace("/", "")}" alt="${user_data.first_name
-      }"/>
+    <img src="${"./assets/avatars/" + avatar.replace("/", "")}" alt="${
+      user_data.first_name
+    }"/>
       <span>VS</span>
-      <img src="${"./assets/avatars/" + data.opponent_avatar.replace("/", "")}" alt="${user_data.first_name
-      }"/>
+      <img src="${
+        "./assets/avatars/" + data.opponent_avatar.replace("/", "")
+      }" alt="${user_data.first_name}"/>
       </div>
     <h4>${data.result}</h4>
     <p>Score: ${data.user_score}</p>
@@ -328,8 +340,9 @@ const components = {
     <div class="chatBanner">
     ${icons.back("friendChat")}
       <label class="friendData">
-        <img src="${!user.avatar ? "assets/avatars/user.svg" : user.avatar
-      }" alt="${user.name}"/>
+        <img src="${
+          !user.avatar ? "assets/avatars/user.svg" : user.avatar
+        }" alt="${user.name}"/>
         <h6>${user.name}</h6>
       </label>
       <div class="controls">
@@ -342,16 +355,21 @@ const components = {
   user_label: function (user, name, index) {
     if (name == "search_friends") name = "myFriends";
     return /* html */ `
-			<input id="${user.first_name + name + user.id
-      }" type="radio" class="chat_member hide" name="${name}" value="${user?.id
-      }"/>
-			<label onKeyDown="selction(event)" for="${user.first_name + name + user.id
-      }" class="user_label ${(!index && name == "myFriends") || (name == "friendChat" && !user.seen)
+			<input id="${
+        user.first_name + name + user.id
+      }" type="radio" class="chat_member hide" name="${name}" value="${
+      user?.id
+    }"/>
+			<label onKeyDown="selction(event)" for="${
+        user.first_name + name + user.id
+      }" class="user_label ${
+      (!index && name == "myFriends") || (name == "friendChat" && !user.seen)
         ? " bubble"
         : ""
-      }" tabindex="0">
-				<img src="${"./assets/avatars/" + user.avatar.replace("/", "")}" alt="${user.first_name
-      }"/>
+    }" tabindex="0">
+				<img src="${"./assets/avatars/" + user.avatar.replace("/", "")}" alt="${
+      user.first_name
+    }"/>
 				<h4>${user.first_name} ${user.last_name}</h4>
 			</label>
 		`;
@@ -360,14 +378,14 @@ const components = {
     return /* html */ `
 			<section id="${name + "_class"}" class="users_list">
 				${usersList
-        .map((users, index) => {
-          return users
-            .map((user) => {
-              return this.user_label(user, name, index);
-            })
-            .join("\n");
-        })
-        .join("\n")}
+          .map((users, index) => {
+            return users
+              .map((user) => {
+                return this.user_label(user, name, index);
+              })
+              .join("\n");
+          })
+          .join("\n")}
 			</section>
 		`;
   },
@@ -420,8 +438,9 @@ const components = {
   warning: function (msg, type) {
     if (type != "game")
       return /* html */ `
-      <div onclick="removeElement(this)" class="warn ${type}" tabindex="0">${icons[type + "Icon"]
-        }<p>${msg}</p></div>
+      <div onclick="removeElement(this)" class="warn ${type}" tabindex="0">${
+        icons[type + "Icon"]
+      }<p>${msg}</p></div>
     `;
     return /* html */ `
       <div onclick="removeElement(this)" id="game_${msg.game_id}" class="warn alert ${type}" tabindex="0">${icons.games}<p>${msg.description}</p></div>
@@ -433,33 +452,37 @@ const components = {
       pending:
         user.last_action != user_data?.id ? ["accept", "decline"] : ["cancel"],
       "": ["invite"],
-      blocked: [(user.last_action != user_data?.id ? "block" : "unblock"), "remove"],
+      blocked: [
+        user.last_action != user_data?.id ? "block" : "unblock",
+        "remove",
+      ],
     };
-    console.log(user)
     return /* html */ `
 		<section id="userProfile">
-    ${Object.keys(user).length
+    ${
+      Object.keys(user).length
         ? /* html */ `
         <div class="userBanner">
         ${icons.back("myFriends")}
-          <img src="${"./assets/avatars/" + user.avatar.replace("/", "")
-        }" alt="${user.first_name}"/>
+          <img src="${
+            "./assets/avatars/" + user.avatar.replace("/", "")
+          }" alt="${user.first_name}"/>
           <div class="userInfo">
           <h3>${user.first_name} ${user.last_name}</h3>
           <p>${user.email}</p>
           <div class="relManager">
           ${choices[user.relationship]
-          .map((action) => {
-            return /* html */ `<button onclick="network(this)" class='button' value="${action}_${user.id}">${action}</button>`;
-          })
-          .join("\n")}
+            .map((action) => {
+              return /* html */ `<button onclick="network(this)" class='button' value="${action}_${user.id}">${action}</button>`;
+            })
+            .join("\n")}
           </div>
         </div>
     </div>
     <div id="stats">
     ${components.cancel(user)}</div>`
         : ""
-      }
+    }
     </section>`;
   },
   notification: function () {
@@ -528,11 +551,14 @@ const components = {
     const myIcon =
       (noti.type != "invitation" ? "invitation" : "invitation") + "Icon";
     return /* html */ `
-    <input type="radio" class="hide noti_member togglers" name="nots" id="${noti.type
-      }_${noti.sender.first_name}_${noti.sender.id}_${noti.id}"/>
-    <label for="${noti.type}_${noti.sender.first_name}_${noti.sender.id}_${noti.id
-      }" class="notiLabel" tabindex="0">
-      <img src="${"./assets/avatars/" + noti.sender.avatar.replace("/", "")
+    <input type="radio" class="hide noti_member togglers" name="nots" id="${
+      noti.type
+    }_${noti.sender.first_name}_${noti.sender.id}_${noti.id}"/>
+    <label for="${noti.type}_${noti.sender.first_name}_${noti.sender.id}_${
+      noti.id
+    }" class="notiLabel" tabindex="0">
+      <img src="${
+        "./assets/avatars/" + noti.sender.avatar.replace("/", "")
       }" alt="${noti.sender.first_name}"/>
       ${icons[myIcon]}
       <p>${noti.description}</p>
@@ -540,13 +566,12 @@ const components = {
   `;
   },
   qr: function (qr) {
-    console.log();
     const container = document.createElement("div");
     container.id = "qrcode";
     container.innerHTML = /* html */ `
       <p>Please scan the QR code</p>
       <img src="${qr}" alt="qrcode"/>
-      <label onclick="next()" class="button">Next</label>
+      <label onclick="next(this)" id="next" class="button" tabindex="0">Next</label>
     `;
     return container;
   },
@@ -554,16 +579,18 @@ const components = {
     const container = document.createElement("form");
     container.id = "otp";
     container.innerHTML = /* html */ `
+      <div>
       <input type="text" maxlength="1" class="otpInput" name="digit1" required />
       <input type="text" maxlength="1" class="otpInput" name="digit2" required />
       <input type="text" maxlength="1" class="otpInput" name="digit3" required />
       <input type="text" maxlength="1" class="otpInput" name="digit4" required />
       <input type="text" maxlength="1" class="otpInput" name="digit5" required />
       <input type="text" maxlength="1" class="otpInput" name="digit6" required />
+      </div>
+      <label onclick="next(this)" id="reset" class="button" tabindex="0">Reset OTP</label>
     `;
 
     const otpInputs = container.querySelectorAll(".otpInput");
-
     otpInputs.forEach((input, index) => {
       input.addEventListener("input", (e) => {
         const value = e.target.value;
@@ -573,11 +600,11 @@ const components = {
           return;
         }
 
-        let i = index
-        console.log(otpInputs[i].value)
+        let i = index;
+        // console.log(otpInputs[i].value)
         while (i >= 0 && i - 1 > -1 && !otpInputs[i - 1].value.length) {
-          otpInputs[i].value = ""
-          i--
+          otpInputs[i].value = "";
+          i--;
         }
         if (i > -1) {
           otpInputs[i].focus();
@@ -591,10 +618,8 @@ const components = {
 
         // Move to the previous input if it's empty
         // Automatically submit if all inputs are filled
-        if (
-          i === otpInputs.length - 1
-        ) {
-          container.submit();
+        if (i === otpInputs.length - 1) {
+          container.dispatchEvent(new Event("submit"));
         }
       });
 
@@ -698,26 +723,38 @@ const components = {
       <h3>Solo games</h3>
       <div class="graph">
       <span class="bar" data-insight="${(
-        data.total_win_games / (data.total_solo_games || 1) * 100).toFixed(2)
-      }%" data-count="${data.total_win_games
-      }" style="width: calc(1px + ${data.total_win_games / (data.total_solo_games || 1)
-      } * 100%)"></span>
+        (data.total_win_games / (data.total_solo_games || 1)) *
+        100
+      ).toFixed(2)}%" data-count="${
+      data.total_win_games
+    }" style="width: calc(1px + ${
+      data.total_win_games / (data.total_solo_games || 1)
+    } * 100%)"></span>
       <span class="bar" data-insight="${(
-        data.total_loss_games / (data.total_solo_games || 1) * 100).toFixed(2)
-      }%" data-count="${data.total_loss_games
-      }" style="width: calc(1px + ${data.total_loss_games / (data.total_solo_games || 1)
-      } * 100%)"></span></div>
+        (data.total_loss_games / (data.total_solo_games || 1)) *
+        100
+      ).toFixed(2)}%" data-count="${
+      data.total_loss_games
+    }" style="width: calc(1px + ${
+      data.total_loss_games / (data.total_solo_games || 1)
+    } * 100%)"></span></div>
       <h3>Tournaments</h3>
       <div class="graph"><span class="bar" data-insight="${(
-        data.total_win_tournaments / (data.total_solo_games || 1) * 100).toFixed(2)
-      }%" data-count="${data.total_win_tournaments
-      }" style="width: calc(1px + ${data.total_win_tournaments / (data.total_solo_games || 1)
-      } * 100%)"></span>
+        (data.total_win_tournaments / (data.total_solo_games || 1)) *
+        100
+      ).toFixed(2)}%" data-count="${
+      data.total_win_tournaments
+    }" style="width: calc(1px + ${
+      data.total_win_tournaments / (data.total_solo_games || 1)
+    } * 100%)"></span>
       <span class="bar" data-insight="${(
-        data.total_loss_tournaments / (data.total_solo_games || 1) * 100).toFixed(2)
-      }%" data-count="${data.total_loss_tournaments
-      }" style="width: calc(1px + ${data.total_loss_tournaments / (data.total_solo_games || 1)
-      } * 100%)"></span></div>
+        (data.total_loss_tournaments / (data.total_solo_games || 1)) *
+        100
+      ).toFixed(2)}%" data-count="${
+      data.total_loss_tournaments
+    }" style="width: calc(1px + ${
+      data.total_loss_tournaments / (data.total_solo_games || 1)
+    } * 100%)"></span></div>
     </div>
     <h3>Game history</h3>
     <div id="recent_games">
@@ -731,11 +768,29 @@ const components = {
   },
 };
 
-function next() {
-  const qr = document.getElementById('qrcode')
-
-  qr.insertAdjacentElement('afterend', components.otp())
-  qr.remove()
+async function next(e) {
+  if (e.id == "next") {
+    const qr = document.getElementById("qrcode");
+    const otp = components.otp();
+    qr.previousElementSibling.classList.remove("hide");
+    qr.insertAdjacentElement("beforebegin", otp);
+    otp.previousElementSibling.outerHTML =
+      "<h3>Please enter the code from your OTP app</h3>";
+    qr.remove();
+    console.log(otp.firstElementChild)
+    otp.firstElementChild.firstElementChild.focus();
+  }
+  else {
+    const data = await fetchWithToken(glob_endp, "/api/setup_twofa/", 'GET')
+    if (data == 'Error') return
+    const otp = document.getElementById("otp");
+    const qr = components.qr(data.qrcode);
+    otp.previousElementSibling.classList.add("hide");
+    otp.insertAdjacentElement("beforebegin", qr);
+    // otp.previousElementSibling.outerHTML =
+    //   "<h3>Please enter the code from your OTP app</h3>";
+    otp.remove();
+  }
 }
 
 async function checkUser(endpoint) {
@@ -804,7 +859,7 @@ const pages = {
 			</section>
 		`,
     id: "landing_page",
-    func: () => { },
+    func: () => {},
     glob: false,
   },
   login: {
@@ -1027,7 +1082,7 @@ function listen(id, change, endpoint, compo) {
           glob_endp,
           `${endpoint}${e.target.value}/`
         );
-        console.log(response)
+        console.log(response);
         if (response == "Error") return;
         data = response;
         // response.user = response;

@@ -238,7 +238,7 @@ body {
 
 #page,
 header,
-.show {
+.show, #otp, #qrcode {
   animation: popIn 0.75s ease-out forwards;
 }
 
