@@ -193,7 +193,7 @@ function server(e, mypong) {
         window_width - mypong.width,
         mypong.playerPaddle.y,
         mypong.oppoPaddle.id,
-        mypong.playerPaddle.color,
+        mypong.oppoPaddle.color,
         window_height * 0.02,
         "opp_player",
         mypong.oppoPaddle.data
@@ -209,7 +209,7 @@ function server(e, mypong) {
         window_width - mypong.width,
         mypong.playerPaddle.y,
         mypong.oppoPaddle.id,
-        mypong.playerPaddle.color,
+        mypong.oppoPaddle.color,
         window_height * 0.02,
         "opp_player",
         mypong.oppoPaddle.data
@@ -240,11 +240,16 @@ function server(e, mypong) {
       mypong.oppoPaddle.score = -1;
       mypong.maxScore = mypong.playerPaddle.score;
     }
-    gameOver(mypong);
+    if (!mypong.close) {
+      mypong.close = 1
+      gameOver(mypong);
+    }
   }
 }
 
 function Game(x, y, color, endpoint = "", maxScore) {
+  const savedColor = localStorage.getItem('my_color')
+  console.log(savedColor)
   this.canvas = document.getElementById("game_canvas");
   this.socket = makeSocket(endpoint, (event) => {
     server(event, this);
@@ -257,11 +262,12 @@ function Game(x, y, color, endpoint = "", maxScore) {
   this.maxScore = maxScore;
   this.height = window_height * 0.2;
   this.timout;
+  this.close = 0;
   this.playerPaddle = new Paddle(
     x,
     y,
     user_data.id,
-    color,
+    savedColor ? savedColor : color,
     window_height * 0.02,
     "current_player",
     user_data
@@ -296,7 +302,10 @@ function Game(x, y, color, endpoint = "", maxScore) {
         this.oppoPaddle.score == this.maxScore) &&
       this.socket
     ) {
-      return gameOver(this);
+      if (!history.close) {
+        this.close = 1
+        return gameOver(this);
+      }
     }
     this.clear();
     if (this.press) changePos(this);
@@ -318,13 +327,14 @@ function Game(x, y, color, endpoint = "", maxScore) {
     this.ctx.fillStyle = "#fff";
     this.ctx.fill();
     this.ctx.closePath();
-    this.ctx.fillStyle = color;
+    this.ctx.fillStyle = this.playerPaddle.color;
     this.ctx.fillRect(
       this.playerPaddle.x,
       this.playerPaddle.y,
       this.width,
       this.height
     );
+    this.ctx.fillStyle = color;
     this.ctx.fillRect(
       this.oppoPaddle.x,
       this.oppoPaddle.y,
@@ -514,12 +524,12 @@ function playTournament(endpoint) {
     socket = makeSocket(`tournament/${endpoint}`, tournamentInfo);
     startGame.tournamentSocket = socket;
   }
-  if (endpoint != -1) {
-    startGame.timer = setTimeout(() => {
-      updateUrl('games', '')
-      clearTimeout(startGame.timer)
-    }, 20000);
-  }
+  // if (endpoint != -1) {
+  //   startGame.timer = setTimeout(() => {
+  //     updateUrl('games', '')
+  //     clearTimeout(startGame.timer)
+  //   }, 20000);
+  // }
   const board = /* html */ `
     <div class="tournament">
       <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img1"/></div>

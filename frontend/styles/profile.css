@@ -56,6 +56,15 @@
   align-items: center;
   padding: 20px;
 }
+#profile #page #updatable label {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  color: #00b1b1;
+  cursor: pointer;
+}
 #profile #page #updatable img {
   width: 150px;
   margin-bottom: 10px;

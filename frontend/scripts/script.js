@@ -57,7 +57,7 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
   const response = await fetch(url + endpoint, settings);
   loader.classList.add("hide");
   loader.classList.remove("show");
-  
+
   if (response.ok) data = await response.json();
   console.log(data)
   // console.log(data, endpoint, data.error);
@@ -276,10 +276,10 @@ function makeSocket(endpoint, socketMethod) {
   socket.onmessage = socketMethod;
 
   socket.onclose = function (event) {
-      if (makeSocket.latest.length) {
-        // makeSocket.latest[makeSocket.latest.length - 1].close();
-        makeSocket.latest.pop();
-      }
+    if (makeSocket.latest.length) {
+      // makeSocket.latest[makeSocket.latest.length - 1].close();
+      makeSocket.latest.pop();
+    }
     console.log("WebSocket is closed now.");
   };
   return socket;
@@ -313,15 +313,14 @@ const components = {
 			<input class="hide togglers" type="checkbox" id="menu"/>
 			<nav>
 				${["profile", "Friends", "Chats", "Games", "logout"]
-          .map((a) => {
-            return this["menu_item"](a);
-          })
-          .join("\n")}
+        .map((a) => {
+          return this["menu_item"](a);
+        })
+        .join("\n")}
 			</nav>
 			<label class="img_label" for="menu" tabindex="1">
-				<img id="user" src="./assets/avatars/${
-          user_data.avatar ? user_data.avatar.replace("/", "") : "user.svg"
-        }" alt="logo" />
+				<img id="user" src="./assets/avatars/${user_data.avatar ? user_data.avatar.replace("/", "") : "user.svg"
+      }" alt="logo" />
 			</label>
 		`;
     return header;
@@ -329,12 +328,10 @@ const components = {
   card: (data, avatar) => {
     return /*html*/ `<div class="card ${data.result.toLowerCase()}">
     <div class="players">
-    <img src="${"./assets/avatars/" + avatar.replace("/", "")}" alt="${
-      user_data.first_name
-    }"/>
+    <img src="${"./assets/avatars/" + avatar.replace("/", "")}" alt="${user_data.first_name
+      }"/>
       <span>VS</span>
-      <img src="${
-        "./assets/avatars/" + data.opponent_avatar.replace("/", "")
+      <img src="${"./assets/avatars/" + data.opponent_avatar.replace("/", "")
       }" alt="${user_data.first_name}"/>
       </div>
     <h4>${data.result}</h4>
@@ -346,9 +343,8 @@ const components = {
     <div class="chatBanner">
     ${icons.back("friendChat")}
       <label class="friendData">
-        <img src="${
-          !user.avatar ? "assets/avatars/user.svg" : user.avatar
-        }" alt="${user.name}"/>
+        <img src="${!user.avatar ? "assets/avatars/user.svg" : user.avatar
+      }" alt="${user.name}"/>
         <h6>${user.name}</h6>
       </label>
       <div class="controls">
@@ -361,21 +357,16 @@ const components = {
   user_label: function (user, name, index) {
     if (name == "search_friends") name = "myFriends";
     return /* html */ `
-			<input id="${
-        user.first_name + name + user.id
-      }" type="radio" class="chat_member hide" name="${name}" value="${
-      user?.id
-    }"/>
-			<label onKeyDown="selction(event)" for="${
-        user.first_name + name + user.id
-      }" class="user_label ${
-      (!index && name == "myFriends") || (name == "friendChat" && !user.seen)
+			<input id="${user.first_name + name + user.id
+      }" type="radio" class="chat_member hide" name="${name}" value="${user?.id
+      }"/>
+			<label onKeyDown="selction(event)" for="${user.first_name + name + user.id
+      }" class="user_label ${(!index && name == "myFriends") || (name == "friendChat" && !user.seen)
         ? " bubble"
         : ""
-    }" tabindex="0">
-				<img src="${"./assets/avatars/" + user.avatar.replace("/", "")}" alt="${
-      user.first_name
-    }"/>
+      }" tabindex="0">
+				<img src="${"./assets/avatars/" + user.avatar.replace("/", "")}" alt="${user.first_name
+      }"/>
 				<h4>${user.first_name} ${user.last_name}</h4>
 			</label>
 		`;
@@ -384,14 +375,14 @@ const components = {
     return /* html */ `
 			<section id="${name + "_class"}" class="users_list">
 				${usersList
-          .map((users, index) => {
-            return users
-              .map((user) => {
-                return this.user_label(user, name, index);
-              })
-              .join("\n");
-          })
-          .join("\n")}
+        .map((users, index) => {
+          return users
+            .map((user) => {
+              return this.user_label(user, name, index);
+            })
+            .join("\n");
+        })
+        .join("\n")}
 			</section>
 		`;
   },
@@ -444,9 +435,8 @@ const components = {
   warning: function (msg, type) {
     if (type != "game")
       return /* html */ `
-      <div onclick="removeElement(this)" class="warn ${type}" tabindex="0">${
-        icons[type + "Icon"]
-      }<p>${msg}</p></div>
+      <div onclick="removeElement(this)" class="warn ${type}" tabindex="0">${icons[type + "Icon"]
+        }<p>${msg}</p></div>
     `;
     return /* html */ `
       <div onclick="removeElement(this)" id="game_${msg.game_id}" class="warn alert ${type}" tabindex="0">${icons.games}<p>${msg.description}</p></div>
@@ -466,31 +456,29 @@ const components = {
     console.log(user)
     return /* html */ `
 		<section id="userProfile">
-    ${
-      Object.keys(user).length
+    ${Object.keys(user).length
         ? /* html */ `
         <div class="userBanner">
         ${icons.back("myFriends")}
-          <img src="${
-            "./assets/avatars/" + user.avatar.replace("/", "")
-          }" alt="${user.first_name}"/>
+          <img src="${"./assets/avatars/" + user.avatar.replace("/", "")
+        }" alt="${user.first_name}"/>
           <div class="userInfo">
           <h3>${user.first_name} ${user.last_name}</h3>
           <p>${user.email}</p>
           <small>${user.nickname}</small>
           <div class="relManager">
           ${choices[user.relationship]
-            .map((action) => {
-              return /* html */ `<button onclick="network(this)" class='button' value="${action}_${user.id}">${action}</button>`;
-            })
-            .join("\n")}
+          .map((action) => {
+            return /* html */ `<button onclick="network(this)" class='button' value="${action}_${user.id}">${action}</button>`;
+          })
+          .join("\n")}
           </div>
         </div>
     </div>
     <div id="stats">
     ${components.cancel(user)}</div>`
         : ""
-    }
+      }
     </section>`;
   },
   notification: function () {
@@ -559,14 +547,11 @@ const components = {
     const myIcon =
       (noti.type != "invitation" ? "invitation" : "invitation") + "Icon";
     return /* html */ `
-    <input type="radio" class="hide noti_member togglers" name="nots" id="${
-      noti.type
-    }_${noti.sender.first_name}_${noti.sender.id}_${noti.id}"/>
-    <label for="${noti.type}_${noti.sender.first_name}_${noti.sender.id}_${
-      noti.id
-    }" class="notiLabel" tabindex="0">
-      <img src="${
-        "./assets/avatars/" + noti.sender.avatar.replace("/", "")
+    <input type="radio" class="hide noti_member togglers" name="nots" id="${noti.type
+      }_${noti.sender.first_name}_${noti.sender.id}_${noti.id}"/>
+    <label for="${noti.type}_${noti.sender.first_name}_${noti.sender.id}_${noti.id
+      }" class="notiLabel" tabindex="0">
+      <img src="${"./assets/avatars/" + noti.sender.avatar.replace("/", "")
       }" alt="${noti.sender.first_name}"/>
       ${icons[myIcon]}
       <p>${noti.description}</p>
@@ -627,7 +612,7 @@ const components = {
         // Move to the previous input if it's empty
         // Automatically submit if all inputs are filled
         if (i === otpInputs.length - 1) {
-          container.dispatchEvent(new Event("submit",{ bubbles: true, cancelable: true }));
+          container.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
           otpInputs[0].focus()
 
         }
@@ -734,36 +719,28 @@ const components = {
       <span class="bar" data-insight="${(
         (data.total_win_games / (data.total_solo_games || 1)) *
         100
-      ).toFixed(2)}%" data-count="${
-      data.total_win_games
-    }" style="width: calc(1px + ${
-      data.total_win_games / (data.total_solo_games || 1)
-    } * 100%)"></span>
+      ).toFixed(2)}%" data-count="${data.total_win_games
+      }" style="width: calc(1px + ${data.total_win_games / (data.total_solo_games || 1)
+      } * 100%)"></span>
       <span class="bar" data-insight="${(
         (data.total_loss_games / (data.total_solo_games || 1)) *
         100
-      ).toFixed(2)}%" data-count="${
-      data.total_loss_games
-    }" style="width: calc(1px + ${
-      data.total_loss_games / (data.total_solo_games || 1)
-    } * 100%)"></span></div>
+      ).toFixed(2)}%" data-count="${data.total_loss_games
+      }" style="width: calc(1px + ${data.total_loss_games / (data.total_solo_games || 1)
+      } * 100%)"></span></div>
       <h3>Tournaments</h3>
       <div class="graph"><span class="bar" data-insight="${(
         (data.total_win_tournaments / (data.total_solo_games || 1)) *
         100
-      ).toFixed(2)}%" data-count="${
-      data.total_win_tournaments
-    }" style="width: calc(1px + ${
-      data.total_win_tournaments / (data.total_solo_games || 1)
-    } * 100%)"></span>
+      ).toFixed(2)}%" data-count="${data.total_win_tournaments
+      }" style="width: calc(1px + ${data.total_win_tournaments / (data.total_solo_games || 1)
+      } * 100%)"></span>
       <span class="bar" data-insight="${(
         (data.total_loss_tournaments / (data.total_solo_games || 1)) *
         100
-      ).toFixed(2)}%" data-count="${
-      data.total_loss_tournaments
-    }" style="width: calc(1px + ${
-      data.total_loss_tournaments / (data.total_solo_games || 1)
-    } * 100%)"></span></div>
+      ).toFixed(2)}%" data-count="${data.total_loss_tournaments
+      }" style="width: calc(1px + ${data.total_loss_tournaments / (data.total_solo_games || 1)
+      } * 100%)"></span></div>
     </div>
     <h3>Game history</h3>
     <div id="recent_games">
@@ -816,7 +793,10 @@ async function checkUser(endpoint) {
 }
 
 function logout(e) {
-  if (e) e.preventDefault();
+  if (e) { 
+    e.preventDefault();
+    const resp = fetchWithToken(glob_endp, )
+  }
   localStorage.removeItem("user_data");
   user_data = undefined;
   if (notiSocket) notiSocket.close();
@@ -863,7 +843,7 @@ const pages = {
 			</section>
 		`,
     id: "landing_page",
-    func: () => {},
+    func: () => { },
     glob: false,
   },
   login: {
@@ -972,6 +952,9 @@ const pages = {
         update.innerHTML = "<h2>Edit your profile</h2>";
         update.appendChild(components[choice.toLowerCase()](data));
       });
+      document.getElementById('colorPicker').addEventListener('input', (e) => {
+        localStorage.setItem('my_color', e.target.value)
+      })
       update.innerHTML = components["cancel"](data);
     },
     glob: true,
@@ -1023,6 +1006,9 @@ const pages = {
 };
 
 function fillProfile(data) {
+  const color = localStorage.getItem('my_color')
+  if (!color)
+    localStorage.setItem('my_color', "#31dede")
   return /* html */ `
   <img id="user_avatar" src="assets/avatars/${data.avatar.replace(
     "/",
@@ -1031,6 +1017,7 @@ function fillProfile(data) {
   <h3 id="user_name">${data.first_name} ${data.last_name}</h3>
   <p id="user_email">${data.email}</p>
   <h5 id="user_nickname">${data.nickname}</h5>
+  <label for="colorPiker">Pick your paddle color: <input type="color" id="colorPicker" value="${color}"/></label>
   <button id="modeSwitch" class="button">Edit</button>`;
 }
 
