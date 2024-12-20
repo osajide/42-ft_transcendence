@@ -113,46 +113,49 @@ function gameOver(game) {
   const loser =
     game.playerPaddle.id == winner.id ? game.oppoPaddle : game.playerPaddle;
 
-  game.socket.send(
-    JSON.stringify({
-      stats: {
-        winner: { id: winner.id, score: winner.score },
-        loser: { id: loser.id, score: loser.score },
-      },
-    })
-  );
   console.log(winner.id, loser.id)
   winner.container.classList.add("winner");
   loser.container.classList.add("loser");
   document.getElementById("game_dash").classList.add("game_over");
-  if (startGame.tournamentSocket) {
-    pos = 0;
-    tournamentInfo.matches.map((match, index) => {
-      if (
-        match.filter((m) => {
-          return m.id == winner.id;
-        }).length
-      )
-        pos = index;
-    });
-    console.log({
-      winner: [pos, winner.id],
-    });
-    startGame.tournamentSocket.send(
+  let sleeper = setTimeout(() => {
+    game.socket.send(
       JSON.stringify({
-        winner: [pos, winner.id],
+        stats: {
+          winner: { id: winner.id, score: winner.score },
+          loser: { id: loser.id, score: loser.score },
+        },
       })
     );
-    let timer = setTimeout(() => {
-      playTournament(-1);
-      clearTimeout(timer);
-    }, 5000);
-  } else {
-    let timer = setTimeout(() => {
-      updateUrl("games", "");
-      clearTimeout(timer);
-    }, 5000);
-  }
+    clearTimeout(sleeper)
+    if (startGame.tournamentSocket) {
+      pos = 0;
+      tournamentInfo.matches.map((match, index) => {
+        if (
+          match.filter((m) => {
+            return m.id == winner.id;
+          }).length
+        )
+          pos = index;
+      });
+      console.log({
+        winner: [pos, winner.id],
+      });
+      startGame.tournamentSocket.send(
+        JSON.stringify({
+          winner: [pos, winner.id],
+        })
+      );
+      let timer = setTimeout(() => {
+        playTournament(-1);
+        clearTimeout(timer);
+      }, 5000);
+    } else {
+      let timer = setTimeout(() => {
+        updateUrl("games", "");
+        clearTimeout(timer);
+      }, 5000);
+    }
+  }, 3000)
 }
 
 function server(e, mypong) {
@@ -225,17 +228,18 @@ function server(e, mypong) {
     if (data.view) mypong.ball.mirror = -1;
     mypong.oppoPaddle.id = data.opponent.id;
     mypong.oppoPaddle.data = data.opponent.data;
-    document
+    const opp = document
       .getElementById("opp_player")
-      .firstElementChild.nextElementSibling.setAttribute(
-        "src",
-        "/assets/avatars/" + data.opponent.avatar.replace("/", "")
-      );
+    opp.lastElementChild.setAttribute(
+      "src",
+      "/assets/avatars/" + data.opponent.avatar.replace("/", "")
+    );
+    opp.firstElementChild.firstElementChild.innerHTML = data.opponent.nickname.replaceAll('_', ' ')
   } else if (data.game_over != undefined) {
-      if (data.game_over.length) {
-        mypong.oppoPaddle.score = -1;
-        mypong.maxScore = mypong.playerPaddle.score;
-      }
+    if (data.game_over.length) {
+      mypong.oppoPaddle.score = -1;
+      mypong.maxScore = mypong.playerPaddle.score;
+    }
     gameOver(mypong);
   }
 }
@@ -445,10 +449,10 @@ function startGame(id) {
       <div id="game_dash" class="hide">
         <div class="player_stats" id="current_player">
           <img src="../assets/avatars/${user_data.avatar.replace("/", "")}"/>
-          <p class="score">0</p>
+          <div class="player_data"><small>${user_data.nickname.replaceAll('_', ' ')}</small><p class="score">0</p></div>
         </div>
         <div class="player_stats" id="opp_player">
-          <p class="score">0</p>
+          <div class="player_data"><small>${user_data.nickname.replaceAll('_', ' ')}</small><p class="score">0</p></div>
           <img src="../assets/avatars/${user_data.avatar.replace("/", "")}"/>
         </div>
       </div>
@@ -479,12 +483,13 @@ function tournamentInfo(e) {
     let cont = document.getElementsByClassName("tournament");
     for (let i = 0; i < cont.length; i++) {
       data.locked[i].map((el, index) => {
-        cont[i]
-          .querySelector(".player_img" + (index + 1))
-          .setAttribute(
-            "src",
-            "../assets/avatars/" + el.avatar.replace("/", "")
-          );
+        const img = cont[i]
+          .querySelector(".player_img" + (index + 1));
+        img.setAttribute(
+          "src",
+          "../assets/avatars/" + el.avatar.replace("/", "")
+        );
+        img.parentElement.setAttribute('data-nickname', el.nickname.replaceAll('_', ' '))
       });
     }
     if (!tournamentInfo.matches.length) tournamentInfo.matches = data.locked;
@@ -517,24 +522,24 @@ function playTournament(endpoint) {
   }
   const board = /* html */ `
     <div class="tournament">
-      <img src="../assets/avatars/user.svg" class="player_img player_img1">
-      <img src="../assets/avatars/user.svg" class="player_img player_img5">
-      <img src="../assets/avatars/user.svg" class="player_img player_img2">
-      <img src="../assets/avatars/user.svg" class="player_img player_img7">
-      <img src="../assets/avatars/user.svg" class="player_img player_img3">
-      <img src="../assets/avatars/user.svg" class="player_img player_img6">
-      <img src="../assets/avatars/user.svg" class="player_img player_img4">
+      <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img1"/></div>
+      <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img5"/></div>
+      <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img2"/></div>
+      <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img7"/></div>
+      <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img3"/></div>
+      <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img6"/></div>
+      <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img4"/></div>
       <span class="pair_link"></span>
       <span class="pair_link"></span>
     </div>
     <div class="tournament">
-    <img src="../assets/avatars/user.svg" class="player_img player_img1">
-    <img src="../assets/avatars/user.svg" class="player_img player_img5">
-    <img src="../assets/avatars/user.svg" class="player_img player_img2">
-    <img src="../assets/avatars/user.svg" class="player_img player_img7">
-    <img src="../assets/avatars/user.svg" class="player_img player_img3">
-    <img src="../assets/avatars/user.svg" class="player_img player_img6">
-    <img src="../assets/avatars/user.svg" class="player_img player_img4">
+    <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img1"/></div>
+    <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img5"/></div>
+    <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img2"/></div>
+    <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img7"/></div>
+    <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img3"/></div>
+    <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img6"/></div>
+    <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img4"/></div>
       <span class="pair_link"></span>
       <span class="pair_link"></span>
     </div>

@@ -1201,7 +1201,6 @@ const updateUrl = (path = "/", mode = "", targetId = "") => {
     app.appendChild(components["notification"]());
     background.classList.add("myblur");
     if (window.innerWidth >= 767) {
-      console.log('ss')
       const profile_img = header.querySelector('[for="menu"]');
       profile_img.setAttribute("for", "profile");
     }

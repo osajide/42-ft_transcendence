@@ -47,14 +47,15 @@
     &:first-child {
       background: url("../assets/vs.png");
       background-position: center;
-      background-repeat: no-repeat;
+      background-repeat: no-repeat !important ;
       background-size: auto 100%;
+      border-right: $global_border;
     }
 
     &:last-child {
       background: url("../assets/tour.png");
       background-position: center;
-      background-repeat: no-repeat;
+      background-repeat: no-repeat !important ;
       background-size: auto 100%;
     }
 
@@ -97,11 +98,10 @@
       }
     }
 
-    .player_img {
+    .player_card {
       height: 14%;
-      width: auto;
       aspect-ratio: 1 / 1;
-      object-fit: cover;
+      // object-fit: cover;
       border: 3px solid #00bcbc;
       border-radius: 7px;
       z-index: 1;
@@ -111,42 +111,69 @@
       &:nth-child(2n) {
         align-self: center;
       }
+
+      &:after {
+        content: attr(data-nickname);
+        position: absolute;
+        top: 50%;
+        right: -1.5rem;
+        transform: translateY(-50%);
+        font-size: 1rem;
+      }
+    }
+
+    .player_img {
+      width: 100%;
+      height: auto;
+      // height: 14%;
+      // width: auto;
+      // aspect-ratio: 1 / 1;
+      object-fit: cover;
+      // border: 3px solid #00bcbc;
+      // border-radius: 7px;
+      // z-index: 1;
+      // position: relative;
+      // background-color: #232323;
+
+      // &:nth-child(2n) {
+      //   align-self: center;
+      // }
     }
 
     &:first-child {
-      @include links(
-        calc(50% - 3px),
-        3px,
-        50%,
-        50%,
-        calc(50% - 35px),
-        58%,
-        21%,
-        left,
-        35px,
-        border-left
-      );
+      @include links(calc(50% - 3px), 3px, 50%, 50%, calc(50% - 35px), 58%, 21%, left, 35px, border-left);
 
-      .player_img {
+      .player_card {
         @include tournament(flex-start, flex-end);
+        &:nth-child(4) {
+      
+          &:after {
+            right: 50%;
+            top: -1.5rem;
+            transform: translateX(50%);
+          }
+        }
       }
     }
 
     &:last-child {
-      @include links(
-        50%,
-        3px,
-        50%,
-        0,
-        calc(50% - 35px),
-        58%,
-        21%,
-        right,
-        35px,
-        border-right
-      );
-      .player_img {
+      @include links(50%, 3px, 50%, 0, calc(50% - 35px), 58%, 21%, right, 35px, border-right);
+
+      .player_card {
         @include tournament(flex-end, flex-start);
+        &:nth-child(4) {
+      
+          &:after {
+            left: 50%;
+            top: -1.5rem;
+            transform: translateX(-50%);
+          }
+        }
+
+        &:after {
+          left: -1.5rem;
+          right: unset;
+        }
       }
       & > .pair_link {
         right: 35px;
@@ -156,6 +183,12 @@
   }
 }
 
+.player_data{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 @media screen and (max-width: 768px) {
   .tournament_board {
     flex-direction: column;
@@ -163,6 +196,12 @@
     .tournament {
       flex-direction: row;
       gap: 10px;
+
+      .player_card {
+        width: 14%;
+        height: auto;
+        transform: rotate(90deg);
+      }
 
       & > .pair_link {
         width: 30%;
@@ -177,9 +216,6 @@
       }
 
       &:first-child {
-        img {
-          transform: rotate(90deg);
-        }
         &::before {
           width: 58.5%;
           height: calc(50% - 4vw);
@@ -198,9 +234,6 @@
       }
 
       &:last-child {
-        img {
-          transform: rotate(90deg);
-        }
         &::before {
           width: 58.5%;
           height: calc(50% - 4vw);
@@ -232,7 +265,6 @@
       }
 
       .player_img {
-        width: 14%;
         height: auto;
       }
     }
@@ -244,23 +276,10 @@
     flex-direction: column;
 
     .game_mode {
-      &:first-child {
-        background: url("../assets/vs1.png") !important;
-        background-size: 100% auto !important;
-        background-position: center;
-        background-repeat: no-repeat;
-        transform-origin: center !important;
-      }
-
-      &:last-child {
-        background: url("../assets/tour1.png") !important;
-        background-size: 100% auto !important;
-        transform-origin: center !important;
-      }
 
       &:hover {
         mix-blend-mode: hard-light;
-        background-size: 150% auto !important;
+        background-size: auto 150% !important;
         transform-origin: center;
       }
     }
@@ -278,14 +297,14 @@
 #game_dash {
   position: absolute;
   width: 100%;
-  height: 70px;
-  top: 0;
+  height: max-content;
+  top: 10px;
   z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 10px;
+  padding: 10px 20px;
   transition: all 0.5s linear;
 }
 
@@ -298,10 +317,11 @@
 
   img {
     height: 100%;
+    width: 100%;
     border: 3px solid $prim_blue;
     border-radius: 7px;
-    max-width: 60px;
-    max-height: 60px;
+    min-width: 60px;
+    min-height: 60px;
     transition: all 0.5s linear;
     aspect-ratio: 1 / 1;
     object-fit: cover;
@@ -352,11 +372,11 @@
     right: -9px;
 
     &:first-child {
-      top: 28px;
+      top: 50px;
     }
 
     &:last-child {
-      bottom: 28px;
+      bottom: 75px;
     }
 
     img {
