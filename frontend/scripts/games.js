@@ -233,8 +233,10 @@ function server(e, mypong) {
         "/assets/avatars/" + data.opponent.avatar.replace("/", "")
       );
   } else if (data.game_over != undefined) {
-    mypong.oppoPaddle.score = -1;
-    mypong.maxScore = mypong.playerPaddle.score;
+      if (data.game_over.length) {
+        mypong.oppoPaddle.score = -1;
+        mypong.maxScore = mypong.playerPaddle.score;
+      }
     gameOver(mypong);
   }
 }

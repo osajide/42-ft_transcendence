@@ -97,7 +97,7 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 			await self.channel_layer.group_send(self.notification_group,
 									   {
 										   'type': 'make_match',
-										   'id': self.scope['user'].id
+										   'sender': UserSerializer(self.scope['user']).data
 									   })
 
 		elif 'tournament'  in json_text_data:
