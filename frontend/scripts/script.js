@@ -276,10 +276,10 @@ function makeSocket(endpoint, socketMethod) {
   socket.onmessage = socketMethod;
 
   socket.onclose = function (event) {
-      // if (makeSocket.latest.length) {
-      //   makeSocket.latest[makeSocket.latest.length - 1].close();
-      //   makeSocket.latest.pop();
-      // }
+      if (makeSocket.latest.length) {
+        makeSocket.latest[makeSocket.latest.length - 1].close();
+        makeSocket.latest.pop();
+      }
     console.log("WebSocket is closed now.");
   };
   return socket;
@@ -477,6 +477,7 @@ const components = {
           <div class="userInfo">
           <h3>${user.first_name} ${user.last_name}</h3>
           <p>${user.email}</p>
+          <small>${user.nickname}</small>
           <div class="relManager">
           ${choices[user.relationship]
             .map((action) => {

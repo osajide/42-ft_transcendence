@@ -77,6 +77,9 @@
   max-width: 100px;
   flex: 1;
 }
+#friends #page #userProfile .userBanner .userInfo small {
+  color: #00b1b1 !important;
+}
 #friends #page .popup * {
   outline: none;
   border: none;
@@ -251,6 +254,9 @@
     left: 0;
     border: none !important;
     overflow: auto !important;
+  }
+  #userProfile .userInfo {
+    text-align: center;
   }
   #userProfile > * {
     width: 100% !important;

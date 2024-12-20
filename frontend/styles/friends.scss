@@ -38,6 +38,10 @@
           max-width: 100px;
           flex: 1;
         }
+
+        small {
+          color: $prim_blue !important;
+        }
       }
     }
     // img {
@@ -146,12 +150,12 @@
     display: flex;
     position: relative;
     // border-radius: 0px 7px 0px 0px;
-  
+
     &:nth-child(2n) {
       // border-radius: 0px 0px 7px 0px;
       background-color: $red;
     }
-  
+
     &::before {
       content: attr(data-insight);
       position: relative;
@@ -160,7 +164,7 @@
       opacity: 0;
       animation: popIn 0.15s linear 0.4s forwards;
     }
-  
+
     &::after {
       content: attr(data-count);
       position: absolute;
@@ -170,7 +174,7 @@
       animation: popIn 0.15s linear 0.4s forwards;
     }
   }
-  
+
   #recent_games {
     display: flex;
     // overflow: auto;
@@ -246,6 +250,9 @@
     left: 0;
     border: none !important;
     overflow: auto !important;
+    .userInfo {
+      text-align: center;
+    }
 
     & > * {
       width: 100% !important;
@@ -293,7 +300,7 @@
     width: 100% !important;
     border: $global_border !important;
     padding: 20px;
-    background-color: rgba($prim_dark, .8);
+    background-color: rgba($prim_dark, 0.8);
   }
 
   .hide:checked + label + .popup {
@@ -310,9 +317,8 @@
   }
 }
 
-
 @media screen and (max-width: 480px) {
-  .card{
+  .card {
     flex: 1;
   }
 }

@@ -121,8 +121,7 @@ function gameOver(game) {
       },
     })
   );
-  // makeSocket.latest[makeSocket.latest.length - 1].close();
-  // makeSocket.latest.pop();
+  console.log(winner, loser)
   winner.container.classList.add("winner");
   loser.container.classList.add("loser");
   document.getElementById("game_dash").classList.add("game_over");
