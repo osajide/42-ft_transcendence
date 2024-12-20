@@ -113,7 +113,7 @@ const icons = {
 };
 
 window.addEventListener("resize", () => {
-  if (window.innerWidth < 768) {
+  if (window.innerWidth < 767) {
     const profile_img = document.querySelector(
       '[for="profile"]:not([tabindex="0"])'
     );
@@ -1200,7 +1200,8 @@ const updateUrl = (path = "/", mode = "", targetId = "") => {
     app.appendChild(header);
     app.appendChild(components["notification"]());
     background.classList.add("myblur");
-    if (window_width >= 767) {
+    if (window.innerWidth >= 767) {
+      console.log('ss')
       const profile_img = header.querySelector('[for="menu"]');
       profile_img.setAttribute("for", "profile");
     }
