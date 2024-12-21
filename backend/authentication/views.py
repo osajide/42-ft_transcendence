@@ -217,7 +217,7 @@ class LogoutView(APIView):
         print("Refresh Token:", refresh_token)
 
         # Prepare the response and delete the cookies
-        response = Response()
+        response = Response({'message': 'Logged out successfully'}, status=200)
         
         # Delete the access and refresh token cookies
         response.delete_cookie('access_token')
@@ -226,9 +226,6 @@ class LogoutView(APIView):
         token = RefreshToken(refresh_token)
         token.blacklist()
        
-        response.data = {
-            'message': 'Logged out successfully'
-        }
         
         return response
     
