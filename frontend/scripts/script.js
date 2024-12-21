@@ -319,6 +319,7 @@ const components = {
   },
   header: function () {
     let header = document.createElement("header");
+    header.classList.add('d-flex')
     header.innerHTML = /*html*/ `
 			<label class="img_label" for="">
 				<img id="logo" src="./assets/42.svg" alt="logo" />
@@ -457,7 +458,7 @@ const components = {
   warning: function (msg, type) {
     if (type != "game")
       return /* html */ `
-      <div onclick="removeElement(this)" class="warn ${type}" tabindex="0">${
+      <div onclick="removeElement(this)" class="warn ${type} d-flex" tabindex="0">${
         icons[type + "Icon"]
       }<p>${msg}</p></div>
     `;
@@ -563,7 +564,7 @@ const components = {
     not.innerHTML = /* html */ `
         <input id="notToggler" type="checkbox" class="hide togglers">
         <label for="notToggler" tabindex="0"><small id="notifier" class="notiBubble hide"></small>${icons["notIcon"]}</label>
-        <div id="notiList"></div>
+        <div id="notiList" class="d-flex"></div>
     `;
     return not;
   },
@@ -576,7 +577,7 @@ const components = {
     }_${noti.sender.first_name}_${noti.sender.id}_${noti.id}"/>
     <label for="${noti.type}_${noti.sender.first_name}_${noti.sender.id}_${
       noti.id
-    }" class="notiLabel" tabindex="0">
+    }" class="notiLabel d-flex" tabindex="0">
       <img src="${
         "./assets/avatars/" + noti.sender.avatar.replace("/", "")
       }" alt="${noti.sender.first_name}"/>
@@ -860,7 +861,7 @@ function closeDiv(e, name) {
 const pages = {
   "/": {
     data: /*html*/ `
-			<section id="page">
+			<section id="page" class="d-flex">
 			<label class="img_label" for="/">
 				<img id="logo" src="./assets/42.svg" alt="logo" />
 			</label>
@@ -868,7 +869,7 @@ const pages = {
 			<h1>JOIN - CHAT - PLAY</h1>
 			<p>Join us - Chat with your friends - Play!</p>
 		</section>
-		<section class="indent">
+		<section class="indent d-flex">
 			<label for="signin" class="button">Sign in</label>
 			<label for="loginin" class="button">Login</label>
 			<span></span>
