@@ -5,7 +5,7 @@ from authentication.models import UserAccount
 
 class Tournament(models.Model):
 
-    name = models.CharField(max_length=20, unique=True)
+    # name = models.CharField(max_length=20, unique=True)
     start_date = models.DateTimeField(auto_now_add=True)
     participants = models.ManyToManyField(UserAccount, related_name="particapents", through='Tournament_Particapent')
     size = models.IntegerField(default=8)

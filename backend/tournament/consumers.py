@@ -248,9 +248,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
         users_states[tournament_id][winner_id[1]] += 1
         if users_states[tournament_id][winner_id[1]] == 4:
-            print("TOURNAMENT WINNER : ", users_states[tournament_id][winner_id[1]])
-        else:
-            print("winner : ", [winner_id[1],  users_states[tournament_id][winner_id[1]]])  
+            print("TOURNAMENT WINNER : ", winner_id[1])
+        print("winner : ", [winner_id[1],  users_states[tournament_id][winner_id[1]]])  
         if len(player_pos[tournament_id]) > 1:
 
             players = []
@@ -266,6 +265,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                         i += 1
                 if (i == 2):
                     print("FINAAAAAL")
+                    
             else:
                 for player in  player_pos[tournament_id]:
                     print(f"player position : {player_pos[tournament_id][player]} , and player id {player}")
@@ -279,7 +279,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send(self.group_name,
             {
                 'type' : 'send_winner',
-                'game_winner' : [winner_id[1],  users_states[tournament_id][winner_id[1]]]
+                'game_winner' : [winner_id[1],  users_states[tournament_id][winner_id[1]], winner_id[0]]
             })
         
         if i == 2:
@@ -295,11 +295,12 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 })
             
         if users_states[tournament_id][winner_id[1]] == 4:
-            users.pop(tournament_id)
-            Tournament.create.objects(winner=winner_id[0])
-            player_pos.pop(tournament_id)
-            users_states[tournament_id][winner_id[1]] += 1
-            users_states.pop(tournament_id)
+            print("TOURNAMENT WINNER : ", winner_id[1])
+            # users.pop(tournament_id)
+            await sync_to_async(Tournament.objects.create)(winner=winner_id[1])
+            # del player_pos[tournament_id]
+            # users_states[tournament_id][winner_id[1]] += 1
+            # del users_states[tournament_id]
             print("TOURNAMENT ENDED")
             print("RESET TOURNAMENT")
             await self.channel_layer.group_send('notification',
@@ -307,7 +308,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     'type' : 'update_tournament',
                     'user_id' : self.scope['user'].id,
                     'id' : tournament_id,
-                    'value' : -8
+                    'value' : -8,
+                    'state' : 'connected'
                 })
     
     async def 	send_winner(self, event):
@@ -325,7 +327,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
        
 
 
-        if len(users[tournament_id]) < 8:
+        if tournament_id in users and len(users[tournament_id]) < 8:
             if self.scope['user'].id in users_states[tournament_id]:
                 users_states[tournament_id].pop(self.scope['user'].id, None)
             if self in users[tournament_id]:

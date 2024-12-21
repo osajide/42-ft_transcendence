@@ -22,7 +22,7 @@ const removeElement = (e) => {
 };
 
 const raiseWarn = (msg, type = "error") => {
-  console.log(msg)
+  // console.log(msg)
   raiseWarn.timers = []
   errors.innerHTML += components.warning(msg, type);
   let self = document.getElementsByClassName("warn");
@@ -59,7 +59,7 @@ const fetchWithToken = async (url, endpoint, method, body = null) => {
   loader.classList.remove("show");
 
   if (response.ok) data = await response.json();
-  console.log(data)
+  // console.log(data)
   // console.log(data, endpoint, data.error);
   if (response.status === 401) {
     const refreshResponse = await fetch(`${url}/api/refresh/`, {
@@ -238,7 +238,7 @@ function notified(e) {
   const notifier = document.getElementById("notifier");
   const notContainer = document.getElementById("notiList");
   const data = JSON.parse(e.data);
-  console.log(data);
+  // console.log(data);
   if (data.error) {
     return raiseWarn(data.error);
   } else if (data.game_id !== undefined) {
@@ -265,7 +265,6 @@ function makeSocket(endpoint, socketMethod) {
   const socket = new WebSocket(`ws://${glob_endp.split("/")[2]}/${endpoint}`);
   if (endpoint) makeSocket.latest.push(socket);
   socket.onerror = (event) => {
-    console.log(event)
     return raiseWarn(event);
   };
 
@@ -276,10 +275,19 @@ function makeSocket(endpoint, socketMethod) {
   socket.onmessage = socketMethod;
 
   socket.onclose = function (event) {
-    if (makeSocket.latest.length) {
-      // makeSocket.latest[makeSocket.latest.length - 1].close();
-      makeSocket.latest.pop();
+    if (event.target.url.indexOf('tournament') > -1) {
+      closeSockets()
+      if (startGame.timer) {
+        clearTimeout(startGame.timer)
+        startGame.timer = undefined
+      }
+      if (startGame.tournamentSocket)
+        startGame.tournamentSocket = undefined
+      tournamentInfo.wins = undefined
+      tournamentInfo.matches = undefined
     }
+    else if (event.target.url.indexOf('game') > -1)
+      makeSocket.latest.pop();
     console.log("WebSocket is closed now.");
   };
   return socket;
@@ -453,7 +461,6 @@ const components = {
         "remove",
       ],
     };
-    console.log(user)
     return /* html */ `
 		<section id="userProfile">
     ${Object.keys(user).length
@@ -793,9 +800,9 @@ async function checkUser(endpoint) {
 }
 
 function logout(e) {
-  if (e) { 
+  if (e) {
     e.preventDefault();
-    const resp = fetchWithToken(glob_endp, )
+    const resp = fetchWithToken(glob_endp,)
   }
   localStorage.removeItem("user_data");
   user_data = undefined;
@@ -1073,7 +1080,6 @@ function listen(id, change, endpoint, compo) {
           `${endpoint}${e.target.value}/`
         );
         if (response == "Error") return;
-        console.log(response)
         data = response;
         // response.user = response;
         // data = response;
@@ -1149,7 +1155,10 @@ const loadResources = (path) => {
 
 function closeSockets() {
   while (makeSocket.latest.length) {
-    makeSocket.latest[makeSocket.latest.length - 1].close();
+    try {
+      makeSocket.latest[makeSocket.latest.length - 1].close();
+    }
+    catch (e) { }
     makeSocket.latest.pop();
   }
 }

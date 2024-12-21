@@ -113,7 +113,7 @@ function gameOver(game) {
   const loser =
     game.playerPaddle.id == winner.id ? game.oppoPaddle : game.playerPaddle;
 
-  console.log(winner.id, loser.id)
+  console.log("My stats ", winner.id, loser.id)
   winner.container.classList.add("winner");
   loser.container.classList.add("loser");
   if (document.getElementById("game_dash"))
@@ -138,7 +138,7 @@ function gameOver(game) {
         )
           pos = index;
       });
-      console.log({
+      console.log("My winner ", {
         winner: [pos, winner.id],
       });
       startGame.tournamentSocket.send(
@@ -146,10 +146,11 @@ function gameOver(game) {
           winner: [pos, winner.id],
         })
       );
-      // let timer = setTimeout(() => {
-      //   playTournament(-1);
-      //   clearTimeout(timer);
-      // }, 5000);
+      let timer = setTimeout(() => {
+        playTournament(-1);
+        fillTournament(tournamentInfo.matches)
+        clearTimeout(timer);
+      }, 5000);
     } else {
       let timer = setTimeout(() => {
         updateUrl("games", "");
@@ -161,7 +162,7 @@ function gameOver(game) {
 
 function server(e, mypong) {
   data = JSON.parse(e.data);
-  console.log(data);
+  // console.log(data);
   if (data.start) {
     mypong.ball.moves = data.start;
     resetBall(mypong);
@@ -250,7 +251,6 @@ function server(e, mypong) {
 
 function Game(x, y, color, endpoint = "", maxScore) {
   const savedColor = localStorage.getItem('my_color')
-  console.log(savedColor)
   this.canvas = document.getElementById("game_canvas");
   this.socket = makeSocket(endpoint, (event) => {
     server(event, this);
@@ -485,52 +485,96 @@ function startGame(id) {
     document.getElementById("game_dash").classList.add("rotate_stats");
 }
 
+function fillTournament(arr) {
+  let cont = document.getElementsByClassName("tournament");
+  for (let i = 0; i < cont.length; i++) {
+    arr[i].map((el, index) => {
+      const img = cont[i]
+        .querySelector(".player_img" + (index + 1));
+      img.setAttribute(
+        "src",
+        "../assets/avatars/" + el.avatar.replace("/", "")
+      );
+      img.parentElement.setAttribute('data-nickname', el.nickname.replaceAll('_', ' '))
+      const isWinner = tournamentInfo.wins[i].indexOf(el)
+      if (isWinner > -1) {
+        let sibling = img.parentElement.nextElementSibling
+        if (isWinner % 2)
+          sibling = img.parentElement.previousElementSibling
+        sibling.classList.add('cry')
+      }
+    });
+    tournamentInfo.wins[i].map((el) => {
+      index = 7
+      if (el[1] < 3)
+        index = tournamentInfo.matches[i].indexOf(el[0]) < 2 ? 5 : 6;
+      const img = cont[i]
+        .querySelector(".player_img" + index);
+      img.setAttribute(
+        "src",
+        "../assets/avatars/" + el[0].avatar.replace("/", "")
+      );
+      img.parentElement.setAttribute('data-nickname', el[0].nickname.replaceAll('_', ' '))
+      if (el[1] == 4)
+        img.parentElement.classList.add('laugh')
+    })
+  }
+}
+
 function tournamentInfo(e) {
   const data = JSON.parse(e.data);
-  console.log(data);
+  // console.log(data);
   if (data.locked) {
     loader.classList.add("hide");
     loader.classList.remove("show");
-    let cont = document.getElementsByClassName("tournament");
-    for (let i = 0; i < cont.length; i++) {
-      data.locked[i].map((el, index) => {
-        const img = cont[i]
-          .querySelector(".player_img" + (index + 1));
-        img.setAttribute(
-          "src",
-          "../assets/avatars/" + el.avatar.replace("/", "")
-        );
-        img.parentElement.setAttribute('data-nickname', el.nickname.replaceAll('_', ' '))
-      });
-    }
+    fillTournament(data.locked)
     if (!tournamentInfo.matches.length) tournamentInfo.matches = data.locked;
   } else if (data.game_index !== undefined) {
     clearTimeout(startGame.timer)
+    startGame.timer = undefined
     loader.classList.add("hide");
     loader.classList.remove("show");
-    // raiseWarn("Your game is about to start", "alert");
-    startGame(data.game_index);
+    raiseWarn("Your game is about to start", "alert");
+    stop = 0
+    if (tournamentInfo.matches.length)
+      stop = 5000
+    let timer = setTimeout(() => {
+      // if (!tournamentInfo.wins[0].length && !tournamentInfo.wins[1].length)
+      startGame(data.game_index);
+      clearTimeout(timer)
+    }, stop)
+  }
+  else if (data.winner) {
+    const pos = data.winner[2];
+    data.winner[0] = tournamentInfo.matches[pos].filter(a => { return a.id == data.winner[0] })[0]
+    tournamentInfo.wins[pos].push(data.winner)
+    if (document.querySelector('.tournament'))
+      fillTournament(tournamentInfo.matches)
   }
 }
 
 function playTournament(endpoint) {
   let socket;
-  if (!tournamentInfo.matches) tournamentInfo.matches = [];
+  if (endpoint !== -1) {
+    tournamentInfo.matches = [];
+    tournamentInfo.wins = [[], []]
+  }
   else socket = startGame.tournamentSocket;
   if (endpoint != -1) {
     loader.classList.add("show");
     loader.classList.remove("hide");
   }
-  if (!startGame.tournamentSocket) {
+  if (endpoint !== -1) {
     socket = makeSocket(`tournament/${endpoint}`, tournamentInfo);
     startGame.tournamentSocket = socket;
   }
-  // if (endpoint != -1) {
-  //   startGame.timer = setTimeout(() => {
-  //     updateUrl('games', '')
-  //     clearTimeout(startGame.timer)
-  //   }, 20000);
-  // }
+  if (endpoint != -1) {
+    startGame.timer = setTimeout(() => {
+      updateUrl('games', '')
+      clearTimeout(startGame.timer)
+      startGame.timer = undefined
+    }, 20000);
+  }
   const board = /* html */ `
     <div class="tournament">
       <div class="player_card" data-nickname="loading"><img src="../assets/avatars/user.svg" class="player_img player_img1"/></div>
