@@ -31,7 +31,7 @@ class GetAuthCode(APIView):
 def register_new_user(user_data):
 
     print("USER EMAIL :", user_data['email'])
-    user = UserAccount.objects.get(email=user_data['email'])
+    user = UserAccount.objects.filter(email=user_data['email']).exists()
 
     if not user:
 
@@ -44,9 +44,11 @@ def register_new_user(user_data):
         user = UserAccount.objects.create(email=user_data['email'], first_name=user_data['first_name'], last_name=user_data['last_name'])
         user.set_unusable_password()
         user.is_42 = True
+        user.is_2fa_verified = True
         user.save()
     else:
         print("ALREADY REGISTRED")
+        user = UserAccount.objects.get(email=user_data['email'])
         if user.is_42 == False:
             return ({'error': 'email already in use for login.'})
 
@@ -101,13 +103,13 @@ class OAuthCallback(APIView):
         if 'error' in result:
             return Response({'error': 'email already in use for login.'})
         
-        serializer = UserSerializer(result['user'])
+
        
         
-        print("user data : ", serializer.data)
         
         serializer = UserSerializer(result['user'])
         serialized_data = serializer.data  
+        print("user data : ", serialized_data)
     
         serialized_data_str = json.dumps(serialized_data)
         serialized_data_safe = quote_plus(serialized_data_str)

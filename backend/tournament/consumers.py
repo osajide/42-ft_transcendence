@@ -145,7 +145,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         i = 0
         j = 0
 
-        
+        print("MATCH MAKING")
+        print("===================================> indexes : ", indexes)
         if len(indexes) == 4:
             if self == users[tournament_id][0]:
                 print("SEND USERS DATA TO ALL USERS")         
@@ -191,6 +192,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                         arr.append(user)
             
             if (len(arr) == 2):
+                print('Rak hna: ', self.scope['user'].id)
                 listed_users = []
                 for user in users[tournament_id]: 
                     if (user.scope['user'].id == arr[0]) or (user.scope['user'].id == arr[1]):
@@ -256,8 +258,8 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         
         
         if winner_id[1] not in player_pos[tournament_id]:
-            print(f"SET PLAYER {self.scope['user'].id} POSITION")
             player_pos[tournament_id][winner_id[1]] = winner_id[0]
+            print(f"SET PLAYER {self.scope['user'].id} POSITION ", player_pos[tournament_id][winner_id[1]])
 
         users_states[tournament_id][winner_id[1]] += 1
         if users_states[tournament_id][winner_id[1]] == 4:
@@ -271,7 +273,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             print("PLAYERS POSITIONS ============= ", player_pos[tournament_id])
             
             if users_states[tournament_id][winner_id[1]] == 3:
-                print("FINALS CHECK")
+                print("FINALS CHECK ", self.scope['user'].id)
                 for player in  player_pos[tournament_id]:
                     if users_states[tournament_id][player] == 3:
                         players.append(player)
@@ -283,7 +285,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 for player in  player_pos[tournament_id]:
                     print(f"player position : {player_pos[tournament_id][player]} , and player id {player}")
 
-                    if (player_pos[tournament_id][player] == winner_id[0]) and (users_states[tournament_id][player] == users_states[tournament_id][self.scope['user'].id]):
+                    if (player_pos[tournament_id][player] == winner_id[0]) and tournament_id in users_states and (users_states[tournament_id][player] == users_states[tournament_id][winner_id[1]]):
                         print(f"MATCHED PLAYER {player} THAT HAS {users_states[tournament_id][player] - 1} WINS")
                         players.append(player)
                         i += 1
@@ -331,7 +333,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                     'user_id' : self.scope['user'].id,
                     'id' : tournament_id,
                     'value' : -8,
-                    'state' : 'connected'
+                    'state' : 'disconnect'
                 })
     
     async def 	send_winner(self, event):
@@ -350,12 +352,12 @@ class TournamentConsumer(AsyncWebsocketConsumer):
 
 
         
-        if self.scope['user'].id in users_states[tournament_id]:
+        if tournament_id in users_states and self.scope['user'].id in users_states[tournament_id]:
             users_states[tournament_id].pop(self.scope['user'].id, None)
-        if self in users[tournament_id]:
+        if tournament_id in users and self in users[tournament_id]:
             users[tournament_id].remove(self)
             print("POPPED USER OBJECT FROM TOURNAMENT")
-        if len(users[tournament_id]) == 0:
+        if tournament_id in users and len(users[tournament_id]) == 0:
             print("Tournament POPPED")
             users.pop(tournament_id)
             users_states.pop(tournament_id)

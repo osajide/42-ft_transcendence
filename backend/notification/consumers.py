@@ -16,7 +16,7 @@ tournaments = []
 user_index = {}
 users_and_games = {}
 connected = []
-users =[]
+users = {}
 
 @database_sync_to_async
 def get_notifications(id):
@@ -132,6 +132,8 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 			if self.scope['user'].id not in user_index:
 				user_index[self.scope['user'].id] = []
 			user_index[self.scope['user'].id] = index
+			if index not in users:
+				users[index] = []
 			print("notf array: ", user_index)
 			print(f"tournament : {index} => {tournaments[index]}")
 			await self.send(json.dumps(
@@ -142,8 +144,11 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 
 	async def 	update_tournament(self, event):
 		
-		if (event['user_id'] == self.scope['user'].id and self.scope['user'].id not in users):
-			users.append(self.scope['user'].id) 
+		if (event['user_id'] == self.scope['user'].id):
+			if event['state']  == 'connected' and self.scope['user'].id not in users[event['id']]:
+				users[event['id']].append(self.scope['user'].id) 
+			elif event['state']  == 'disconnect' and self.scope['user'].id in users[event['id']]:
+				users[event['id']].remove(self.scope['user'].id)
 			print("UPDATE TOURNAMENT")
 			print("user state : ", event['state'])
 			tournaments[event['id']] = chr(ord(tournaments[event['id']]) + event['value'])
@@ -169,6 +174,7 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 			indexes.append(index)
 			i += 1
 		redis_client.set('max_games', len(games))
+		print("indexes : ", indexes)
 		await self.channel_layer.group_send(event['tournament_group'], 
             {
                 'type' : 'match_making',   

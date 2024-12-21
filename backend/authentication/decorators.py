@@ -10,6 +10,8 @@ def two_fa_required(view_func):
     def wrapper(request, *args, **kwargs):
         print("TWOFA CHECK")
         raw_token = request.COOKIES.get('access_token')
+        
+        print('hahowa dkhl: ', raw_token)
         if raw_token is None:
             print("Access token not found")
             return JsonResponse({"error": "Acces token not provided."}, status=403)
@@ -17,6 +19,6 @@ def two_fa_required(view_func):
         user = get_object_or_404(UserAccount, pk__in=user_id)
         # print("username : ", user.first_name)
         if (user.is_2fa_verified == False):
-             return Response({"error": "2FA not verified. Please complete 2FA to proceed."}, status=403)
+             return JsonResponse({"error": "2FA not verified. Please complete 2FA to proceed."}, status=403)
         return view_func(request, *args, **kwargs)
     return wrapper

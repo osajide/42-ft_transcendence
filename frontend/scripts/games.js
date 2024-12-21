@@ -118,7 +118,7 @@ function gameOver(game, game_stats = undefined) {
     loser.container.querySelector(".score").innerHTML = loser.score
   }
 
-  console.log("My stats ", winner.id, loser.id)
+  // console.log("My stats ", winner.id, loser.id)
   winner.container.classList.add("winner");
   loser.container.classList.add("loser");
 
@@ -126,7 +126,7 @@ function gameOver(game, game_stats = undefined) {
     document.getElementById("game_dash").classList.add("game_over");
 
   let sleeper = setTimeout(() => {
-    if (!game_stats)
+    if (!game_stats && game.socket.readyState == 1) {
       game.socket.send(
         JSON.stringify({
           stats: {
@@ -135,6 +135,7 @@ function gameOver(game, game_stats = undefined) {
           },
         })
       );
+    }
     clearTimeout(sleeper)
     if (startGame.tournamentSocket) {
       pos = 0;
@@ -146,9 +147,13 @@ function gameOver(game, game_stats = undefined) {
         )
           pos = index;
       });
-      console.log("My winner ", {
-        winner: [pos, winner.id],
-      });
+      // console.log("My winner ", {
+      //   winner: [pos, winner.id],
+      // });
+      console.log({
+        winner: { id: winner.id, score: winner.score },
+        loser: { id: loser.id, score: loser.score },
+      })
       startGame.tournamentSocket.send(
         JSON.stringify({
           winner: [pos, winner.id],
@@ -170,7 +175,7 @@ function gameOver(game, game_stats = undefined) {
 
 function server(e, mypong) {
   data = JSON.parse(e.data);
-  console.log(data, e);
+  // console.log(data, e);
   if (data.start) {
     mypong.ball.moves = data.start;
     resetBall(mypong);
@@ -253,7 +258,7 @@ function server(e, mypong) {
     }
     else {
       stats = JSON.parse(data.game_over)
-      console.log(data.game_over, stats)
+      // console.log(data.game_over, stats)
     }
     if (!mypong.close) {
       mypong.close = 1
@@ -511,7 +516,7 @@ function fillTournament(arr) {
         );
         img.parentElement.setAttribute('data-nickname', el.nickname.replaceAll('_', ' '))
         const isWinner = tournamentInfo.wins[i].filter(a => { return a[0].id == el.id })
-        console.log(isWinner)
+        // console.log(isWinner)
         if (isWinner.length) {
           img.parentElement.classList.add('smile')
           let v = 1;
@@ -543,10 +548,16 @@ function fillTournament(arr) {
         }
         const nickname = cont[i]
           .querySelector(".player_img7").parentElement.getAttribute('data-nickname')
-          console.log(nickname, el[0])
-        if (nickname !== 'loading' && el[0].nickname.replaceAll(' ', '_') == nickname) {
-          img.parentElement.classList.add('smile')
-          img.parentElement.classList.remove('cry')
+        if (nickname !== 'loading') {
+          if (el[0].nickname.replaceAll('_', ' ') == nickname && el[1] == 3) {
+            console.log(nickname, nickname== el[0].nickname.replaceAll('_', ' '), el[1])
+            let to_change = cont[i].querySelector(".player_img6").parentElement
+            if (to_change.getAttribute('data-nickname') != nickname)
+              to_change = cont[i].querySelector(".player_img5").parentElement
+            console.log(to_change)
+            to_change.classList.add('smile')
+            to_change.classList.remove('cry')
+          }
         }
       })
     }
@@ -555,7 +566,7 @@ function fillTournament(arr) {
 
 function tournamentInfo(e) {
   const data = JSON.parse(e.data);
-  // console.log(data);
+  console.log(data);
   if (data.locked) {
     loader.classList.add("hide");
     loader.classList.remove("show");
@@ -581,8 +592,8 @@ function tournamentInfo(e) {
     data.winner[0] = tournamentInfo.matches[pos].filter(a => { return a.id == data.winner[0] })[0]
     tournamentInfo.wins[pos].push(data.winner)
     if (document.querySelector('.tournament'))
-      console.log(tournamentInfo.wins)
-    fillTournament(tournamentInfo.matches)
+      // console.log(tournamentInfo.wins)
+      fillTournament(tournamentInfo.matches)
   }
 }
 
