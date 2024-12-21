@@ -100,6 +100,7 @@
 
     .player_card {
       height: 14%;
+      // overflow: hidden;
       aspect-ratio: 1 / 1;
       border: 3px solid #00bcbc;
       border-radius: 7px;
@@ -125,6 +126,7 @@
       width: 100%;
       height: auto;
       object-fit: cover;
+      border-radius: 7px;
     }
 
     &:first-child {
@@ -143,10 +145,10 @@
         }
       }
 
-      & > .laugh{
-        left: 100%;
-        transform: translate(-50%, -50%);
-      }
+      // & > .laugh{
+      //   left: 100%;
+      //   transform: translate(-50%, -50%);
+      // }
     }
 
     &:last-child {
@@ -179,10 +181,10 @@
         left: unset;
       }
 
-      & > .laugh{
-        left: -100%;
-        transform: translate(50%, -50%);
-      }
+      // & > .laugh{
+      //   left: -100%;
+      //   transform: translate(50%, -50%);
+      // }
     }
   }
 }
@@ -433,10 +435,6 @@
   border-color: $red;
 }
 
-.winner img, .smile {
-  border-color: $green;
-}
-
 .cry {
   border-color: $red !important;
 
@@ -452,14 +450,19 @@
   }
 }
 
+.winner img, .smile {
+  border-color: $green !important;
+}
+
 .laugh {
   border-color: #ffdf76 !important;
-  width: 200px !important;
-  height: auto !important;
-  aspect-ratio: 1 / 1;
-  position: absolute !important;
-  z-index: 20;
-  top: 50% !important;
+  scale: 1.7;
+  // width: 200px !important;
+  // height: auto !important;
+  // aspect-ratio: 1 / 1;
+  // position: absolute !important;
+  // z-index: 20;
+  // top: 50% !important;
 }
 
 .tournament:has(> .laugh) {

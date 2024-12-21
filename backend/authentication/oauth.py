@@ -8,6 +8,9 @@ from rest_framework.views import APIView
 from .models import UserAccount
 from .tokens import get_tokens_for_user
 from rest_framework import status
+from .serializers import *
+import json
+from urllib.parse import quote_plus
 
 class GetAuthCode(APIView):
     def get(request, provider):
@@ -28,7 +31,7 @@ class GetAuthCode(APIView):
 def register_new_user(user_data):
 
     print("USER EMAIL :", user_data['email'])
-    user = UserAccount.objects.filter(email=user_data['email'])
+    user = UserAccount.objects.get(email=user_data['email'])
 
     if not user:
 
@@ -40,14 +43,17 @@ def register_new_user(user_data):
 
         user = UserAccount.objects.create(email=user_data['email'], first_name=user_data['first_name'], last_name=user_data['last_name'])
         user.set_unusable_password()
+        user.is_42 = True
         user.save()
     else:
-        return ({'error': 'email already in use for login.'})
+        print("ALREADY REGISTRED")
+        if user.is_42 == False:
+            return ({'error': 'email already in use for login.'})
 
     tokens = get_tokens_for_user(user)
 
     return {
-        'email': user.email,
+        'user': user,
         'access_token': tokens['access'],
         'refresh_token': tokens['refresh']
     }
@@ -61,12 +67,13 @@ class OAuthCallback(APIView):
         
         print("code =>", code)
         if code is None:
+            print('No code is provided')
             return Response({'No code is provided'})
         url = 'https://api.intra.42.fr/oauth/token'
         data = {
             "grant_type": "authorization_code",
             "client_id": 'u-s4t2ud-1619f031b401b49c5796f0b7dc500bab1bad5c24ab3c19bb97df8c83adbfc15f',
-            "client_secret": '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',
+            "client_secret": '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',
             "code": code,
             "redirect_uri" : "http://127.0.0.1:8000/api/intra/oauth/",
         }
@@ -90,16 +97,21 @@ class OAuthCallback(APIView):
 
         #in the front end you will get the access token and save it locally
         result = register_new_user(user_data)
-        print('error' in result)
+        
         if 'error' in result:
             return Response({'error': 'email already in use for login.'})
         
-
-        response =  Response({result['email']}, status=status.HTTP_201_CREATED)
+        serializer = UserSerializer(result['user'])
+       
         
-
+        print("user data : ", serializer.data)
+        
+        serializer = UserSerializer(result['user'])
+        serialized_data = serializer.data  
+    
+        serialized_data_str = json.dumps(serialized_data)
+        serialized_data_safe = quote_plus(serialized_data_str)
+        response = HttpResponseRedirect(f'http://127.0.0.1:4242/profile?data={serialized_data_safe}')
         response.set_cookie('refresh_token', result['refresh_token'], httponly=True, samesite='None', secure=True)
         response.set_cookie('access_token', result['access_token'], httponly=True, samesite='None', secure=True)
-        response = HttpResponseRedirect('http://127.0.0.1:5500/')
         return response
-

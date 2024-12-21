@@ -16,6 +16,7 @@ tournaments = []
 user_index = {}
 users_and_games = {}
 connected = []
+users =[]
 
 @database_sync_to_async
 def get_notifications(id):
@@ -141,14 +142,15 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 
 	async def 	update_tournament(self, event):
 		
-		if (event['user_id'] == self.scope['user'].id): 
+		if (event['user_id'] == self.scope['user'].id and self.scope['user'].id not in users):
+			users.append(self.scope['user'].id) 
 			print("UPDATE TOURNAMENT")
 			print("user state : ", event['state'])
 			tournaments[event['id']] = chr(ord(tournaments[event['id']]) + event['value'])
 			if (event['user_id'] in user_index) and (event['state'] == 'disconnect'):
 				print("POPPED FROM NOTIFICATION") 
 				user_index.pop(event['user_id']) 
-			print(f"tournament {event['id']} has {tournaments[event['id']]} elements")
+			print(f"========================> tournament {event['id']} has {tournaments[event['id']]} elements")
 
 	async def 	generate_games(self, event):
 		if event['user_id'] != self.scope['user'].id:

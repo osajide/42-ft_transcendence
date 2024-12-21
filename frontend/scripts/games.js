@@ -95,38 +95,46 @@ function resetBall(game) {
         mypong.ball.ballMoveY *= -1
     };
   }
-  // if (game.rev < 0) {
-  //   [game.ball.ballMoveX, game.ball.ballMoveY] = [
-  //     game.ball.ballMoveY,
-  //     game.ball.ballMoveX,
-  //   ];
-  // }
   game.ball.moves.shift();
 }
 
-function gameOver(game) {
+function gameOver(game, game_stats = undefined) {
   cancelAnimationFrame(game.frameId);
-  const winner =
+  let winner =
     game.playerPaddle.score == game.maxScore
       ? game.playerPaddle
       : game.oppoPaddle;
-  const loser =
+  let loser =
     game.playerPaddle.id == winner.id ? game.oppoPaddle : game.playerPaddle;
+  if (game_stats) {
+    winner = game.playerPaddle.id == winner.id
+      ? game.playerPaddle
+      : game.oppoPaddle;
+    loser =
+      game.playerPaddle.id == winner.id ? game.oppoPaddle : game.playerPaddle;
+    winner.score = game_stats.winner.score
+    loser.score = game_stats.loser.score
+    winner.container.querySelector(".score").innerHTML = winner.score
+    loser.container.querySelector(".score").innerHTML = loser.score
+  }
 
   console.log("My stats ", winner.id, loser.id)
   winner.container.classList.add("winner");
   loser.container.classList.add("loser");
+
   if (document.getElementById("game_dash"))
     document.getElementById("game_dash").classList.add("game_over");
+
   let sleeper = setTimeout(() => {
-    game.socket.send(
-      JSON.stringify({
-        stats: {
-          winner: { id: winner.id, score: winner.score },
-          loser: { id: loser.id, score: loser.score },
-        },
-      })
-    );
+    if (!game_stats)
+      game.socket.send(
+        JSON.stringify({
+          stats: {
+            winner: { id: winner.id, score: winner.score },
+            loser: { id: loser.id, score: loser.score },
+          },
+        })
+      );
     clearTimeout(sleeper)
     if (startGame.tournamentSocket) {
       pos = 0;
@@ -157,12 +165,12 @@ function gameOver(game) {
         clearTimeout(timer);
       }, 5000);
     }
-  }, 3000)
+  }, 1000)
 }
 
 function server(e, mypong) {
   data = JSON.parse(e.data);
-  console.log(data);
+  console.log(data, e);
   if (data.start) {
     mypong.ball.moves = data.start;
     resetBall(mypong);
@@ -238,13 +246,18 @@ function server(e, mypong) {
     );
     opp.firstElementChild.firstElementChild.innerHTML = data.opponent.nickname.replaceAll('_', ' ')
   } else if (data.game_over != undefined) {
-    if (data.game_over.length) {
+    let stats = undefined
+    if (data.game_over == 'salam') {
       mypong.oppoPaddle.score = -1;
       mypong.maxScore = mypong.playerPaddle.score;
     }
+    else {
+      stats = JSON.parse(data.game_over)
+      console.log(data.game_over, stats)
+    }
     if (!mypong.close) {
       mypong.close = 1
-      gameOver(mypong);
+      gameOver(mypong, stats);
     }
   }
 }
@@ -488,37 +501,55 @@ function startGame(id) {
 function fillTournament(arr) {
   let cont = document.getElementsByClassName("tournament");
   for (let i = 0; i < cont.length; i++) {
-    arr[i].map((el, index) => {
-      const img = cont[i]
-        .querySelector(".player_img" + (index + 1));
-      img.setAttribute(
-        "src",
-        "../assets/avatars/" + el.avatar.replace("/", "")
-      );
-      img.parentElement.setAttribute('data-nickname', el.nickname.replaceAll('_', ' '))
-      const isWinner = tournamentInfo.wins[i].indexOf(el)
-      if (isWinner > -1) {
-        img.parentElement.classList.add('smile')
-        let sibling = img.parentElement.nextElementSibling
-        if (isWinner % 2)
-          sibling = img.parentElement.previousElementSibling
-        sibling.classList.add('cry')
-      }
-    });
-    tournamentInfo.wins[i].map((el) => {
-      index = 7
-      if (el[1] < 3)
-        index = tournamentInfo.matches[i].indexOf(el[0]) < 2 ? 5 : 6;
-      const img = cont[i]
-        .querySelector(".player_img" + index);
-      img.setAttribute(
-        "src",
-        "../assets/avatars/" + el[0].avatar.replace("/", "")
-      );
-      img.parentElement.setAttribute('data-nickname', el[0].nickname.replaceAll('_', ' '))
-      if (el[1] == 4)
-        img.parentElement.classList.add('laugh')
-    })
+    if (arr) {
+      arr[i].map((el, index) => {
+        const img = cont[i]
+          .querySelector(".player_img" + (index + 1));
+        img.setAttribute(
+          "src",
+          "../assets/avatars/" + el.avatar.replace("/", "")
+        );
+        img.parentElement.setAttribute('data-nickname', el.nickname.replaceAll('_', ' '))
+        const isWinner = tournamentInfo.wins[i].filter(a => { return a[0].id == el.id })
+        console.log(isWinner)
+        if (isWinner.length) {
+          img.parentElement.classList.add('smile')
+          let v = 1;
+          if (index % 2)
+            v = -1
+          let sibling = cont[i].querySelector(".player_img" + (index + 1 + v))
+          sibling = sibling.parentElement
+          sibling.classList.add('cry')
+        }
+      });
+      tournamentInfo.wins[i].map((el) => {
+        index = 7
+        if (el[1] < 3)
+          index = tournamentInfo.matches[i].indexOf(el[0]) < 2 ? 5 : 6;
+        let img = cont[i]
+          .querySelector(".player_img" + index);
+        img.setAttribute(
+          "src",
+          "../assets/avatars/" + el[0].avatar.replace("/", "")
+        );
+        img.parentElement.setAttribute('data-nickname', el[0].nickname.replaceAll('_', ' '))
+        if (el[1] == 4)
+          img.parentElement.classList.add('laugh')
+
+        else if (el[1] == 3 && tournamentInfo.wins[i].length == 3 && tournamentInfo.wins[(i == 1 ? 0 : 1)].length == 4)
+          img.parentElement.classList.add('cry')
+        else if (el[1] == 2 && tournamentInfo.wins[i].length >= 3) {
+          img.parentElement.classList.add('cry')
+        }
+        const nickname = cont[i]
+          .querySelector(".player_img7").parentElement.getAttribute('data-nickname')
+          console.log(nickname, el[0])
+        if (nickname !== 'loading' && el[0].nickname.replaceAll(' ', '_') == nickname) {
+          img.parentElement.classList.add('smile')
+          img.parentElement.classList.remove('cry')
+        }
+      })
+    }
   }
 }
 
@@ -550,7 +581,8 @@ function tournamentInfo(e) {
     data.winner[0] = tournamentInfo.matches[pos].filter(a => { return a.id == data.winner[0] })[0]
     tournamentInfo.wins[pos].push(data.winner)
     if (document.querySelector('.tournament'))
-      fillTournament(tournamentInfo.matches)
+      console.log(tournamentInfo.wins)
+    fillTournament(tournamentInfo.matches)
   }
 }
 
@@ -574,7 +606,7 @@ function playTournament(endpoint) {
       updateUrl('games', '')
       clearTimeout(startGame.timer)
       startGame.timer = undefined
-    }, 20000);
+    }, 120000);
   }
   const board = /* html */ `
     <div class="tournament">

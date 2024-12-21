@@ -246,7 +246,7 @@ function notified(e) {
   const notifier = document.getElementById("notifier");
   const notContainer = document.getElementById("notiList");
   const data = JSON.parse(e.data);
-  // console.log(data);
+  console.log(data);
   if (data.error) {
     return raiseWarn(data.error);
   } else if (data.game_id !== undefined) {
@@ -290,8 +290,11 @@ function makeSocket(endpoint, socketMethod) {
         startGame.timer = undefined;
       }
       if (startGame.tournamentSocket) startGame.tournamentSocket = undefined;
-      tournamentInfo.wins = undefined;
-      tournamentInfo.matches = undefined;
+      let wait = setTimeout(() => {
+        tournamentInfo.wins = undefined;
+        tournamentInfo.matches = undefined;
+        clearTimeout(wait)
+      }, 300);
     } else if (event.target.url.indexOf("game") > -1) makeSocket.latest.pop();
     console.log("WebSocket is closed now.");
   };

@@ -51,6 +51,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         max_len = int(redis_client.get("tournament_len").decode())
 
         if tournament_id >= max_len or tournament_id < 0:
+            print("TOURNAMENT NOT FOUND")
             await self.send(text_data=json.dumps({
                     'error' : 'Tournament not found'
                 }))
@@ -65,6 +66,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         users_states[tournament_id][self.scope['user'].id] = 1
 
         if (len(users[tournament_id]) == 8):
+            print('error : Tournament is Full')
             await self.send(text_data=json.dumps({
                     'error' : 'Tournament is Full'
                 }))
@@ -74,6 +76,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
         
         user = await sync_to_async(UserAccount.objects.get)(id=self.scope['user'].id)
         if user.user_state == "in_game":
+            print("user already in game")
             await self.send(text_data=json.dumps({
                     'error' : 'User already joined an existing tournament'
                 }))
@@ -121,7 +124,7 @@ class TournamentConsumer(AsyncWebsocketConsumer):
                 {
                     # 'users' : final_pairs
                     'type' : 'users_list',
-                    'users' : final_pairs
+                    'users' : final_pairs,
                 })
             await self.channel_layer.group_send('notification',
                 {
@@ -209,6 +212,16 @@ class TournamentConsumer(AsyncWebsocketConsumer):
     
 
     async def	users_list(self, event):
+        
+        if 'state' in event:
+            state = event["state"]
+            if state == "disconnect":
+                print("========= USER CLOSE CONNECTION IN TOURNAMENT END")
+                await self.close()
+                return
+
+        
+        
         await self.send(text_data=json.dumps({
                 # 'users' : final_pairs
                 'locked' : event['users']
@@ -296,11 +309,20 @@ class TournamentConsumer(AsyncWebsocketConsumer):
             
         if users_states[tournament_id][winner_id[1]] == 4:
             print("TOURNAMENT WINNER : ", winner_id[1])
-            # users.pop(tournament_id)
+            users.pop(tournament_id)
+            if tournament_id not in users:
+                print("TOURNAMENT POPPED WHEN TOURNAMENT ENDS")
+            else:
+                print("TOURNAMENT NOT POPPED")
             await sync_to_async(Tournament.objects.create)(winner=winner_id[1])
-            # del player_pos[tournament_id]
-            # users_states[tournament_id][winner_id[1]] += 1
-            # del users_states[tournament_id]
+            del player_pos[tournament_id]
+            del users_states[tournament_id]
+            await self.channel_layer.group_send(self.group_name,
+                {
+                    # 'users' : final_pairs
+                    'type' : 'users_list',
+                    'state' : 'disconnect'
+                })
             print("TOURNAMENT ENDED")
             print("RESET TOURNAMENT")
             await self.channel_layer.group_send('notification',
@@ -327,17 +349,26 @@ class TournamentConsumer(AsyncWebsocketConsumer):
        
 
 
-        if tournament_id in users and len(users[tournament_id]) < 8:
-            if self.scope['user'].id in users_states[tournament_id]:
-                users_states[tournament_id].pop(self.scope['user'].id, None)
-            if self in users[tournament_id]:
-                users[tournament_id].remove(self)
-                print("POPPED USER OBJECT FROM TOURNAMENT")
-            if len(users[tournament_id]) == 0:
-                print("Tournament POPPED")
-                users.pop(tournament_id)
-                users_states.pop(tournament_id)
-
+        
+        if self.scope['user'].id in users_states[tournament_id]:
+            users_states[tournament_id].pop(self.scope['user'].id, None)
+        if self in users[tournament_id]:
+            users[tournament_id].remove(self)
+            print("POPPED USER OBJECT FROM TOURNAMENT")
+        if len(users[tournament_id]) == 0:
+            print("Tournament POPPED")
+            users.pop(tournament_id)
+            users_states.pop(tournament_id)
+            await self.channel_layer.group_send('notification',
+                {
+                    'type' : 'update_tournament',
+                    'user_id' : self.scope['user'].id,
+                    'id' : tournament_id,
+                    'value' : -8,
+                    'state' : 'disconnect'
+                })
+            
+        if tournament_id in users and (len(users[tournament_id]) > 0 and len(users[tournament_id]) < 8):
             await self.channel_layer.group_send('notification',
                 {
                     'type' : 'update_tournament',

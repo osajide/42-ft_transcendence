@@ -154,6 +154,7 @@
   height: auto;
   -o-object-fit: cover;
      object-fit: cover;
+  border-radius: 7px;
 }
 .tournament_board .tournament:first-child::after {
   content: "";
@@ -188,10 +189,6 @@
   bottom: calc(100% + 1rem);
   top: unset;
   transform: translateX(-50%);
-}
-.tournament_board .tournament:first-child > .laugh {
-  left: 100%;
-  transform: translate(-50%, -50%);
 }
 .tournament_board .tournament:last-child::after {
   content: "";
@@ -234,10 +231,6 @@
 .tournament_board .tournament:last-child > .pair_link {
   right: 35px;
   left: unset;
-}
-.tournament_board .tournament:last-child > .laugh {
-  left: -100%;
-  transform: translate(50%, -50%);
 }
 
 .player_data {
@@ -438,10 +431,6 @@
   border-color: #db0000;
 }
 
-.winner img, .smile {
-  border-color: #00b278;
-}
-
 .cry {
   border-color: #db0000 !important;
 }
@@ -456,14 +445,13 @@
   background-color: rgba(219, 0, 0, 0.3137254902);
 }
 
+.winner img, .smile {
+  border-color: #00b278 !important;
+}
+
 .laugh {
   border-color: #ffdf76 !important;
-  width: 200px !important;
-  height: auto !important;
-  aspect-ratio: 1/1;
-  position: absolute !important;
-  z-index: 20;
-  top: 50% !important;
+  scale: 1.7;
 }
 
 .tournament:has(> .laugh) {

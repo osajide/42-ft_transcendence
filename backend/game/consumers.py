@@ -77,7 +77,7 @@ class	GameConsumer(AsyncWebsocketConsumer):
 
 		await self.channel_layer.group_add(self.group_name, self.channel_name)
 		print(f"game before host and opponent: {games}, game id : {self.game_id}")
-		if 'host' in games[self.game_id] and games[self.game_id]['host'] is not self: # not the same user trying to connect twice
+		if 'host' in games[self.game_id] and games[self.game_id]['host'].user is not self.user: # not the same user trying to connect twice
 			print(f"this is the opponent of the game {self.scope['user']}") 
 			games[self.game_id]['opponent'] = self
 			games[self.game_id]['ready'] = 0
@@ -106,8 +106,8 @@ class	GameConsumer(AsyncWebsocketConsumer):
 	async def	receive(self, text_data=None, bytes_data=None):
 		json_text_data = json.loads(text_data)
 
-		if 'stats' in json_text_data:
-			print(f'You have received stats from : {self.user}')
+		# if 'stats' in json_text_data:
+		# 	print(f'You have received stats from : {self.user}')
 		if 'w' and 'h' and 'mobile' in json_text_data:
 			await self.channel_layer.group_send(self.group_name,
 									   {
@@ -136,46 +136,57 @@ class	GameConsumer(AsyncWebsocketConsumer):
 		elif 'stats' in json_text_data and self.game_id in games:
 			print(f'Stats sender is: {self.user}')
 			if 'stats' not in games[self.game_id]:
+				print(f'No Stats found: {self.user}')
 				games[self.game_id]['stats'] = '1'
 				print(f'{self.user} first quiter')
 				# await self.send(text_data=json.dumps({'game_over': ''}))
 				other_user = games[self.game_id]['host']
 				if other_user == self:
 					other_user = games[self.game_id]['opponent']
-				await self.channel_layer.group_send(self.group_name,
-						{
-							'type' : 'broadcast',
-							'game_over' : '',
-							'id': other_user.user.id
-						})
+				# await self.channel_layer.group_send(self.group_name,
+				# 		{
+				# 			'type' : 'broadcast',
+				# 			'game_over' : str(json_text_data['stats']),
+				# 			'id': other_user.user.id
+						# })
+				await other_user.send(text_data=json.dumps(
+					{
+						'game_over' : json.dumps(json_text_data['stats'])
+					}
+				))
+				await other_user.close(code=4998)
 				# games[self.game_id]['stats'] = '1'
 				print(f'Samaykom {self.user}:{games[self.game_id]["stats"]}')
 				await create_game_record(self, json_text_data['stats'])
 				games[self.game_id]['disconnected'].append(self)
-				await self.close()
+				await self.close(code=4999)
 			elif 'stats' in games[self.game_id]:
-				print(f'--------- {games[self.game_id]["stats"]}')
+				print(f'States were saved {games[self.game_id]["stats"]}')
 				while(await sync_to_async(Game.objects.filter(
         				(Q(player1=games[self.game_id]['host'].user) & Q(player2=games[self.game_id]['opponent'].user))
                                				| (Q(player1=games[self.game_id]['opponent'].user) & Q(player2=games[self.game_id]['host'].user))).first)() == None):
-					print('waiting....')
+					print('waiting....') 
 				print(f'{self.user.first_name} {json_text_data["stats"]}')
 				print(f'{self.user} second quiter')
-				games[self.game_id]['stats'] = '2'
+				# games[self.game_id]['stats'] = '2'
 				games[self.game_id]['disconnected'].append(self)
-				await self.close()
+				# await self.close()
 	
 	async def	broadcast(self, event):
 		if 'key' in event:
 			if not self.user.id == event['id']:
 				await self.send(text_data=json.dumps(event))
-		elif 'game_over' in event and self.user.id == event['id']:
-			if self.game_id in games and self not in games[self.game_id]['disconnected']:
-				await self.send(text_data=json.dumps(
-					{
-						'game_over' : ''
-					}
-				))
+		# elif 'game_over' in event and self.user.id == event['id']:
+		# 	print('Ha game over jat: ', self.user)
+		# 	if self.game_id in games and self not in games[self.game_id]['disconnected']:
+		# 		await self.send(text_data=json.dumps(
+		# 			{
+		# 				'game_over' : event['game_over']
+		# 			}
+		# 		))
+				# print('Safi sed: ', self.user)
+				# games[self.game_id]['stats'] = '2'
+				# await self.close()
 		else:
 			if self.game_id in games and self not in games[self.game_id]['disconnected']:
 				await self.send(text_data=json.dumps(event))
@@ -190,12 +201,25 @@ class	GameConsumer(AsyncWebsocketConsumer):
 			))
 
 	async def	disconnect(self, code):
-		print('code in game: ', code)
-		if code == 4000:
+		if code == 4000 or code == 4998:
+		#	print('code in game: ', code)
+			return
+
+		await self.channel_layer.group_discard(self.group_name, self.channel_name)
+
+		if code == 4999:
+			print(f'{self.user}:{self.user.id} sala tarh')
+			print(f'Ana f else: {self.user}')
+			games.pop(self.game_id)
+			await self.channel_layer.group_send("notification",
+									{
+										'type': 'release_game_id',
+										'index': self.game_id,
+										'user_id': self.user.id
+									})
 			return
 		
 		# await sync_to_async(self.user.update)(user_state='offline')
-		await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
 		print('*********** user in game disconnect(): ', self.user)
 		# print('gamessss in disconnect of one of them:::::>>>>>> ', games)
@@ -228,14 +252,15 @@ class	GameConsumer(AsyncWebsocketConsumer):
 						'game_over': 'salam'
 					}
 				))
-			else:
-				print(f'{self.user}:{self.user.id} sala tarh')
-				# if self.game_id in games:
-				if games[self.game_id]['stats'] == '2':
-					games.pop(self.game_id)
-					await self.channel_layer.group_send("notification",
-											{
-												'type': 'release_game_id',
-												'index': self.game_id,
-												'user_id': self.user.id
-											})
+			# else:
+			# 	print(f'{self.user}:{self.user.id} sala tarh')
+			# 	# if self.game_id in games:
+			# 	if games[self.game_id]['stats'] == '2':
+			# 		print(f'Ana f else: {self.user}')
+			# 		games.pop(self.game_id)
+			# 		await self.channel_layer.group_send("notification",
+			# 								{
+			# 									'type': 'release_game_id',
+			# 									'index': self.game_id,
+			# 									'user_id': self.user.id
+			# 								})
