@@ -17,13 +17,14 @@ games = {}
 def	create_game_record(self, stats):
 	score1 = stats['loser']['score']
 	score2 = stats['winner']['score']
+	mode = stats['mode']
 
 	if games[self.game_id]['host'].user.id == stats['winner']['id']:
 		score1 = stats['winner']['score']
 		score2 = stats['loser']['score']
 
 	Game.objects.create(
-		game_type='solo',
+		game_type=mode,
 		player1=games[self.game_id]['host'].user,
 		player2=games[self.game_id]['opponent'].user,
 		player1_score=score1,

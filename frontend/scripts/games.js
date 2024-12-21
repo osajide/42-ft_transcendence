@@ -132,6 +132,7 @@ function gameOver(game, game_stats = undefined) {
           stats: {
             winner: { id: winner.id, score: winner.score },
             loser: { id: loser.id, score: loser.score },
+            mode: startGame.tournamentSocket ? 'tournament' : 'solo'
           },
         })
       );
