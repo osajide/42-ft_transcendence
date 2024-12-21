@@ -116,7 +116,8 @@ function gameOver(game) {
   console.log(winner.id, loser.id)
   winner.container.classList.add("winner");
   loser.container.classList.add("loser");
-  document.getElementById("game_dash").classList.add("game_over");
+  if (document.getElementById("game_dash"))
+    document.getElementById("game_dash").classList.add("game_over");
   let sleeper = setTimeout(() => {
     game.socket.send(
       JSON.stringify({
@@ -145,10 +146,10 @@ function gameOver(game) {
           winner: [pos, winner.id],
         })
       );
-      let timer = setTimeout(() => {
-        playTournament(-1);
-        clearTimeout(timer);
-      }, 5000);
+      // let timer = setTimeout(() => {
+      //   playTournament(-1);
+      //   clearTimeout(timer);
+      // }, 5000);
     } else {
       let timer = setTimeout(() => {
         updateUrl("games", "");
@@ -532,24 +533,24 @@ function playTournament(endpoint) {
   // }
   const board = /* html */ `
     <div class="tournament">
-      <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img1"/></div>
-      <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img5"/></div>
-      <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img2"/></div>
-      <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img7"/></div>
-      <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img3"/></div>
-      <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img6"/></div>
-      <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img4"/></div>
+      <div class="player_card" data-nickname="loading"><img src="../assets/avatars/user.svg" class="player_img player_img1"/></div>
+      <div class="player_card" data-nickname="loading"><img src="../assets/avatars/user.svg" class="player_img player_img5"/></div>
+      <div class="player_card" data-nickname="loading"><img src="../assets/avatars/user.svg" class="player_img player_img2"/></div>
+      <div class="player_card" data-nickname="loading"><img src="../assets/avatars/user.svg" class="player_img player_img7"/></div>
+      <div class="player_card" data-nickname="loading"><img src="../assets/avatars/user.svg" class="player_img player_img3"/></div>
+      <div class="player_card" data-nickname="loading"><img src="../assets/avatars/user.svg" class="player_img player_img6"/></div>
+      <div class="player_card" data-nickname="loading"><img src="../assets/avatars/user.svg" class="player_img player_img4"/></div>
       <span class="pair_link"></span>
       <span class="pair_link"></span>
     </div>
     <div class="tournament">
-    <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img1"/></div>
-    <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img5"/></div>
-    <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img2"/></div>
-    <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img7"/></div>
-    <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img3"/></div>
-    <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img6"/></div>
-    <div class="player_card" data-nickname="d"><img src="../assets/avatars/user.svg" class="player_img player_img4"/></div>
+    <div class="player_card" data-nickname="loading"><img src="../assets/avatars/user.svg" class="player_img player_img1"/></div>
+    <div class="player_card" data-nickname="loading"><img src="../assets/avatars/user.svg" class="player_img player_img5"/></div>
+    <div class="player_card" data-nickname="loading"><img src="../assets/avatars/user.svg" class="player_img player_img2"/></div>
+    <div class="player_card" data-nickname="loading"><img src="../assets/avatars/user.svg" class="player_img player_img7"/></div>
+    <div class="player_card" data-nickname="loading"><img src="../assets/avatars/user.svg" class="player_img player_img3"/></div>
+    <div class="player_card" data-nickname="loading"><img src="../assets/avatars/user.svg" class="player_img player_img6"/></div>
+    <div class="player_card" data-nickname="loading"><img src="../assets/avatars/user.svg" class="player_img player_img4"/></div>
       <span class="pair_link"></span>
       <span class="pair_link"></span>
     </div>

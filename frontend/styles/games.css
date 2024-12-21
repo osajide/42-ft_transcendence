@@ -145,7 +145,7 @@
   content: attr(data-nickname);
   position: absolute;
   top: 50%;
-  right: -1.5rem;
+  left: calc(100% + 1.5rem);
   transform: translateY(-50%);
   font-size: 1rem;
 }
@@ -184,7 +184,7 @@
 }
 .tournament_board .tournament:first-child .player_card:nth-child(4):after {
   right: 50%;
-  top: -1.5rem;
+  bottom: calc(100% + 1.5rem);
   transform: translateX(50%);
 }
 .tournament_board .tournament:last-child::after {
@@ -214,14 +214,15 @@
 .tournament_board .tournament:last-child .player_card:nth-child(4) {
   align-self: flex-start;
 }
+.tournament_board .tournament:last-child .player_card:after {
+  right: calc(100% + 1.5rem);
+  left: unset;
+}
 .tournament_board .tournament:last-child .player_card:nth-child(4):after {
   left: 50%;
-  top: -1.5rem;
-  transform: translateX(-50%);
-}
-.tournament_board .tournament:last-child .player_card:after {
-  left: -1.5rem;
   right: unset;
+  bottom: calc(100% + 1.5rem);
+  transform: translateX(-50%);
 }
 .tournament_board .tournament:last-child > .pair_link {
   right: 35px;

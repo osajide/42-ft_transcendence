@@ -116,7 +116,7 @@
         content: attr(data-nickname);
         position: absolute;
         top: 50%;
-        right: -1.5rem;
+        left: calc(100% + 1.5rem);
         transform: translateY(-50%);
         font-size: 1rem;
       }
@@ -149,7 +149,7 @@
       
           &:after {
             right: 50%;
-            top: -1.5rem;
+            bottom: calc(100% + 1.5rem);
             transform: translateX(50%);
           }
         }
@@ -161,19 +161,25 @@
 
       .player_card {
         @include tournament(flex-end, flex-start);
+
+        &:after {
+          right: calc(100% + 1.5rem);
+          left: unset;
+        }
         &:nth-child(4) {
       
           &:after {
             left: 50%;
-            top: -1.5rem;
+            right: unset;
+            bottom: calc(100% + 1.5rem);
             transform: translateX(-50%);
           }
         }
 
-        &:after {
-          left: -1.5rem;
-          right: unset;
-        }
+        // &:after {
+        //   right: calc(100% + 1.5rem);
+        //   left: unset;
+        // }
       }
       & > .pair_link {
         right: 35px;

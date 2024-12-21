@@ -6,6 +6,8 @@ import random
 from authentication.models import UserAccount
 from authentication.serializers import UserSerializer
 import redis
+from django.db.models import Q
+import asyncio 
 
 redis_client = redis.Redis(host='redis', port=6379, db=1)
 
@@ -69,6 +71,7 @@ class	GameConsumer(AsyncWebsocketConsumer):
 		print("IN CONNECT === game id ====>", self.game_id)
 		if not self.game_id in games:
 			games[self.game_id] = {}
+			games[self.game_id]['disconnected'] = []
 
 		self.group_name = f'{self.game_id}'
 
@@ -134,7 +137,6 @@ class	GameConsumer(AsyncWebsocketConsumer):
 			print(f'Stats sender is: {self.user}')
 			if 'stats' not in games[self.game_id]:
 				games[self.game_id]['stats'] = '1'
-				await create_game_record(self, json_text_data['stats'])
 				print(f'{self.user} first quiter')
 				# await self.send(text_data=json.dumps({'game_over': ''}))
 				other_user = games[self.game_id]['host']
@@ -146,12 +148,21 @@ class	GameConsumer(AsyncWebsocketConsumer):
 							'game_over' : '',
 							'id': other_user.user.id
 						})
+				# games[self.game_id]['stats'] = '1'
+				print(f'Samaykom {self.user}:{games[self.game_id]["stats"]}')
+				await create_game_record(self, json_text_data['stats'])
+				games[self.game_id]['disconnected'].append(self)
 				await self.close()
 			elif 'stats' in games[self.game_id]:
+				print(f'--------- {games[self.game_id]["stats"]}')
+				while(await sync_to_async(Game.objects.filter(
+        				(Q(player1=games[self.game_id]['host'].user) & Q(player2=games[self.game_id]['opponent'].user))
+                               				| (Q(player1=games[self.game_id]['opponent'].user) & Q(player2=games[self.game_id]['host'].user))).first)() == None):
+					print('waiting....')
 				print(f'{self.user.first_name} {json_text_data["stats"]}')
 				print(f'{self.user} second quiter')
 				games[self.game_id]['stats'] = '2'
-				# await self.send(text_data=json.dumps({'game_over': ''}))
+				games[self.game_id]['disconnected'].append(self)
 				await self.close()
 	
 	async def	broadcast(self, event):
@@ -159,13 +170,15 @@ class	GameConsumer(AsyncWebsocketConsumer):
 			if not self.user.id == event['id']:
 				await self.send(text_data=json.dumps(event))
 		elif 'game_over' in event and self.user.id == event['id']:
-			await self.send(text_data=json.dumps(
-				{
-					'game_over' : ''
-				}
-			))
+			if self.game_id in games and self not in games[self.game_id]['disconnected']:
+				await self.send(text_data=json.dumps(
+					{
+						'game_over' : ''
+					}
+				))
 		else:
-			await self.send(text_data=json.dumps(event))
+			if self.game_id in games and self not in games[self.game_id]['disconnected']:
+				await self.send(text_data=json.dumps(event))
 
 	
 	async def	send_aspect(self, event):

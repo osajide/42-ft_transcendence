@@ -14,7 +14,8 @@ redis_client = redis.Redis(host='redis', port=6379, db=1)
 games = []
 tournaments = []
 user_index = {}
-users_and_games = {} 
+users_and_games = {}
+connected = []
 
 @database_sync_to_async
 def get_notifications(id):
@@ -34,6 +35,7 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 	notification_group = 'notification'
 	async def	connect(self):
 		await self.accept()
+		connected.append(self)
 
 		if self.scope['user'].is_authenticated is False:
 			await self.send(json.dumps(
@@ -47,7 +49,8 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 		print('which user: ', self.scope['user'])
 		await self.channel_layer.group_add(self.notification_group, self.channel_name)
 		notifications = await get_notifications(self.scope['user'].id)
-		await self.send(text_data=notifications)
+		if self in connected:
+			await self.send(text_data=notifications)
 
 	async def	disconnect(self, code):
 		await sync_to_async(UserAccount.objects.filter(id=self.scope['user'].id).update)(user_state="offline")
@@ -68,6 +71,7 @@ class	NotificationConsumer(AsyncWebsocketConsumer):
 				users_and_games.pop(key)
 				break
 		print('users_and_games after: ', users_and_games)
+		connected.remove(self)
 
 	async def	receive(self, text_data=None, bytes_data=None):
 		
