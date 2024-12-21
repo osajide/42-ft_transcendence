@@ -498,6 +498,7 @@ function fillTournament(arr) {
       img.parentElement.setAttribute('data-nickname', el.nickname.replaceAll('_', ' '))
       const isWinner = tournamentInfo.wins[i].indexOf(el)
       if (isWinner > -1) {
+        img.parentElement.classList.add('smile')
         let sibling = img.parentElement.nextElementSibling
         if (isWinner % 2)
           sibling = img.parentElement.previousElementSibling

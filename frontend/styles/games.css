@@ -438,12 +438,12 @@
   border-color: #db0000;
 }
 
-.winner img {
+.winner img, .smile {
   border-color: #00b278;
 }
 
 .cry {
-  border-color: #db0000;
+  border-color: #db0000 !important;
 }
 .cry::before {
   content: "";
@@ -452,6 +452,7 @@
   left: 0;
   width: 100%;
   height: 100%;
+  z-index: 2;
   background-color: rgba(219, 0, 0, 0.3137254902);
 }
 
