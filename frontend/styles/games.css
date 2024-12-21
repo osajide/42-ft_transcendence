@@ -189,7 +189,7 @@
   top: unset;
   transform: translateX(-50%);
 }
-.tournament_board .tournament:first-child.laugh {
+.tournament_board .tournament:first-child > .laugh {
   left: 100%;
   transform: translate(-50%, -50%);
 }
@@ -235,7 +235,7 @@
   right: 35px;
   left: unset;
 }
-.tournament_board .tournament:last-child.laugh {
+.tournament_board .tournament:last-child > .laugh {
   left: -100%;
   transform: translate(50%, -50%);
 }
@@ -465,10 +465,10 @@
   top: 50% !important;
 }
 
-.tournament:has(.laugh) {
-  z-index: 1;
+.tournament:has(> .laugh) {
+  z-index: 1 !important;
 }
 
-.tournament:not(:has(.laugh)) {
-  z-index: 0;
+.tournament:not(:has(> .laugh)) {
+  z-index: 0 !important;
 }/*# sourceMappingURL=games.css.map */
