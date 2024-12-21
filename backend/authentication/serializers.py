@@ -25,7 +25,7 @@ class UserSerializer(serializers.ModelSerializer):
 		# Remove password2 as it's not part of the User model
 		if 'confirm_password' in validated_data:
 			validated_data.pop('confirm_password')
-
+		# self.nickname = self.first_name + '_' + self.last_name
 		# Hash the password before saving
 		if 'password' in validated_data:
 			validated_data['password'] = make_password(validated_data['password'])

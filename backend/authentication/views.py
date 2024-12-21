@@ -284,9 +284,9 @@ class UserProfile(APIView):
                         Q(player1=user) | Q(player2=user)).exclude(winner=user.id).count()
 
 
-        total_loss_tournaments = Tournament.objects.exclude(winner=user.id).count()
-
-
+        played_tournaments = Tournament_Particapent.objects.filter(user_id=user.id).values('tournament_id')
+        total_loss_tournaments = Tournament.objects.filter(id__in=played_tournaments).exclude(winner=user.id).count()
+        
         # recent_games = (
         #                 Game.objects.filter(
         #                     Q(player1=user) | Q(player2=user)
@@ -464,6 +464,7 @@ class UpdateProfile(APIView):
             user.email = email
         if nickname:
             user.nickname = nickname
+            
         if avatar:
             user.avatar = avatar
         

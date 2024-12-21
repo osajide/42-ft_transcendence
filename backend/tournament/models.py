@@ -15,8 +15,6 @@ class Tournament(models.Model):
     ]
     status = models.CharField(max_length=20, choices=status_choices, default='active')
     winner = models.IntegerField(default=0)
-    def __str__(self):
-        return self.name
 
 
 

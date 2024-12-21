@@ -39,7 +39,7 @@ class UserAccountManager(BaseUserManager):
 class UserAccount(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    nickname = models.CharField(max_length=50, null=True, blank=True)
+    nickname = models.CharField(max_length=50, default="")
     email = models.EmailField(validators=[EmailValidator()], unique=True) # add email to be unique
     password = models.CharField(max_length=128)
     verified_mail = models.BooleanField(default=True)
@@ -49,6 +49,7 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)  # Required for admin access
     secret_key = models.CharField(max_length=50, null=True, blank=True)
     is_2fa_verified = models.BooleanField(default=False)
+    is_42 = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []  # Leave empty to only require username and password
@@ -63,7 +64,8 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
             # print('*****selfaa: ', self.avatar.url)
             # self.avatar.url = f'saaaalaam.png'
             # self.avatar = f'saaaalaam.png'
-            self.nickname = self.first_name + '_' + self.last_name
+            if self.nickname == "":
+                self.nickname = self.first_name + '_' + self.last_name
             super().save(*args, **kwargs)
             # print('aaaaa:::::: ', self.avatar)
         except Exception as e:

@@ -162,7 +162,7 @@ function gameOver(game) {
 
 function server(e, mypong) {
   data = JSON.parse(e.data);
-  // console.log(data);
+  console.log(data);
   if (data.start) {
     mypong.ball.moves = data.start;
     resetBall(mypong);

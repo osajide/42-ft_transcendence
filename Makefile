@@ -8,7 +8,7 @@ purge:
 	@docker compose -f ./setup/docker/docker-compose.yml down -v
 
 push:
-	@sudo find backend/ -type f -name "00*" -delete
+	@ find backend/ -type f -name "00*" -delete
 
 re: stop all
 

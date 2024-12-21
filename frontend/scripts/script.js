@@ -27,7 +27,7 @@ const raiseWarn = (msg, type = "error") => {
   errors.innerHTML += components.warning(msg, type);
   let self = document.getElementsByClassName("warn");
   self = self[self.length - 1];
-  if (msg == "Session expired" || msg == "Invalid Token") {
+  if (msg == "Session expired" || msg == "Invalid Token" || msg == "User not found") {
     logout();
     return "Error";
   }
@@ -64,7 +64,7 @@ const fetchWithToken = async (
   loader.classList.remove("show");
 
   if (response.ok) data = await response.json();
-  // console.log(data)
+  console.log(data)
   // console.log(data, endpoint, data.error);
   if (response.status === 401) {
     if (!recursive) {
@@ -352,7 +352,7 @@ const components = {
       }" alt="${user_data.first_name}"/>
       </div>
     <h4>${data.result}</h4>
-    <p>Score: ${data.user_score}</p>
+    <p>Score: ${data.user_score > -1 ? data.user_score : 'LEFT'}</p>
     </div>`;
   },
   chat_banner: function (user) {
@@ -763,20 +763,20 @@ const components = {
     } * 100%)"></span></div>
       <h3>Tournaments</h3>
       <div class="graph"><span class="bar" data-insight="${(
-        (data.total_win_tournaments / (data.total_solo_games || 1)) *
+        (data.total_win_tournaments / (data.total_played_tournament || 1)) *
         100
       ).toFixed(2)}%" data-count="${
       data.total_win_tournaments
     }" style="width: calc(1px + ${
-      data.total_win_tournaments / (data.total_solo_games || 1)
+      data.total_win_tournaments / (data.total_played_tournament || 1)
     } * 100%)"></span>
       <span class="bar" data-insight="${(
-        (data.total_loss_tournaments / (data.total_solo_games || 1)) *
+        (data.total_loss_tournaments / (data.total_played_tournament || 1)) *
         100
       ).toFixed(2)}%" data-count="${
       data.total_loss_tournaments
     }" style="width: calc(1px + ${
-      data.total_loss_tournaments / (data.total_solo_games || 1)
+      data.total_loss_tournaments / (data.total_played_tournament || 1)
     } * 100%)"></span></div>
     </div>
     <h3>Game history</h3>
@@ -1260,9 +1260,21 @@ loader.classList.remove("hide");
 
 document.body.onload = () => {
   makeSocket.latest = [];
+  user_data = JSON.parse(localStorage.getItem("user_data"));
+  const params = new URLSearchParams(window.location.search)
+  if (params.size != 0) {
+    user_data = JSON.parse(Object.fromEntries(params.entries()).data)
+    reff = ['id', 'first_name', 'last_name', 'email', 'avatar', 'user_state']
+    if (JSON.stringify(Object.keys(user_data)) !== JSON.stringify(reff))
+      user_data = undefined
+  }
   let path = window.location.pathname.replace("/", "");
   if (!path.length) path = "/";
-  user_data = JSON.parse(localStorage.getItem("user_data"));
+  if (params.size != 0 && user_data){
+    currentUrl = new URL(window.location.origin);
+    currentUrl.pathname = path;
+    window.history.pushState({}, "", currentUrl);
+  }
   if (!user_data && ["login", "signin", "/"].indexOf(path) < 0) {
     raiseWarn("Session expired");
     return updateUrl("login", "push");

@@ -6,7 +6,7 @@ class TournamentSerializer(serializers.ModelSerializer):
 	
 	class Meta:
 		model = Tournament
-		fields = ['id', 'name', 'start_date']
+		fields = ['id', 'start_date']
 		extra_kwargs = {
 			'start_date' : {'read_only' : True}
 		}
