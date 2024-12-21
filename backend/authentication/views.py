@@ -205,7 +205,7 @@ class LogoutView(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
+    def get(self, request):
         # Corrected typo: access_token instead of acess_token
 
         access_token = request.COOKIES.get('access_token')

@@ -143,7 +143,7 @@
         }
       }
 
-      &.laugh{
+      & > .laugh{
         left: 100%;
         transform: translate(-50%, -50%);
       }
@@ -179,7 +179,7 @@
         left: unset;
       }
 
-      &.laugh{
+      & > .laugh{
         left: -100%;
         transform: translate(50%, -50%);
       }
@@ -461,10 +461,10 @@
   top: 50% !important;
 }
 
-.tournament:has(.laugh) {
-  z-index: 1;
+.tournament:has(> .laugh) {
+  z-index: 1 !important;
 }
 
-.tournament:not(:has(.laugh)) {
-  z-index: 0;
+.tournament:not(:has(> .laugh)) {
+z-index: 0 !important;
 }
