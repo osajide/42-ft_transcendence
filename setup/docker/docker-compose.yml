@@ -1,15 +1,18 @@
 services:
 
   frontend:
-    image: frontend:nginx
-    build:
-      context: .
-      dockerfile: frontendDockerfile
-    container_name: frontend
+    image: nginx:latest
+    container_name: nginx
     volumes:
+      - ./ssl:/ssl
       - ${HOME}/Desktop/42-ft_transcendence/frontend:/var/www/html
+      - ./conf/nginx.conf:/etc/nginx/conf.d/django.conf
       - assetsVolume:/var/www/html/assets/avatars/
-    ports:
+      - staticVolume:/var/www/html/static
+    networks:
+      - myNet
+    ports: 
+      - 443:443
       - 4242:4242
     restart: unless-stopped
     depends_on:
@@ -28,8 +31,10 @@ services:
       - PIP_ROOT_USER_ACTION=ignore # for preventing warning of running pip as root
     volumes:
       - ${HOME}/Desktop/42-ft_transcendence/backend:/app
-      - assetsVolume:/app/assets/avatars
+      - assetsVolume:/app/assets/avatars/
+      - staticVolume:/app/assets/static/
       - backendVolume:/root/.cache/pip/
+      - ./ssl:/ssl
     networks:
       - myNet
     ports:
@@ -74,3 +79,4 @@ volumes:
   backendVolume:
   redisVolume:
   assetsVolume:
+  staticVolume:

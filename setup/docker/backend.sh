@@ -9,4 +9,11 @@ cp /tmp/user.svg /app/assets/avatars/
 
 python3 manage.py makemigrations
 python3 manage.py migrate
-exec $@
+
+# if [ -z "$(ls -A "$STATIC_ROOT" 2>/dev/null)" ]; then # -z option is for checking zero-length result
+    python manage.py collectstatic --noinput
+# else
+    # echo "static files already collected"
+# fi
+
+exec "$@"

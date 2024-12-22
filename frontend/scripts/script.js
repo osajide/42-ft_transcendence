@@ -47,7 +47,7 @@ const fetchWithToken = async (
   recursive = 0
 ) => {
   let data = "Error";
-  if (endpoint != "/api/register/") {
+  if (endpoint != "/register/") {
     loader.classList.add("show");
     loader.classList.remove("hide");
   }
@@ -59,7 +59,7 @@ const fetchWithToken = async (
   settings.body = body;
   // } else if (body) settings.body = JSON.stringify(body);
   // console.log(body)
-  const response = await fetch(url + endpoint, settings);
+  const response = await fetch(url.split(':')[0] + '://' + window.location.hostname + '/api' + endpoint, settings);
   loader.classList.add("hide");
   loader.classList.remove("show");
 
@@ -84,10 +84,10 @@ const fetchWithToken = async (
   }
 
   if (
-    endpoint != "/api/register/" &&
-    endpoint != "/api/login/" &&
-    endpoint != "/api/verify_code/" &&
-    endpoint != "/api/setup_twofa/" &&
+    endpoint != "/register/" &&
+    endpoint != "/login/" &&
+    endpoint != "/verify_code/" &&
+    endpoint != "/setup_twofa/" &&
     data == "Error"
   ) {
     return raiseWarn("Session expired");
@@ -199,11 +199,11 @@ const network = async (e) => {
 async function authenticate(e) {
   e.preventDefault();
   errors.innerHTML = "";
-  let endpoint = "/api/register/";
+  let endpoint = "/register/";
   let form = new FormData(e.target);
-  if (e.target.childElementCount < 5) endpoint = "/api/login/";
+  if (e.target.childElementCount < 5) endpoint = "/login/";
   if (e.target.id == "otp") {
-    endpoint = "/api/verify_code/";
+    endpoint = "/verify_code/";
     tmp = new FormData();
     let s = "";
     for ([key, value] of form.entries()) s += value;
@@ -214,7 +214,7 @@ async function authenticate(e) {
   let data = await fetchWithToken(glob_endp, endpoint, "POST", form);
   if (data == "Error") return;
 
-  if (endpoint == "/api/register/") {
+  if (endpoint == "/register/") {
     raiseWarn("Please verify your email", "alert");
     return updateUrl("login", "push");
   } else {
@@ -222,7 +222,7 @@ async function authenticate(e) {
     e.target.nextElementSibling.classList.add("hide");
     e.target.previousElementSibling.classList.add("hide");
     if (data[0] == "scan_qr") {
-      const qr = await fetchWithToken(glob_endp, "/api/setup_twofa/");
+      const qr = await fetchWithToken(glob_endp, "/setup_twofa/");
       e.target.insertAdjacentElement("beforebegin", components.qr(qr.qrcode));
     } else {
       const otp = components.otp();
@@ -270,10 +270,15 @@ function notified(e) {
 }
 
 function makeSocket(endpoint, socketMethod) {
-  const socket = new WebSocket(`ws://${glob_endp.split("/")[2]}/${endpoint}`);
+  let ws = 'ws'
+  let proto = glob_endp.split(':')[0].slice(-1)
+  if (proto == 's')
+    ws += 's'
+  const socket = new WebSocket(`wss://${window.location.hostname}/ws/${endpoint}`);
+  // const socket = new WebSocket(`wss://127.0.0.1/ws/${endpoint}`);
   if (endpoint) makeSocket.latest.push(socket);
   socket.onerror = (event) => {
-    return raiseWarn(event);
+    return raiseWarn('Something went wrong');
   };
 
   socket.onopen = function (event) {
@@ -689,7 +694,7 @@ const components = {
       if (count) {
         resp = await fetchWithToken(
           glob_endp,
-          "/api/update_profile/",
+          "/update_profile/",
           "PATCH",
           formData
         );
@@ -782,7 +787,7 @@ async function next(e) {
     qr.remove();
     otp.firstElementChild.firstElementChild.focus();
   } else {
-    const data = await fetchWithToken(glob_endp, "/api/setup_twofa/", "GET");
+    const data = await fetchWithToken(glob_endp, "/setup_twofa/", "GET");
     if (data == "Error") return;
     const otp = document.getElementById("otp");
     const qr = components.qr(data.qrcode);
@@ -811,7 +816,7 @@ async function checkUser(endpoint) {
 function logout(e) {
   if (e) {
     e.preventDefault();
-    fetchWithToken(glob_endp, '/api/logout/');
+    fetchWithToken(glob_endp, '/logout/');
   }
   localStorage.removeItem("user_data");
   user_data = undefined;
@@ -953,7 +958,7 @@ const pages = {
     id: "profile",
     func: async () => {
       const update = document.getElementById("stats");
-      const data = await fetchWithToken(glob_endp, `/api/profile/`, "GET");
+      const data = await fetchWithToken(glob_endp, `/profile/`, "GET");
       if (data == "Error") return;
       document.getElementById("updatable").innerHTML = fillProfile(data);
       document.getElementById("modeSwitch").addEventListener("click", (e) => {

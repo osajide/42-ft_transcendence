@@ -18,7 +18,7 @@ class GetAuthCode(APIView):
         url =  'https://api.intra.42.fr/oauth/authorize'
         params = {
             "client_id" : 'u-s4t2ud-1619f031b401b49c5796f0b7dc500bab1bad5c24ab3c19bb97df8c83adbfc15f',
-            "redirect_uri" : "http://127.0.0.1:8000/api/intra/oauth/",
+            "redirect_uri" : "https://127.0.0.1/api/intra/oauth/",
             "response_type": "code",
             "scope": 'public',
             "prompt": "consent",
@@ -77,7 +77,7 @@ class OAuthCallback(APIView):
             "client_id": 'u-s4t2ud-1619f031b401b49c5796f0b7dc500bab1bad5c24ab3c19bb97df8c83adbfc15f',
             "client_secret": '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',
             "code": code,
-            "redirect_uri" : "http://127.0.0.1:8000/api/intra/oauth/",
+            "redirect_uri" : "https://127.0.0.1/api/intra/oauth/",
         }
         
 
@@ -113,7 +113,7 @@ class OAuthCallback(APIView):
     
         serialized_data_str = json.dumps(serialized_data)
         serialized_data_safe = quote_plus(serialized_data_str)
-        response = HttpResponseRedirect(f'http://127.0.0.1:4242/profile?data={serialized_data_safe}')
+        response = HttpResponseRedirect(f'https://127.0.0.1/profile?data={serialized_data_safe}')
         response.set_cookie('refresh_token', result['refresh_token'], httponly=True, samesite='None', secure=True)
         response.set_cookie('access_token', result['access_token'], httponly=True, samesite='None', secure=True)
         return response
