@@ -152,9 +152,9 @@ function gameOver(game, game_stats = undefined) {
       //   winner: [pos, winner.id],
       // });
       //console.log({
-        winner: { id: winner.id, score: winner.score },
-        loser: { id: loser.id, score: loser.score },
-      })
+      //   winner: { id: winner.id, score: winner.score },
+      //   loser: { id: loser.id, score: loser.score },
+      // })
       startGame.tournamentSocket.send(
         JSON.stringify({
           winner: [pos, winner.id],

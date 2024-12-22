@@ -68,7 +68,7 @@ const fetchWithToken = async (
   // //console.log(data, endpoint, data.error);
   if (response.status === 401) {
     if (!recursive) {
-      const refreshResponse = await fetch(`${url}/api/refresh/`, {
+      const refreshResponse = await fetch(`${url.split(':')[0] + '://' + window.location.hostname + '/api'}/api/refresh/`, {
         method: "POST",
         credentials: "include",
       });
