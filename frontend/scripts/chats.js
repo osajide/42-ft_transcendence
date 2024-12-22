@@ -26,6 +26,7 @@ function receiveMessage(event) {
     });
     let timer = setTimeout(() => {
       messenger.scrollTop = messenger.scrollHeight;
+      clearTimeout(timer)
     }, 20);
   } else if (data.message) {
     if (messenger.querySelector(".newMsgs"))
