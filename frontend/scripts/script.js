@@ -22,7 +22,7 @@ const removeElement = (e) => {
 };
 
 const raiseWarn = (msg, type = "error") => {
-  // console.log(msg)
+  // //console.log(msg)
   raiseWarn.timers = [];
   errors.innerHTML += components.warning(msg, type);
   let self = document.getElementsByClassName("warn");
@@ -58,14 +58,14 @@ const fetchWithToken = async (
   // if (body && body instanceof FormData && body.has('avatar')) {
   settings.body = body;
   // } else if (body) settings.body = JSON.stringify(body);
-  // console.log(body)
+  // //console.log(body)
   const response = await fetch(url.split(':')[0] + '://' + window.location.hostname + '/api' + endpoint, settings);
   loader.classList.add("hide");
   loader.classList.remove("show");
 
   if (response.ok) data = await response.json();
-  console.log(data)
-  // console.log(data, endpoint, data.error);
+  //console.log(data)
+  // //console.log(data, endpoint, data.error);
   if (response.status === 401) {
     if (!recursive) {
       const refreshResponse = await fetch(`${url}/api/refresh/`, {
@@ -245,7 +245,7 @@ function notified(e) {
   const notifier = document.getElementById("notifier");
   const notContainer = document.getElementById("notiList");
   const data = JSON.parse(e.data);
-  console.log(data);
+  //console.log(data);
   if (data.error) {
     return raiseWarn(data.error);
   } else if (data.game_id !== undefined) {
@@ -281,7 +281,7 @@ function makeSocket(endpoint, socketMethod) {
   };
 
   socket.onopen = function (event) {
-    console.log("WebSocket is open now.");
+    //console.log("WebSocket is open now.");
   };
 
   socket.onmessage = socketMethod;
@@ -300,7 +300,7 @@ function makeSocket(endpoint, socketMethod) {
         clearTimeout(wait)
       }, 7000);
     } else if (event.target.url.indexOf("game") > -1) makeSocket.latest.pop();
-    console.log("WebSocket is closed now.");
+    //console.log("WebSocket is closed now.");
   };
   return socket;
 }
@@ -614,7 +614,7 @@ const components = {
         }
 
         let i = index;
-        // console.log(otpInputs[i].value)
+        // //console.log(otpInputs[i].value)
         while (i >= 0 && i - 1 > -1 && !otpInputs[i - 1].value.length) {
           otpInputs[i].value = "";
           i--;
@@ -1251,6 +1251,8 @@ document.body.onload = () => {
     reff = ["id", "first_name", "last_name", "email", "avatar", "user_state", "nickname"]
     if (JSON.stringify(Object.keys(user_data)) !== JSON.stringify(reff))
       user_data = undefined
+    else
+      localStorage.setItem("user_data", JSON.stringify(user_data));
   }
   let path = window.location.pathname.replace("/", "");
   if (!path.length) path = "/";
