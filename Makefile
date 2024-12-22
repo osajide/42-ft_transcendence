@@ -1,11 +1,14 @@
+CURDIR := $(shell pwd)
+export COMPOSE_PROJECT_PATH=$(CURDIR)
+
 all:
-	@docker compose -f ./setup/docker/docker-compose.yml up --build -d
+	@docker compose up --build -d
 
 stop:
-	@docker compose -f ./setup/docker/docker-compose.yml down
+	@docker compose down
 
 purge:
-	@docker compose -f ./setup/docker/docker-compose.yml down -v
+	@docker compose down -v
 
 push:
 	@ find backend/ -type f -name "00*" -delete

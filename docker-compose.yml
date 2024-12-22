@@ -6,9 +6,9 @@ services:
     env_file:
       - .env
     volumes:
-      - ${COMPOSE_PROJECT_PATH}/setup/docker/ssl:/ssl
+      - ./ssl:/ssl
       - ${HOME}/Desktop/42-ft_transcendence/frontend:/var/www/html
-      - ${COMPOSE_PROJECT_PATH}/setup/docker/conf/nginx.conf:/etc/nginx/conf.d/django.conf
+      - ./conf/nginx.conf:/etc/nginx/conf.d/django.conf
       - assetsVolume:/var/www/html/assets/avatars/
       - staticVolume:/var/www/html/static
     networks:
@@ -25,7 +25,7 @@ services:
   backend:
     image: backend:django
     build:
-      context: ${COMPOSE_PROJECT_PATH}/setup/docker
+      context: .
       dockerfile: backendDockerfile
     container_name: backend
     env_file:
@@ -38,7 +38,7 @@ services:
       - assetsVolume:/app/assets/avatars/
       - staticVolume:/app/assets/static/
       - backendVolume:/root/.cache/pip/
-      - ${COMPOSE_PROJECT_PATH}/setup/docker/ssl:/ssl
+      - ./ssl:/ssl
     networks:
       - myNet
     ports:
@@ -69,7 +69,7 @@ services:
       # - POSTGRES_HOST_AUTH_METHOD=trust
     volumes:
       - postgresVolume:/var/lib/postgresql/data
-      - ${COMPOSE_PROJECT_PATH}/setup/docker/postgres.sh:/docker-entrypoint-initdb.d/postgres.sh
+      - ./postgres.sh:/docker-entrypoint-initdb.d/postgres.sh
     networks:
       - myNet
     restart: unless-stopped
@@ -83,9 +83,9 @@ services:
     networks:
         - myNet
     volumes:
-        - ${COMPOSE_PROJECT_PATH}/setup/docker/conf/prometheus.yml:/etc/prometheus/prometheus.yml
+        - ./conf/prometheus.yml:/etc/prometheus/prometheus.yml
         - prom_vol:/prometheus
-        - ${COMPOSE_PROJECT_PATH}/setup/docker/conf/rules.yml:/etc/prometheus/rules.yml
+        - ./conf/rules.yml:/etc/prometheus/rules.yml
     ports:
         - 9090:9090
     depends_on:
@@ -115,7 +115,7 @@ services:
     image: prometheuscommunity/postgres-exporter:v0.16.0
     container_name: postgres-exporter
     volumes:
-        - ${COMPOSE_PROJECT_PATH}/setup/docker/conf/queries.yml:/etc/postgres/queries.yml
+        - ./conf/queries.yml:/etc/postgres/queries.yml
     env_file:
         - .env
     networks:
@@ -126,13 +126,13 @@ services:
 
   alert-manager:
     build:
-        context: ${COMPOSE_PROJECT_PATH}/setup/docker
+        context: .
         dockerfile: alertmanagerDockerfile
     container_name: alert-manager
     env_file:
         - .env
     volumes:
-        - ${COMPOSE_PROJECT_PATH}/setup/docker/conf/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+        - ./conf/alertmanager.yml:/etc/alertmanager/alertmanager.yml
         - alert_vol:/alertmanager
     ports:
         - 9093:9093
@@ -148,8 +148,8 @@ services:
         - .env
     volumes:
         - grafana_vol:/var/lib/grafana
-        - ${COMPOSE_PROJECT_PATH}/setup/docker/provisioning/dashboards:/etc/grafana/provisioning/dashboards
-        - ${COMPOSE_PROJECT_PATH}/setup/docker/provisioning/datasources:/etc/grafana/provisioning/datasources
+        - ./provisioning/dashboards:/etc/grafana/provisioning/dashboards
+        - ./provisioning/datasources:/etc/grafana/provisioning/datasources
     networks:
         - myNet
     ports:

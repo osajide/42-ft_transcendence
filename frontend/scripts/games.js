@@ -493,7 +493,7 @@ function startGame(id) {
   cont.innerHTML = statsBoard;
   cont.classList.add("in_game");
   cont.classList.remove("tournament_board");
-  mypong = new Game(0, 0, "#31dede", `game/${id}`, 1);
+  mypong = new Game(0, 0, "#31dede", `game/${id}`, 11);
   mypong.timeout = setTimeout(() => {
     clearTimeout(mypong.timeout)
     updateUrl('games', '')
