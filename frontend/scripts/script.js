@@ -215,7 +215,6 @@ async function authenticate(e) {
   if (data == "Error") return;
 
   if (endpoint == "/register/") {
-    raiseWarn("Please verify your email", "alert");
     return updateUrl("login", "push");
   } else {
     e.target.classList.add("hide");

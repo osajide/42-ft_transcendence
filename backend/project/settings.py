@@ -24,7 +24,7 @@ print('media root: ', MEDIA_ROOT)
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-*c&l8(oh@*_)zir$dx_h*do@za8ak356bac2m7-3@$2ajt!djy'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -125,9 +125,9 @@ CHANNEL_LAYERS = {
 DATABASES = {
 	'default': {
 		'ENGINE': 'django.db.backends.postgresql',
-		'NAME': 'django_database',
-		'USER': 'django_user',
-		'PASSWORD': '1234',
+		'NAME': os.environ.get('DB_NAME'),
+		'USER': os.environ.get('DB_USER'),
+		'PASSWORD': os.environ.get('DB_PASS'),
 		'HOST': 'postgresql',
 		'PORT': '5432'
 	}
@@ -194,8 +194,8 @@ EMAIL_HOST = 'smtp.gmail.com'  # For Gmail
 EMAIL_PORT = 587  # 587 for TLS
 EMAIL_USE_TLS = True  
 EMAIL_USE_SSL = False  
-EMAIL_HOST_USER = 'ft.transcendence.13@gmail.com' 
-EMAIL_HOST_PASSWORD = 'pswkabcgwtysmjxr'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',  # Default Django backend
@@ -204,8 +204,8 @@ AUTHENTICATION_BACKENDS = (
 
 SERVICE_PROVIDER = {
     'INTRA': {
-        'CLIENT_ID': 'u-s4t2ud-1619f031b401b49c5796f0b7dc500bab1bad5c24ab3c19bb97df8c83adbfc15f',
-        'CLIENT_SECRET': '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',
+        'CLIENT_ID': os.environ.get('CLIENT_ID'),
+        'CLIENT_SECRET': os.environ.get('CLIENT_SECRET'),
         'REDIRECT_URI': 'https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-1619f031b401b49c5796f0b7dc500bab1bad5c24ab3c19bb97df8c83adbfc15f&redirect_uri=http%3A%2F%2F127.0.0.1%3A8000%2Fadmin&response_type=code',
         'AUTHORIZE_URL': 'https://api.intra.42.fr/oauth/authorize',
         'TOKEN_URL': 'https://api.intra.42.fr/oauth/token',

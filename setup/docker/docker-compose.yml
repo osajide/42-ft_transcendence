@@ -3,6 +3,8 @@ services:
   frontend:
     image: nginx:latest
     container_name: nginx
+    env_file:
+      - .env
     volumes:
       - ./ssl:/ssl
       - ${HOME}/Desktop/42-ft_transcendence/frontend:/var/www/html
@@ -26,6 +28,8 @@ services:
       context: .
       dockerfile: backendDockerfile
     container_name: backend
+    env_file:
+      - .env
     environment:
       - PYTHONUNBUFFERED=1 # to see the asgi server's output in docker logs command
       - PIP_ROOT_USER_ACTION=ignore # for preventing warning of running pip as root
@@ -60,8 +64,8 @@ services:
   postgres:
     image: postgres:14.15-alpine
     container_name: postgresql
-    environment:
-      - POSTGRES_PASSWORD=root
+    env_file:
+      - .env
       # - POSTGRES_HOST_AUTH_METHOD=trust
     volumes:
       - postgresVolume:/var/lib/postgresql/data
@@ -70,6 +74,86 @@ services:
       - myNet
     restart: unless-stopped
 
+#--------------------------------------------
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    # user: root
+    networks:
+        - myNet
+    volumes:
+        - ./conf/prometheus.yml:/etc/prometheus/prometheus.yml
+        - prom_vol:/prometheus
+        - ./conf/rules.yml:/etc/prometheus/rules.yml
+    ports:
+        - 9090:9090
+    depends_on:
+        - node-exporter
+        - alert-manager
+
+# ****************************************************
+
+  node-exporter:
+    image: prom/node-exporter
+    container_name: node-exporter
+    # ports:
+    #     - 9100:9100
+    #pid: host
+    # user: root
+    # userns_mode: "host"
+    networks:
+        - myNet
+    volumes:
+        - /:/host
+    command:
+        - --path.rootfs=/host
+    
+# *********************************************************
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.16.0
+    container_name: postgres-exporter
+    volumes:
+        - ./conf/queries.yml:/etc/postgres/queries.yml
+    env_file:
+        - .env
+    networks:
+        - myNet
+        # - myNet1
+
+# **********************************************************
+
+  alert-manager:
+    build:
+        context: .
+        dockerfile: alertmanagerDockerfile
+    container_name: alert-manager
+    env_file:
+        - .env
+    volumes:
+        - ./conf/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+        - alert_vol:/alertmanager
+    ports:
+        - 9093:9093
+    networks:
+        - myNet
+
+# ************************************************************
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    env_file:
+        - .env
+    volumes:
+        - grafana_vol:/var/lib/grafana
+        - ./provisioning/dashboards:/etc/grafana/provisioning/dashboards
+        - ./provisioning/datasources:/etc/grafana/provisioning/datasources
+    networks:
+        - myNet
+    ports:
+        - 3000:3000
 
 networks:
   myNet:
@@ -80,3 +164,6 @@ volumes:
   redisVolume:
   assetsVolume:
   staticVolume:
+  prom_vol:
+  alert_vol:
+  grafana_vol:
