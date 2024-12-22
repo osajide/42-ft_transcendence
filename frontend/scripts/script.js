@@ -738,30 +738,30 @@ const components = {
       <h3>Solo games</h3>
       <div class="graph">
       <span class="bar" data-insight="${(
-        (data.total_win_games / (data.total_solo_games || 1)) *
+        (data.total_win_games / (data.total_solo_games || 1)) * (!data.total_solo_games ? 0 : 1) *
         100
       ).toFixed(2)}%" data-count="${data.total_win_games
       }" style="width: calc(1px + ${data.total_win_games / (data.total_solo_games || 1)
-      } * 100%)"></span>
+ * (!data.total_solo_games ? 0 : 1)      } * 100%)"></span>
       <span class="bar" data-insight="${(
-        (data.total_loss_games / (data.total_solo_games || 1)) *
+        (data.total_loss_games / (data.total_solo_games || 1)) * (!data.total_solo_games ? 0 : 1) *
         100
       ).toFixed(2)}%" data-count="${data.total_loss_games
       }" style="width: calc(1px + ${data.total_loss_games / (data.total_solo_games || 1)
-      } * 100%)"></span></div>
+ * (!data.total_solo_games ? 0 : 1)      } * 100%)"></span></div>
       <h3>Tournaments</h3>
       <div class="graph"><span class="bar" data-insight="${(
-        (data.total_win_tournaments / (data.total_played_tournament || 1)) *
+        (data.total_win_tournaments / (data.total_played_tournament || 1)) * (!data.total_played_tournament ? 0 : 1) *
         100
       ).toFixed(2)}%" data-count="${data.total_win_tournaments
       }" style="width: calc(1px + ${data.total_win_tournaments / (data.total_played_tournament || 1)
-      } * 100%)"></span>
+ * (!data.total_played_tournament ? 0 : 1)      } * 100%)"></span>
       <span class="bar" data-insight="${(
-        (data.total_loss_tournaments / (data.total_played_tournament || 1)) *
+        (data.total_loss_tournaments / (data.total_played_tournament || 1)) * (!data.total_played_tournament ? 0 : 1) *
         100
       ).toFixed(2)}%" data-count="${data.total_loss_tournaments
       }" style="width: calc(1px + ${data.total_loss_tournaments / (data.total_played_tournament || 1)
-      } * 100%)"></span></div>
+ * (!data.total_played_tournament ? 0 : 1)      } * 100%)"></span></div>
     </div>
     <h3>Game history</h3>
     <div id="recent_games">
