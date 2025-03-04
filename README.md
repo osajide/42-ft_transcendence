@@ -78,6 +78,7 @@ If you want to monitor the system's resources (e.g., CPU, memory, network usage)
 https://localhost/grafana/
 ```
 When accessing Grafana, you will be prompted to log in. Use `admin` for both username and password.
+You will be asked to change the password after the first login.
 
 ---
 
