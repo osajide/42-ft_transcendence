@@ -15,7 +15,6 @@ services:
       - myNet
     ports: 
       - 443:443
-      - 4242:4242
     restart: unless-stopped
     depends_on:
       - backend
@@ -90,7 +89,6 @@ services:
         - 9090:9090
     depends_on:
         - node-exporter
-        - alert-manager
 
 # ****************************************************
 
@@ -122,23 +120,6 @@ services:
         - myNet
         # - myNet1
 
-# **********************************************************
-
-  alert-manager:
-    build:
-        context: .
-        dockerfile: alertmanagerDockerfile
-    container_name: alert-manager
-    env_file:
-        - .env
-    volumes:
-        - ${COMPOSE_PROJECT_PATH}/conf/alertmanager.yml:/etc/alertmanager/alertmanager.yml
-        - alert_vol:/alertmanager
-    ports:
-        - 9093:9093
-    networks:
-        - myNet
-
 # ************************************************************
 
   grafana:
@@ -165,5 +146,4 @@ volumes:
   assetsVolume:
   staticVolume:
   prom_vol:
-  alert_vol:
   grafana_vol:
