@@ -77,6 +77,9 @@ If you want to monitor the system's resources (e.g., CPU, memory, network usage)
 ```bash
 https://localhost/grafana/
 ```
+When accessing Grafana, you will be prompted to log in. Use `admin` for both username and password.
+
+---
 
 
 
