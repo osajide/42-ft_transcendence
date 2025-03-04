@@ -1,0 +1,463 @@
+@keyframes popIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes scaleIn {
+  from {
+    transform: scale(0.7);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes hit {
+  0% {
+    transform: rotate(-35deg);
+  }
+  100% {
+    transform: rotate(-10deg);
+  }
+}
+@keyframes bounce {
+  0% {
+    transform: translate(0px, 0px);
+  }
+  100% {
+    transform: translate(20px, -150px);
+  }
+}
+@keyframes fillIn {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
+#games {
+  display: flex;
+  align-items: center;
+}
+
+#game_page {
+  position: relative;
+}
+#game_page > * {
+  animation: popIn 0.75s ease-out forwards;
+}
+
+.lobby#page {
+  border-radius: 17px;
+  border: 1.5px solid rgba(49, 222, 222, 0.4392156863);
+  background-color: rgba(35, 35, 35, 0.4);
+  background-color: rgba(35, 35, 35, 0.4);
+  width: 100% !important;
+  height: 100% !important;
+}
+.lobby#page:has(canvas) {
+  background-color: transparent;
+  border: none;
+}
+
+#game_page:not(.in_game) {
+  display: flex;
+  flex: 1;
+  position: relative;
+  width: 100%;
+  border-radius: 17px;
+  overflow: hidden;
+}
+#game_page:not(.in_game) .game_mode {
+  display: flex;
+  flex: 1;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.15s linear;
+}
+#game_page:not(.in_game) .game_mode:first-child {
+  background: url("../assets/vs.png");
+  background-position: center;
+  background-repeat: no-repeat !important;
+  background-size: auto 100%;
+  border-right: 1.5px solid rgba(49, 222, 222, 0.4392156863);
+}
+#game_page:not(.in_game) .game_mode:last-child {
+  background: url("../assets/tour.png");
+  background-position: center;
+  background-repeat: no-repeat !important;
+  background-size: auto 100%;
+}
+#game_page:not(.in_game) .game_mode:hover {
+  mix-blend-mode: hard-light;
+  background-size: auto 150%;
+}
+#game_page:not(.in_game) .game_mode .button {
+  height: -moz-fit-content;
+  height: fit-content;
+  min-width: 10rem;
+}
+
+.tournament_board {
+  gap: 20px;
+  padding: 10px;
+  position: relative;
+}
+.tournament_board .tournament {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 0.02%;
+  position: relative;
+}
+.tournament_board .tournament > .pair_link {
+  height: 20%;
+  width: 3px;
+  background-color: #f1f1f1;
+  position: absolute;
+  left: 35px;
+  top: 10%;
+  z-index: 0;
+}
+.tournament_board .tournament > .pair_link:last-child {
+  top: 70%;
+}
+.tournament_board .tournament .player_card {
+  height: 14%;
+  aspect-ratio: 1/1;
+  border: 3px solid #00bcbc;
+  border-radius: 7px;
+  z-index: 1;
+  position: relative;
+  background-color: #232323;
+}
+.tournament_board .tournament .player_card:nth-child(2n) {
+  align-self: center;
+}
+.tournament_board .tournament .player_card:after {
+  content: attr(data-nickname);
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 1.5rem);
+  transform: translateY(-50%);
+  font-size: 1rem;
+}
+.tournament_board .tournament .player_img {
+  width: 100%;
+  height: auto;
+  -o-object-fit: cover;
+     object-fit: cover;
+  border-radius: 7px;
+}
+.tournament_board .tournament:first-child::after {
+  content: "";
+  position: absolute;
+  width: calc(50% - 3px);
+  height: 3px;
+  left: 50%;
+  top: 50%;
+  z-index: 0;
+  background-color: #f1f1f1;
+}
+.tournament_board .tournament:first-child::before {
+  content: "";
+  position: absolute;
+  width: calc(50% - 35px);
+  height: 58%;
+  left: 35px;
+  top: 21%;
+  z-index: 0;
+  border: 3px solid #f1f1f1;
+  border-left: none;
+}
+.tournament_board .tournament:first-child .player_card:nth-child(2n+1) {
+  align-self: flex-start;
+}
+.tournament_board .tournament:first-child .player_card:nth-child(4) {
+  align-self: flex-end;
+}
+.tournament_board .tournament:first-child .player_card:nth-child(4):after {
+  left: 50%;
+  right: unset;
+  bottom: calc(100% + 1rem);
+  top: unset;
+  transform: translateX(-50%);
+}
+.tournament_board .tournament:last-child::after {
+  content: "";
+  position: absolute;
+  width: 50%;
+  height: 3px;
+  left: 0;
+  top: 50%;
+  z-index: 0;
+  background-color: #f1f1f1;
+}
+.tournament_board .tournament:last-child::before {
+  content: "";
+  position: absolute;
+  width: calc(50% - 35px);
+  height: 58%;
+  right: 35px;
+  top: 21%;
+  z-index: 0;
+  border: 3px solid #f1f1f1;
+  border-right: none;
+}
+.tournament_board .tournament:last-child .player_card:nth-child(2n+1) {
+  align-self: flex-end;
+}
+.tournament_board .tournament:last-child .player_card:nth-child(4) {
+  align-self: flex-start;
+}
+.tournament_board .tournament:last-child .player_card:after {
+  right: calc(100% + 1.5rem);
+  left: unset;
+}
+.tournament_board .tournament:last-child .player_card:nth-child(4):after {
+  left: 50%;
+  right: unset;
+  bottom: calc(100% + 1rem);
+  top: unset;
+  transform: translateX(-50%);
+}
+.tournament_board .tournament:last-child > .pair_link {
+  right: 35px;
+  left: unset;
+}
+
+.player_data {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media screen and (max-width: 768px) {
+  .tournament_board {
+    flex-direction: column;
+  }
+  .tournament_board .tournament {
+    flex-direction: row;
+    gap: 10px;
+  }
+  .tournament_board .tournament .player_card {
+    width: 14%;
+    height: auto;
+    transform: rotate(90deg);
+  }
+  .tournament_board .tournament > .pair_link {
+    width: 30%;
+    height: 3px;
+    top: 4vw !important;
+    left: 20px;
+  }
+  .tournament_board .tournament > .pair_link:last-child {
+    left: unset;
+    right: 20px;
+  }
+  .tournament_board .tournament:first-child::before {
+    width: 58.5%;
+    height: calc(50% - 4vw);
+    left: 20.5%;
+    top: 4vw;
+    z-index: 0;
+    border-top: none;
+    border-left: 3px solid #f1f1f1;
+  }
+  .tournament_board .tournament:first-child:after {
+    width: 3px;
+    height: calc(50% - 3px);
+    bottom: 0;
+  }
+  .tournament_board .tournament:last-child::before {
+    width: 58.5%;
+    height: calc(50% - 4vw);
+    left: 20.5%;
+    bottom: 4vw;
+    top: unset;
+    z-index: 0;
+    border-bottom: none;
+    border-right: 3px solid #f1f1f1;
+  }
+  .tournament_board .tournament:last-child:after {
+    width: 3px;
+    height: 50%;
+    left: 50%;
+    top: 0;
+  }
+  .tournament_board .tournament:last-child > .pair_link {
+    top: unset !important;
+    bottom: 4vw !important;
+    left: 20px;
+  }
+  .tournament_board .tournament:last-child > .pair_link:last-child {
+    left: unset;
+    right: 20px;
+  }
+  .tournament_board .tournament .player_img {
+    height: auto;
+  }
+}
+@media screen and (max-width: 480px) {
+  #game_page:not(.in_game) {
+    flex-direction: column;
+  }
+  #game_page:not(.in_game) .game_mode:hover {
+    mix-blend-mode: hard-light;
+    background-size: auto 150% !important;
+    transform-origin: center;
+  }
+}
+#game_canvas {
+  border-radius: 17px;
+  border: 1.5px solid rgba(49, 222, 222, 0.4392156863);
+  background-color: rgba(35, 35, 35, 0.4);
+}
+
+#games + header + #notification {
+  display: none;
+}
+
+#game_dash {
+  position: absolute;
+  width: 100%;
+  height: -moz-max-content;
+  height: max-content;
+  top: 10px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 10px 20px;
+  transition: all 0.5s linear;
+}
+
+.player_stats {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  height: 100%;
+  transition: all 0.5s linear;
+}
+.player_stats img {
+  height: 100%;
+  width: 100%;
+  max-width: 70px;
+  border: 3px solid #00b1b1;
+  border-radius: 7px;
+  min-width: 60px;
+  min-height: 60px;
+  transition: all 0.5s linear;
+  aspect-ratio: 1/1;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+.player_stats p {
+  font-size: 2rem;
+}
+
+.rotate_stats#game_dash {
+  height: 100%;
+  width: 70px;
+  right: 0;
+  flex-direction: column;
+}
+.rotate_stats#game_dash .player_stats {
+  width: -moz-fit-content;
+  width: fit-content;
+  height: 50px;
+  position: absolute;
+  transform-origin: center;
+  transform: rotate(90deg);
+  transition: all 0.5s linear;
+  right: -9px;
+}
+.rotate_stats#game_dash .player_stats:first-child {
+  top: 50px;
+}
+.rotate_stats#game_dash .player_stats:last-child {
+  bottom: 75px;
+}
+.rotate_stats#game_dash .player_stats img {
+  height: 48px;
+  width: 48px;
+  aspect-ratio: 1/1;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+
+.game_over#game_dash {
+  height: 100%;
+  width: 100%;
+  justify-content: space-evenly;
+  gap: 40px;
+}
+.game_over#game_dash img {
+  max-width: 100px;
+  max-height: 100px;
+}
+
+.rotate_stats.game_over#game_dash .player_stats {
+  width: -moz-fit-content;
+  width: fit-content;
+  height: 100px;
+  transform: translateX(-50%) rotate(90deg);
+  left: 50%;
+}
+.rotate_stats.game_over#game_dash .player_stats:first-child {
+  top: 20%;
+}
+.rotate_stats.game_over#game_dash .player_stats:last-child {
+  bottom: 20%;
+}
+.rotate_stats.game_over#game_dash .player_stats img {
+  height: 100%;
+  width: 100%;
+  max-width: 70px;
+  aspect-ratio: 1/1;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+
+.loser img {
+  border-color: #db0000;
+}
+
+.cry {
+  border-color: #db0000 !important;
+}
+.cry::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  background-color: rgba(219, 0, 0, 0.3137254902);
+}
+
+.winner img, .smile {
+  border-color: #00b278 !important;
+}
+
+.laugh {
+  border-color: #ffdf76 !important;
+  scale: 1.7;
+}
+
+.tournament:has(> .laugh) {
+  z-index: 1 !important;
+}
+
+.tournament:not(:has(> .laugh)) {
+  z-index: 0 !important;
+}/*# sourceMappingURL=games.css.map */

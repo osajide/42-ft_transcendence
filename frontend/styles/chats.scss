@@ -1,0 +1,307 @@
+@use "./vars.scss" as *;
+
+$white: rgb(246, 246, 246);
+$box-width: 100%;
+$msg_tick_bottom: 14px;
+
+#chats {
+  #page {
+    flex-direction: row;
+    flex-wrap: nowrap;
+
+    & > section {
+      @include container;
+    }
+  }
+
+  #chatCont {
+    width: 100%;
+    flex-grow: 1;
+    height: 100%;
+    // background-color: rgba($prim_dark, .4);
+  }
+
+  .chatBanner {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    padding: 10px;
+    gap: 20px;
+    align-items: center;
+    background-color: rgba($sec_dark, 0.7);
+    border-bottom: $global_border;
+
+    img {
+      height: 40px;
+    }
+
+    .friendData,
+    .controls {
+      color: $white !important;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      cursor: pointer;
+
+      h6 {
+        min-width: fit-content;
+        text-align: left;
+        overflow: hidden;
+        white-space: nowrap;
+        // word-break: keep-all;
+        text-overflow: ellipsis;
+      }
+    }
+
+    .friendData {
+      img {
+        border-radius: 50%;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+      }
+    }
+
+    .controls {
+      svg {
+        transition: all 0.15s linear;
+
+        &:hover {
+          scale: 1.3;
+        }
+      }
+    }
+  }
+}
+
+.newMsgs {
+  width: 100%;
+  border-bottom: 1px solid #ffffff20;
+  margin: 10px 0px 5px;
+  position: relative;
+
+  &::after {
+    position: absolute;
+    content: "New messages";
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(-50%);
+    background-color: $white;
+    color: $prim_dark;
+    padding: 5px 10px;
+    border-radius: 7px 7px 0px 0;
+    font-size: 10px;
+  }
+}
+
+#chatCont {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+  overflow: hidden;
+
+  & > * {
+    min-width: 200px;
+  }
+}
+
+#chat {
+  width: $box-width;
+  height: 100%;
+  flex-grow: 1;
+  background-color: rgba($prim_dark, 0.4);
+  // background-image: url('../assets/chat.webp');
+  // background-size: cover;
+  // background-repeat: no-repeat;
+  border-radius: $global_radius $global_radius 0px 0px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: auto;
+  padding: 20px 20px calc(20px + $msg_box);
+  border-bottom: 0;
+  @include scroll(0px $global_radius 0px 0px);
+
+  & > *:first-child {
+    margin-top: auto !important;
+  }
+}
+
+#chatCont form {
+  display: flex;
+  width: $box-width;
+  overflow: hidden;
+  height: 60px;
+  border-top: $global_border;
+
+  & > *:focus {
+    outline: none;
+  }
+}
+
+#chatCont {
+  input,
+  .msg {
+    flex-grow: 1;
+    color: $white;
+    background-color: rgba($sec_dark, 0.7);
+    border: none;
+  }
+
+  input[type="submit"] {
+    border-left: $global_border;
+    // border-radius: 0 0 15px 0px;
+    background-color: $prim_blue;
+    cursor: pointer;
+    padding: 10px 20px;
+    width: fit-content;
+  }
+
+  .msg {
+    width: 100%;
+    flex-grow: 1;
+    padding: 10px;
+    // height: fit-content;
+    min-height: 30px;
+    // border-radius: 0 0 0px $global_radius;
+    resize: none;
+
+    @include scroll(0px);
+  }
+
+  .message {
+    margin: 0;
+    border-radius: 7px !important;
+    padding: 10px 15px;
+    max-width: 80%;
+    width: fit-content;
+    min-width: 30px;
+    position: relative;
+    text-align: left;
+
+    &:before {
+      content: "";
+      position: absolute;
+      border: $msg_box solid transparent;
+      top: 100%;
+      border-bottom: none;
+    }
+  }
+
+  .myMsg {
+    align-self: flex-end;
+    background-color: $white;
+    color: $sec_dark;
+    transform-origin: bottom right;
+    word-break: break-all;
+    &:last-child,
+    &:has(+ .friend),
+    &:has(+ .newMsgs) {
+      @include msg_ticks(right, $white);
+    }
+  }
+
+  .friend {
+    align-self: flex-start;
+    background-color: $blue_border;
+    color: $white;
+    transform-origin: bottom left;
+    word-break: break-all;
+    &:last-child,
+    &:has(+ .myMsg),
+    &:has(+ .newMsgs) {
+      @include msg_ticks(left, $blue_border);
+    }
+  }
+
+  .friend.reject{
+    background-color: $red;
+    @include msg_ticks(left, $red);
+  }
+
+  .animate {
+    animation: msgPopIn 0.1s linear;
+  }
+
+  .animateF {
+    animation: msgPopIn 0.1s linear;
+  }
+}
+
+@keyframes msgPopIn {
+  0% {
+    scale: 0;
+  }
+  100% {
+    scale: 1;
+  }
+}
+
+#page {
+  position: relative;
+}
+
+@media screen and (max-width: 767px) {
+  #chatCont {
+    height: 100dvh;
+    position: absolute;
+    z-index: 1;
+    left: 0;
+    border: none !important;
+
+    & > * {
+      width: 100% !important;
+    }
+  }
+
+  #chats #page {
+    & > section {
+      // width: 100% !important;
+      max-width: 100%;
+    }
+
+    .list {
+      width: 100%;
+    }
+
+    #chatCont {
+      width: 0 !important;
+      overflow: hidden;
+      transform-origin: right;
+      transition: all 0.25s linear;
+    }
+
+    input[type="checkbox"]:checked + #chatCont {
+      width: 10% !important;
+      border: $global_border !important;
+    }
+
+    #chatCont.expand {
+      width: 100% !important;
+      border: $global_border !important;
+      background-color: rgba($prim_dark, .8);
+    }
+  }
+
+  .hide:checked + label + .popup {
+    width: 90% !important;
+    height: 90% !important;
+  }
+
+  .chatBanner {
+    padding-left: 30px !important;
+    position: relative;
+  }
+
+  #close {
+    position: absolute;
+    left: 0;
+    width: 30px;
+    height: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}

@@ -1,0 +1,11 @@
+# https://grafana.com/docs/grafana/latest/administration/provisioning/#dashboards
+
+apiVersion: 1
+
+providers:
+  - name: '--- node exporter dashboard ---'
+    options:
+      path: /etc/grafana/provisioning/dashboards
+  - name: 'postgresql'
+    options:
+      path: /etc/grafana/provisioning/dashboards

@@ -1,0 +1,314 @@
+@keyframes popIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes scaleIn {
+  from {
+    transform: scale(0.7);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes hit {
+  0% {
+    transform: rotate(-35deg);
+  }
+  100% {
+    transform: rotate(-10deg);
+  }
+}
+@keyframes bounce {
+  0% {
+    transform: translate(0px, 0px);
+  }
+  100% {
+    transform: translate(20px, -150px);
+  }
+}
+@keyframes fillIn {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
+#chats #page {
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+#chats #page > section {
+  border-radius: 17px;
+  border: 1.5px solid rgba(49, 222, 222, 0.4392156863);
+  background-color: rgba(35, 35, 35, 0.4);
+}
+#chats #chatCont {
+  width: 100%;
+  flex-grow: 1;
+  height: 100%;
+}
+#chats .chatBanner {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  padding: 10px;
+  gap: 20px;
+  align-items: center;
+  background-color: rgba(28, 28, 28, 0.7);
+  border-bottom: 1.5px solid rgba(49, 222, 222, 0.4392156863);
+}
+#chats .chatBanner img {
+  height: 40px;
+}
+#chats .chatBanner .friendData,
+#chats .chatBanner .controls {
+  color: rgb(246, 246, 246) !important;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  cursor: pointer;
+}
+#chats .chatBanner .friendData h6,
+#chats .chatBanner .controls h6 {
+  min-width: -moz-fit-content;
+  min-width: fit-content;
+  text-align: left;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+#chats .chatBanner .friendData img {
+  border-radius: 50%;
+  aspect-ratio: 1/1;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+#chats .chatBanner .controls svg {
+  transition: all 0.15s linear;
+}
+#chats .chatBanner .controls svg:hover {
+  scale: 1.3;
+}
+
+.newMsgs {
+  width: 100%;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1254901961);
+  margin: 10px 0px 5px;
+  position: relative;
+}
+.newMsgs::after {
+  position: absolute;
+  content: "New messages";
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  background-color: rgb(246, 246, 246);
+  color: #232323;
+  padding: 5px 10px;
+  border-radius: 7px 7px 0px 0;
+  font-size: 10px;
+}
+
+#chatCont {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+  overflow: hidden;
+}
+#chatCont > * {
+  min-width: 200px;
+}
+
+#chat {
+  width: 100%;
+  height: 100%;
+  flex-grow: 1;
+  background-color: rgba(35, 35, 35, 0.4);
+  border-radius: 17px 17px 0px 0px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: auto;
+  padding: 20px 20px 35px;
+  border-bottom: 0;
+}
+#chat::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 0px 17px 0px 0px !important;
+}
+#chat::-webkit-scrollbar-thumb {
+  background-color: #00b1b1;
+  border-radius: 0px 17px 0px 0px !important;
+}
+#chat > *:first-child {
+  margin-top: auto !important;
+}
+
+#chatCont form {
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+  height: 60px;
+  border-top: 1.5px solid rgba(49, 222, 222, 0.4392156863);
+}
+#chatCont form > *:focus {
+  outline: none;
+}
+
+#chatCont input,
+#chatCont .msg {
+  flex-grow: 1;
+  color: rgb(246, 246, 246);
+  background-color: rgba(28, 28, 28, 0.7);
+  border: none;
+}
+#chatCont input[type=submit] {
+  border-left: 1.5px solid rgba(49, 222, 222, 0.4392156863);
+  background-color: #00b1b1;
+  cursor: pointer;
+  padding: 10px 20px;
+  width: -moz-fit-content;
+  width: fit-content;
+}
+#chatCont .msg {
+  width: 100%;
+  flex-grow: 1;
+  padding: 10px;
+  min-height: 30px;
+  resize: none;
+}
+#chatCont .msg::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 0px !important;
+}
+#chatCont .msg::-webkit-scrollbar-thumb {
+  background-color: #00b1b1;
+  border-radius: 0px !important;
+}
+#chatCont .message {
+  margin: 0;
+  border-radius: 7px !important;
+  padding: 10px 15px;
+  max-width: 80%;
+  width: -moz-fit-content;
+  width: fit-content;
+  min-width: 30px;
+  position: relative;
+  text-align: left;
+}
+#chatCont .message:before {
+  content: "";
+  position: absolute;
+  border: 15px solid transparent;
+  top: 100%;
+  border-bottom: none;
+}
+#chatCont .myMsg {
+  align-self: flex-end;
+  background-color: rgb(246, 246, 246);
+  color: #1c1c1c;
+  transform-origin: bottom right;
+  word-break: break-all;
+}
+#chatCont .myMsg:last-child:before, #chatCont .myMsg:has(+ .friend):before, #chatCont .myMsg:has(+ .newMsgs):before {
+  border-top: 15px solid rgb(246, 246, 246) !important;
+  border-right: 15px;
+  right: 7.5px;
+}
+#chatCont .friend {
+  align-self: flex-start;
+  background-color: rgba(49, 222, 222, 0.4392156863);
+  color: rgb(246, 246, 246);
+  transform-origin: bottom left;
+  word-break: break-all;
+}
+#chatCont .friend:last-child:before, #chatCont .friend:has(+ .myMsg):before, #chatCont .friend:has(+ .newMsgs):before {
+  border-top: 15px solid rgba(49, 222, 222, 0.4392156863) !important;
+  border-left: 15px;
+  left: 7.5px;
+}
+#chatCont .friend.reject {
+  background-color: #db0000;
+}
+#chatCont .friend.reject:before {
+  border-top: 15px solid #db0000 !important;
+  border-left: 15px;
+  left: 7.5px;
+}
+#chatCont .animate {
+  animation: msgPopIn 0.1s linear;
+}
+#chatCont .animateF {
+  animation: msgPopIn 0.1s linear;
+}
+
+@keyframes msgPopIn {
+  0% {
+    scale: 0;
+  }
+  100% {
+    scale: 1;
+  }
+}
+#page {
+  position: relative;
+}
+
+@media screen and (max-width: 767px) {
+  #chatCont {
+    height: 100dvh;
+    position: absolute;
+    z-index: 1;
+    left: 0;
+    border: none !important;
+  }
+  #chatCont > * {
+    width: 100% !important;
+  }
+  #chats #page > section {
+    max-width: 100%;
+  }
+  #chats #page .list {
+    width: 100%;
+  }
+  #chats #page #chatCont {
+    width: 0 !important;
+    overflow: hidden;
+    transform-origin: right;
+    transition: all 0.25s linear;
+  }
+  #chats #page input[type=checkbox]:checked + #chatCont {
+    width: 10% !important;
+    border: 1.5px solid rgba(49, 222, 222, 0.4392156863) !important;
+  }
+  #chats #page #chatCont.expand {
+    width: 100% !important;
+    border: 1.5px solid rgba(49, 222, 222, 0.4392156863) !important;
+    background-color: rgba(35, 35, 35, 0.8);
+  }
+  .hide:checked + label + .popup {
+    width: 90% !important;
+    height: 90% !important;
+  }
+  .chatBanner {
+    padding-left: 30px !important;
+    position: relative;
+  }
+  #close {
+    position: absolute;
+    left: 0;
+    width: 30px;
+    height: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}/*# sourceMappingURL=chats.css.map */

@@ -1,0 +1,7 @@
+FROM prom/alertmanager
+COPY conf/alertmanager.yml /conf/alertmanager.yml
+COPY tools/entrypoint.sh /conf/entrypoint.sh
+USER root
+RUN chmod u+x /conf/entrypoint.sh
+# USER nobody
+ENTRYPOINT [ "sh", "/conf/entrypoint.sh" ]

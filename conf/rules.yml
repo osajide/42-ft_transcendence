@@ -1,0 +1,10 @@
+groups:
+  - name: salam
+    rules:
+      - alert: containerDown
+        expr: up{job="node_exporter"} == 0
+        # for: 1m
+        labels:
+          severity: critical
+        annotations:
+          description: "test container down"

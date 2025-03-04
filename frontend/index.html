@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transcendence</title>
+    <link href="./styles/style.css" rel="stylesheet" />
+    <link id="pageStyle" rel="stylesheet" href="" />
+    <link rel="icon" type="image/x-icon" href="./assets/42.svg">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  </head>
+
+  <body>
+    <div id="errorCont" class="d-flex"></div>
+    <section id="landing">
+      <section id="spa_nav">
+        <input id="/" type="radio" name="nav" value="/" checked />
+        <input id="profile" type="radio" name="nav" value="profile" />
+        <input id="signin" type="radio" name="nav" value="signin" />
+        <input id="loginin" type="radio" name="nav" value="login" />
+        <input id="friends" type="radio" name="nav" value="friends" />
+        <input id="chats" type="radio" name="nav" value="chats" />
+        <input id="games" type="radio" name="nav" value="games" />
+      </section>
+
+      <main id="landing_page"></main>
+    </section>
+    <div id="backg">
+      <video autoplay muted loop playbackRate="3.0">
+        <source src="./assets/back.mp4" type="video/mp4" />
+      </video>
+    </div>
+    <div id="loader" class="show">
+      <svg
+        fill="currentColor"
+        id="Layer_1"
+        data-name="Layer 1"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 23.98"
+      >
+        <path
+          d="m8.49,0c2.6.04,4.66.88,6.36,2.57.81.8,1.62,1.61,2.42,2.42,2.4,2.44,2.86,6.01,1.16,8.97-.36.63-.27,1.25.28,1.73,1.48,1.32,2.97,2.64,4.46,3.96,1.08.96,1.12,2.31.1,3.33-.16.16-.31.32-.48.47-.91.78-2.23.7-3.04-.21-1.36-1.51-2.71-3.03-4.06-4.54-.38-.42-.83-.59-1.39-.43-.12.03-.24.1-.35.16-2.97,1.69-6.55,1.22-8.96-1.19-.79-.79-1.6-1.57-2.38-2.38C.2,12.35-.59,9.39.44,6.09,1.47,2.8,3.8.84,7.17.15c.5-.1,1.02-.11,1.32-.15ZM.86,8.66c0,2.11.82,4.08,2.31,5.57.81.81,1.62,1.62,2.43,2.43.92.92,2.02,1.51,3.29,1.8.3.07.52.04.72-.21.15-.19.35-.36.52-.53,2.76-2.76,5.52-5.52,8.28-8.29.07-.07.12-.23.1-.33-.23-1.37-.85-2.54-1.82-3.52-.8-.81-1.6-1.62-2.42-2.42-1.73-1.7-3.81-2.48-6.23-2.29C4.01,1.19.85,4.62.86,8.66Zm9.69,9.92c1.08-.05,2.09-.36,3.02-.91.91-.53,1.98-.36,2.69.41.27.29.53.59.79.88,1.09,1.22,2.18,2.44,3.27,3.66.6.67,1.41.7,2.05.06.1-.1.2-.19.29-.29.7-.7.68-1.48-.06-2.14-1.48-1.31-2.96-2.63-4.44-3.94-.85-.76-1.02-1.82-.45-2.81.41-.7.68-1.46.81-2.26.04-.24.05-.49.08-.73-2.7,2.7-5.37,5.37-8.06,8.06Z"
+        />
+      </svg>
+      <span class="ball"></span>
+    </div>
+    <script src="./scripts/script.js"></script>
+    <script id="pageScript" src=""></script>
+  </body>
+</html>

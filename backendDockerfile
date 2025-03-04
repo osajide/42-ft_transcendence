@@ -1,0 +1,5 @@
+FROM python:3.10.12-bookworm
+COPY backend.sh usr/local/bin/backend
+COPY user.svg /tmp/user.svg
+ENTRYPOINT [ "backend" ]
+CMD [ "python", "manage.py", "runserver", "0.0.0.0:8000" ]

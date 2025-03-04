@@ -1,0 +1,168 @@
+@use "vars" as *;
+
+.indent {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+
+  span {
+    height: calc(100% - 14px);
+    border-left: 2px solid $white;
+  }
+}
+
+#landing_page #page {
+  gap: 30px;
+}
+
+.auth_form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 500px;
+
+  * {
+    outline: none;
+    border: none;
+  }
+
+  div {
+    width: 100%;
+    display: flex;
+    gap: 20px;
+  }
+
+  .form_inp {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+
+    input {
+      width: 100%;
+      padding: 10px 7px;
+      border-radius: 7px;
+      color: $sec_dark;
+    }
+
+    small {
+      color: $red;
+      display: none;
+    }
+  }
+
+  input:user-invalid {
+    border: 2px solid $red;
+
+    & + small {
+      display: inline !important;
+    }
+  }
+
+  .button {
+    margin-top: 1rem;
+    width: 50%;
+  }
+}
+
+// .passwd {
+// 	position: relative;
+
+// 	input{
+// 		padding-right: 42px !important;
+// 	}
+
+// 	&::before {
+// 		content: "";
+// 		cursor: pointer;
+// 		@include abs(bottom, 0, right, 0, 100%, 100%, 0);
+// 		opacity: .4;
+// 		width: 40.5px;
+// 		height: 40.5px;
+// 		background: url("../assets/eyeC.svg") no-repeat center;
+// 	}
+// }
+
+#qrcode {
+  min-width: 240px;
+  width: 50%;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+
+  img{
+    width: 240px;
+  }
+}
+
+#otp {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+
+  & > div {
+    display: flex;
+    gap: 10px;
+  }
+
+  .otpInput {
+    width: 60px;
+    height: 60px;
+    border: none;
+    aspect-ratio: 1 / 1;
+    text-align: center;
+    font-size: 18px;
+    color: $prim_dark;
+    background-color: $white;
+    border-radius: 7px;
+    font-size: 2rem;
+
+    &:focus{
+      border: 3px solid $prim_blue !important;
+    }
+  }
+
+  #reset{
+    font-size: .8rem;
+    // background-color: $prim_blue;
+    // cursor: pointer;
+    // width: fit-content;
+    // padding: 10px 20px;
+    margin: auto;
+    border-radius: 7px;
+    margin-top: 20px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .button {
+    width: 100% !important;
+    flex-grow: 1;
+  }
+
+  .auth_form div {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .indent {
+    flex-direction: column;
+    width: 100%;
+    span {
+      width: calc(100% - 14px);
+      height: 0;
+      border-left: none;
+      border-bottom: 2px solid $white;
+    }
+  }
+}

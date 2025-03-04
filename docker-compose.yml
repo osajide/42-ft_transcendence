@@ -1,0 +1,169 @@
+services:
+
+  frontend:
+    image: nginx:latest
+    container_name: nginx
+    env_file:
+      - .env
+    volumes:
+      - ${COMPOSE_PROJECT_PATH}/ssl:/ssl
+      - ${COMPOSE_PROJECT_PATH}/frontend:/var/www/html
+      - ${COMPOSE_PROJECT_PATH}/conf/nginx.conf:/etc/nginx/conf.d/django.conf
+      - assetsVolume:/var/www/html/assets/avatars/
+      - staticVolume:/var/www/html/static
+    networks:
+      - myNet
+    ports: 
+      - 443:443
+      - 4242:4242
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+#-------------------------------------------
+
+  backend:
+    image: backend:django
+    build:
+      context: .
+      dockerfile: backendDockerfile
+    container_name: backend
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1 # to see the asgi server's output in docker logs command
+      - PIP_ROOT_USER_ACTION=ignore # for preventing warning of running pip as root
+    volumes:
+      - ${COMPOSE_PROJECT_PATH}/backend:/app
+      - assetsVolume:/app/assets/avatars/
+      - staticVolume:/app/assets/static/
+      - backendVolume:/root/.cache/pip/
+      - ${COMPOSE_PROJECT_PATH}/ssl:/ssl
+    networks:
+      - myNet
+    ports:
+      - 8000:8000 # for admin interface
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - postgres
+
+#-------------------------------------------
+
+  redis:
+    image: redis:bookworm
+    container_name: redis
+    volumes:
+      - redisVolume:/data
+    networks:
+      - myNet
+    restart: unless-stopped
+
+#-------------------------------------------
+
+  postgres:
+    image: postgres:14.15-alpine
+    container_name: postgresql
+    env_file:
+      - .env
+      # - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - postgresVolume:/var/lib/postgresql/data
+      - ${COMPOSE_PROJECT_PATH}/postgres.sh:/docker-entrypoint-initdb.d/postgres.sh
+    networks:
+      - myNet
+    restart: unless-stopped
+
+#--------------------------------------------
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    # user: root
+    networks:
+        - myNet
+    volumes:
+        - ${COMPOSE_PROJECT_PATH}/conf/prometheus.yml:/etc/prometheus/prometheus.yml
+        - prom_vol:/prometheus
+        - ${COMPOSE_PROJECT_PATH}/conf/rules.yml:/etc/prometheus/rules.yml
+    ports:
+        - 9090:9090
+    depends_on:
+        - node-exporter
+        - alert-manager
+
+# ****************************************************
+
+  node-exporter:
+    image: prom/node-exporter
+    container_name: node-exporter
+    # ports:
+    #     - 9100:9100
+    #pid: host
+    # user: root
+    # userns_mode: "host"
+    networks:
+        - myNet
+    volumes:
+        - /:/host
+    command:
+        - --path.rootfs=/host
+    
+# *********************************************************
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.16.0
+    container_name: postgres-exporter
+    volumes:
+        - ${COMPOSE_PROJECT_PATH}/conf/queries.yml:/etc/postgres/queries.yml
+    env_file:
+        - .env
+    networks:
+        - myNet
+        # - myNet1
+
+# **********************************************************
+
+  alert-manager:
+    build:
+        context: .
+        dockerfile: alertmanagerDockerfile
+    container_name: alert-manager
+    env_file:
+        - .env
+    volumes:
+        - ${COMPOSE_PROJECT_PATH}/conf/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+        - alert_vol:/alertmanager
+    ports:
+        - 9093:9093
+    networks:
+        - myNet
+
+# ************************************************************
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    env_file:
+        - .env
+    volumes:
+        - grafana_vol:/var/lib/grafana
+        - ${COMPOSE_PROJECT_PATH}/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+        - ${COMPOSE_PROJECT_PATH}/provisioning/datasources:/etc/grafana/provisioning/datasources
+    networks:
+        - myNet
+    ports:
+        - 3000:3000
+
+networks:
+  myNet:
+
+volumes:
+  postgresVolume:
+  backendVolume:
+  redisVolume:
+  assetsVolume:
+  staticVolume:
+  prom_vol:
+  alert_vol:
+  grafana_vol:

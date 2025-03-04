@@ -1,0 +1,167 @@
+@keyframes popIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes scaleIn {
+  from {
+    transform: scale(0.7);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes hit {
+  0% {
+    transform: rotate(-35deg);
+  }
+  100% {
+    transform: rotate(-10deg);
+  }
+}
+@keyframes bounce {
+  0% {
+    transform: translate(0px, 0px);
+  }
+  100% {
+    transform: translate(20px, -150px);
+  }
+}
+@keyframes fillIn {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
+.indent {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.indent span {
+  height: calc(100% - 14px);
+  border-left: 2px solid #f1f1f1;
+}
+
+#landing_page #page {
+  gap: 30px;
+}
+
+.auth_form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 500px;
+}
+.auth_form * {
+  outline: none;
+  border: none;
+}
+.auth_form div {
+  width: 100%;
+  display: flex;
+  gap: 20px;
+}
+.auth_form .form_inp {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  width: 100%;
+  max-width: 500px;
+  position: relative;
+}
+.auth_form .form_inp input {
+  width: 100%;
+  padding: 10px 7px;
+  border-radius: 7px;
+  color: #1c1c1c;
+}
+.auth_form .form_inp small {
+  color: #db0000;
+  display: none;
+}
+.auth_form input:user-invalid {
+  border: 2px solid #db0000;
+}
+.auth_form input:user-invalid + small {
+  display: inline !important;
+}
+.auth_form .button {
+  margin-top: 1rem;
+  width: 50%;
+}
+
+#qrcode {
+  min-width: 240px;
+  width: 50%;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+#qrcode img {
+  width: 240px;
+}
+
+#otp {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+#otp > div {
+  display: flex;
+  gap: 10px;
+}
+#otp .otpInput {
+  width: 60px;
+  height: 60px;
+  border: none;
+  aspect-ratio: 1/1;
+  text-align: center;
+  font-size: 18px;
+  color: #232323;
+  background-color: #f1f1f1;
+  border-radius: 7px;
+  font-size: 2rem;
+}
+#otp .otpInput:focus {
+  border: 3px solid #00b1b1 !important;
+}
+#otp #reset {
+  font-size: 0.8rem;
+  margin: auto;
+  border-radius: 7px;
+  margin-top: 20px;
+}
+
+@media screen and (max-width: 480px) {
+  .button {
+    width: 100% !important;
+    flex-grow: 1;
+  }
+  .auth_form div {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .indent {
+    flex-direction: column;
+    width: 100%;
+  }
+  .indent span {
+    width: calc(100% - 14px);
+    height: 0;
+    border-left: none;
+    border-bottom: 2px solid #f1f1f1;
+  }
+}/*# sourceMappingURL=auth.css.map */

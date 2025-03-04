@@ -1,0 +1,16 @@
+global:
+  resolve_timeout: 5m # default value
+
+route:
+  receiver: 'manager'
+
+receivers:
+  - name: 'manager'
+    email_configs:
+      - to: '${RECEIVER}'
+        from: '${SENDER}'
+      # smtp server
+        smarthost: '${SMTP_SERVER}'
+        auth_username: '${AUTH_USERNAME}'
+        auth_password: '${AUTH_PASSWORD}'
+        send_resolved: true

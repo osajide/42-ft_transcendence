@@ -1,0 +1,474 @@
+@use "vars" as *;
+
+#games {
+  display: flex;
+  align-items: center;
+}
+
+#game_page {
+  position: relative;
+  & > * {
+    animation: popIn 0.75s ease-out forwards;
+  } // width: fit-content !important;
+  // height: fit-content !important;
+  // margin-inline: auto;
+}
+
+.lobby#page {
+  @include container;
+  background-color: rgba($prim_dark, 0.4);
+  width: 100% !important;
+  height: 100% !important;
+
+  &:has(canvas) {
+    background-color: transparent;
+    border: none;
+  }
+}
+
+#game_page:not(.in_game) {
+  display: flex;
+  flex: 1;
+  position: relative;
+  width: 100%;
+  border-radius: $global_radius;
+  overflow: hidden;
+
+  .game_mode {
+    display: flex;
+    flex: 1;
+    height: 100%;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.15s linear;
+
+    &:first-child {
+      background: url("../assets/vs.png");
+      background-position: center;
+      background-repeat: no-repeat !important ;
+      background-size: auto 100%;
+      border-right: $global_border;
+    }
+
+    &:last-child {
+      background: url("../assets/tour.png");
+      background-position: center;
+      background-repeat: no-repeat !important ;
+      background-size: auto 100%;
+    }
+
+    &:hover {
+      mix-blend-mode: hard-light;
+      background-size: auto 150%;
+    }
+
+    .button {
+      height: fit-content;
+      min-width: calc(1rem * 10);
+    }
+  }
+}
+
+.tournament_board {
+  gap: 20px;
+  padding: 10px;
+  position: relative;
+
+  .tournament {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 0.02%;
+    position: relative;
+
+    & > .pair_link {
+      height: 20%;
+      width: 3px;
+      background-color: $white;
+      position: absolute;
+      left: 35px;
+      top: 10%;
+      z-index: 0;
+
+      &:last-child {
+        top: 70%;
+      }
+    }
+
+    .player_card {
+      height: 14%;
+      // overflow: hidden;
+      aspect-ratio: 1 / 1;
+      border: 3px solid #00bcbc;
+      border-radius: 7px;
+      z-index: 1;
+      position: relative;
+      background-color: #232323;
+
+      &:nth-child(2n) {
+        align-self: center;
+      }
+
+      &:after {
+        content: attr(data-nickname);
+        position: absolute;
+        top: 50%;
+        left: calc(100% + 1.5rem);
+        transform: translateY(-50%);
+        font-size: 1rem;
+      }
+    }
+
+    .player_img {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+      border-radius: 7px;
+    }
+
+    &:first-child {
+      @include links(calc(50% - 3px), 3px, 50%, 50%, calc(50% - 35px), 58%, 21%, left, 35px, border-left);
+
+      .player_card {
+        @include tournament(flex-start, flex-end);
+        &:nth-child(4) {
+          &:after {
+            left: 50%;
+            right: unset;
+            bottom: calc(100% + 1rem);
+            top: unset;
+            transform: translateX(-50%);
+          }
+        }
+      }
+
+      // & > .laugh{
+      //   left: 100%;
+      //   transform: translate(-50%, -50%);
+      // }
+    }
+
+    &:last-child {
+      @include links(50%, 3px, 50%, 0, calc(50% - 35px), 58%, 21%, right, 35px, border-right);
+
+      .player_card {
+        @include tournament(flex-end, flex-start);
+
+        &:after {
+          right: calc(100% + 1.5rem);
+          left: unset;
+        }
+        &:nth-child(4) {
+          &:after {
+            left: 50%;
+            right: unset;
+            bottom: calc(100% + 1rem);
+            top: unset;
+            transform: translateX(-50%);
+          }
+        }
+
+        // &:after {
+        //   right: calc(100% + 1.5rem);
+        //   left: unset;
+        // }
+      }
+      & > .pair_link {
+        right: 35px;
+        left: unset;
+      }
+
+      // & > .laugh{
+      //   left: -100%;
+      //   transform: translate(50%, -50%);
+      // }
+    }
+  }
+}
+
+.player_data {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media screen and (max-width: 768px) {
+  .tournament_board {
+    flex-direction: column;
+
+    .tournament {
+      flex-direction: row;
+      gap: 10px;
+
+      .player_card {
+        width: 14%;
+        height: auto;
+        transform: rotate(90deg);
+      }
+
+      & > .pair_link {
+        width: 30%;
+        height: 3px;
+        top: 4vw !important;
+        left: calc(20px);
+
+        &:last-child {
+          left: unset;
+          right: calc(20px);
+        }
+      }
+
+      &:first-child {
+        &::before {
+          width: 58.5%;
+          height: calc(50% - 4vw);
+          left: 20.5%;
+          top: 4vw;
+          z-index: 0;
+          border-top: none;
+          border-left: 3px solid $white;
+        }
+
+        &:after {
+          width: 3px;
+          height: calc(50% - 3px);
+          bottom: 0;
+        }
+      }
+
+      &:last-child {
+        &::before {
+          width: 58.5%;
+          height: calc(50% - 4vw);
+          left: 20.5%;
+          bottom: 4vw;
+          top: unset;
+          z-index: 0;
+          border-bottom: none;
+          border-right: 3px solid $white;
+        }
+
+        &:after {
+          width: 3px;
+          height: 50%;
+          left: 50%;
+          top: 0;
+        }
+
+        & > .pair_link {
+          top: unset !important;
+          bottom: 4vw !important;
+          left: calc(20px);
+
+          &:last-child {
+            left: unset;
+            right: calc(20px);
+          }
+        }
+      }
+
+      .player_img {
+        height: auto;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 480px) {
+  #game_page:not(.in_game) {
+    flex-direction: column;
+
+    .game_mode {
+      &:hover {
+        mix-blend-mode: hard-light;
+        background-size: auto 150% !important;
+        transform-origin: center;
+      }
+    }
+  }
+}
+
+#game_canvas {
+  @include container;
+}
+
+#games + header + #notification {
+  display: none;
+}
+
+#game_dash {
+  position: absolute;
+  width: 100%;
+  height: max-content;
+  top: 10px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 10px 20px;
+  transition: all 0.5s linear;
+}
+
+.player_stats {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  height: 100%;
+  transition: all 0.5s linear;
+
+  img {
+    height: 100%;
+    width: 100%;
+    max-width: 70px;
+    border: 3px solid $prim_blue;
+    border-radius: 7px;
+    min-width: 60px;
+    min-height: 60px;
+    transition: all 0.5s linear;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+  }
+
+  p {
+    font-size: 2rem;
+  }
+}
+
+// main{
+// 	position: relative;
+//   &::after {
+//     position: absolute;
+//     width: 1px;
+//     height: 100vh;
+//     content: "";
+//     background-color: #f00;
+//     top: 0;
+//     left: 50%;
+//   }
+
+//   &::before {
+//     position: absolute;
+//     width: 100vw;
+//     height: 1px;
+//     content: "";
+//     background-color: #f00;
+//     top: 50%;
+//     left: 0;
+//     z-index: 90;
+//   }
+// }
+
+.rotate_stats#game_dash {
+  height: 100%;
+  width: 70px;
+  right: 0;
+  flex-direction: column;
+
+  .player_stats {
+    width: fit-content;
+    height: 50px;
+    position: absolute;
+    transform-origin: center;
+    transform: rotate(90deg);
+    transition: all 0.5s linear;
+    right: -9px;
+
+    &:first-child {
+      top: 50px;
+    }
+
+    &:last-child {
+      bottom: 75px;
+    }
+
+    img {
+      height: 48px;
+      width: 48px;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+    }
+  }
+}
+
+.game_over#game_dash {
+  height: 100%;
+  width: 100%;
+  justify-content: space-evenly;
+  gap: 40px;
+
+  img {
+    max-width: 100px;
+    max-height: 100px;
+  }
+}
+
+.rotate_stats.game_over#game_dash {
+  .player_stats {
+    width: fit-content;
+    height: 100px;
+    transform: translateX(-50%) rotate(90deg);
+    left: 50%;
+
+    &:first-child {
+      top: 20%;
+    }
+
+    &:last-child {
+      bottom: 20%;
+    }
+
+    img {
+      height: 100%;
+      width: 100%;
+      max-width: 70px;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+    }
+  }
+}
+
+.loser img {
+  border-color: $red;
+}
+
+.cry {
+  border-color: $red !important;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    background-color: #db000050;
+  }
+}
+
+.winner img, .smile {
+  border-color: $green !important;
+}
+
+.laugh {
+  border-color: #ffdf76 !important;
+  scale: 1.7;
+  // width: 200px !important;
+  // height: auto !important;
+  // aspect-ratio: 1 / 1;
+  // position: absolute !important;
+  // z-index: 20;
+  // top: 50% !important;
+}
+
+.tournament:has(> .laugh) {
+  z-index: 1 !important;
+}
+
+.tournament:not(:has(> .laugh)) {
+z-index: 0 !important;
+}
